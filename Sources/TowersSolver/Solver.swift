@@ -351,7 +351,7 @@ public class Solver {
                 set(i, hints.first!)
                 
                 if interactive && descriptive {
-                    _print("[\(visible)] At \(_coord): Sole hint \(hints.first!) is the only solution!")
+                    _print("[\(visible)] At \(_coord): Sole hint \(hints.first!) is the only solution for cell at \(i + 1)!")
                 }
             default:
                 break
@@ -391,7 +391,7 @@ public class Solver {
                 set(c[0].0, h)
                 
                 if interactive && descriptive {
-                    _print("[\(visible)] At \(_coord): Cell \(c[0].0 + 1) is the only one featuring \(h)")
+                    _print("[\(visible)] At \(_coord): Cell \(c[0].0 + 1) is the only cell on its row featuring height hint \(h): That's its solution.")
                 }
             }
         }
