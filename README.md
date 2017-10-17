@@ -2,6 +2,11 @@
 
 A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 4.0](https://swift.org).
 
+Towers is a logic game where a _at most_ half-filled grid is presented and is to be filled with towers of height 1 through N _(N = length of square grid's side)_, such that all lines and columns have all possible tower heights, but no line or column has repeated tower heights.
+
+Along the edges of the grid are numbered clues that tell how many towers can be seen from that edge when looking through to the other side of the grid in a straight line. Tall towers occlude smaller towers, so the puzzle is mostly about choosing correct sequences of towers such that the edges with the clues can 'see' the exact proper amount of towers, no more no less.
+
+
 The executable sample currently only runs a static solution for a puzzle grid as follows:
 
 ```
