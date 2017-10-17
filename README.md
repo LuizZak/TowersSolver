@@ -64,3 +64,7 @@ Requires: Xcode 9.0 & Swift 4.0
 This solver uses trivial solution deductions (like solving for ones or W (size of grid)'s) and other more complex solving steps that use a tree for deducting possible combinations of values for each node (some ideas taken from http://www.conceptispuzzles.com/index.aspx?uri=puzzle/skyscrapers/techniques), and in the last case does backtracking guess attempts.
 
 It's pretty simple, but fancy stuff. It's able to solve a pretty complex puzzle (the one above) in only ~0.25s with three guesses total.
+
+## License
+
+This is licensed under MIT license (see `LICENSE.md` for more info.)

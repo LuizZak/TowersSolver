@@ -99,7 +99,7 @@ public class Solver {
     
     /// Runs a given closure for each solution direction (up, down, left, right)
     /// passing in the visibility at the cell and the array of towers (pre-ordered
-    /// from nearest to farthest from.
+    /// from nearest to farthest from the edge.)
     ///
     /// Also provides a closure that when fed an index, returns a proper (x, y)
     /// coordinates pair for the cell at the given index on the column/row that
@@ -154,7 +154,7 @@ public class Solver {
         }
         
         // Now step through and remove hints that conflict with previously solved
-        // cells
+        // cells in vertical/horizontal lines.
         for y in 0..<grid.size {
             for x in 0..<grid.size {
                 guard let solution = grid.cellAt(x: x, y: y).solution else {
@@ -184,7 +184,11 @@ public class Solver {
         // Case 1: For 1 < v < towers, the largest possible tower height will always
         // be at least 'v' distance from the corner.
         // E.g.:
+        //
         // 3: - - - - -
+        //
+        // Can only have 5's on:
+        //
         // 3: - - 5 5 5  If a 5 lands on the first or second spot, the row cannot
         //               be solved!
         if visible > 1 && visible < towers.count {
@@ -208,7 +212,7 @@ public class Solver {
         
         // Case 2: For visibilities of 2, the second tower cannot be the second
         // tallest one, as it'd result in either one or three towers being visible
-        // (along with any other possible height, except exactly two!)
+        // (along with any other possible visible towers count, except exactly two!)
         if visible == 2 {
             setNot(1, towers.count - 1)
         }
@@ -252,6 +256,8 @@ public class Solver {
             if interactive && descriptive {
                 _print("[\(visible)] At \(_coord): Blocking whole view with \(towers.count) tower")
             }
+            
+            return
         }
         
         if visible == 2 {
@@ -265,6 +271,8 @@ public class Solver {
                         _print("[\(visible)] At \(_coord): Blocking view of towers up to \(towers.count) with \(towers.count - 1) tower")
                     }
                 }
+                
+                return
             }
             
             // Case 3: For visible = 2, if the very first tower is the smallest
@@ -279,6 +287,8 @@ public class Solver {
                         _print("[\(visible)] At \(_coord): Smallest tower must be followed by largest tower")
                     }
                 }
+                
+                return
             }
         }
         
@@ -286,11 +296,11 @@ public class Solver {
         // solution, and all positions occluded by the tall tower contain the
         // sequence of towers from Tallest to N-th tallest (in any order), then
         // the positions before the tallest tower must be a sequence of shortest
-        // to N-1 tall tower, because that's the only way to solve that position.
+        // to N-1 tall tower, because that's the only way to solve those positions.
         if visible > 1 && towers[visible - 1].solution == towers.count {
             // Check occluded tower solutions
             let sol = towers[(visible-1)...].solutionHeights()
-            if sol.sorted() == Array(visible...towers.count) {
+            if Set(sol) == Set(visible...towers.count) {
                 for h in 1..<visible {
                     set(h - 1, h)
                 }
@@ -298,13 +308,15 @@ public class Solver {
                 if interactive && descriptive {
                     _print("[\(visible)] At \(_coord): Adding sequential tower heights (due to being only solution possible)")
                 }
+                
+                return
             }
         }
         
         // Case 5: If the sequence of towers from the first position go from
         // 1 to visible - 1 (in order), then the next tower must be the tallest
         // possible tower occluding all others, otherwise the solution will be
-        // visible + 1
+        // visible + 1 (and thus invalid).
         if visible > 1 && visible < towers.count && towers[visible - 1].solution == nil {
             if towers[0..<visible-1].solutionHeights() == Array(1..<visible) {
                 set(visible - 1, towers.count)
@@ -312,6 +324,8 @@ public class Solver {
                 if interactive && descriptive {
                     _print("[\(visible)] At \(_coord): Adding tallest tower after sequential tower heights (due to being only solution possible)")
                 }
+                
+                return
             }
         }
         
@@ -407,9 +421,10 @@ public class Solver {
             possible = root.permutations(ofVisibleTowers: visible)
         }
         
-        // Returns an array containing sets where each index represents a tower
-        // row, and each set within is a set of all cell hints found at that row
-        // from all input solution permutations.
+        // Returns an array containing sets where each index represents the tower
+        // that is 'that-index' distance away from the edge, and each set within
+        // is a set of all cell hints found at that index from all input solution
+        // permutations.
         func groupAllMatching(in permutations: [[Int]]) -> [Set<Int>] {
             // No permutations- return array of empty sets
             if permutations.count == 0 {
@@ -429,8 +444,6 @@ public class Solver {
             return _sets
         }
         
-        // Sets where each index represents a row, and each set is the possible
-        // solution values for that row
         let possibleSets = groupAllMatching(in: possible)
         
         for (i, possibleSet) in possibleSets.enumerated() {
@@ -443,7 +456,10 @@ public class Solver {
                 }
             }
             
-            // Remove from
+            // Remove from the current hints set of the cell all heights that don't
+            // show up on the possible heights permutations for that cell, meaning
+            // no combination of solution features these heights, and they can be
+            // safely discarded.
             if let hints = towers[i].hints {
                 let diff = possibleSet.symmetricDifference(hints)
                 if diff.count > 0 {
@@ -464,7 +480,7 @@ public class Solver {
 // MARK: - Solver loops
 public extension Solver {
     /// Runs as many solving steps as possible before either solving the whole
-    /// grid or stopping after not being able to make any more attempts.
+    /// grid, or stopping after not being able to make any more attempts.
     @discardableResult
     public func solve() -> Bool {
         if resetGrid {
@@ -475,10 +491,9 @@ public extension Solver {
         
         // Run until we can't anymore
         while true {
-            let before = grid.cells
             let didWork = step()
             
-            if interactive && grid.cells != before {
+            if interactive && didWork {
                 // Re-print grid
                 gridPrinter.printGrid(grid: grid)
                 _flushDescriptiveText()
@@ -612,7 +627,8 @@ public extension Solver {
     /// or because the solver failed to solve the puzzle successfully).
     public func step() -> Bool {
         
-        // Check if any cell features empty cells (this means we ran out of possibilities
+        // Check if any cell features empty cells (this means we ran out of
+        // possibilities for one or more cells)
         if hasEmptySolutionCells() {
             if interactive {
                 _print("Avoiding solving a grid with no more guesses available")
@@ -622,17 +638,17 @@ public extension Solver {
         
         let before = grid.cells
         
-        // Do complex runs
+        // Do nested trivial and complex runs
         runWhileChangingGrid {
-            // Do trivial runs until we can't anymore, then we do some complex runs
+            // Fill out trivials first. These don't need to construct visibility
+            // trees, and so are much faster to perform, as well as trim out many
+            // easy cases.
             runWhileChangingGrid {
-                // Fill out trivials first. These don't need the visibility tree and
-                // so are much faster to perform, and weed out many easy cases.
                 runTrivialStep()
                 _print("End of trivial cycle.")
             }
             
-            // Run a complex step that uses visibility nodes as an aid for a more
+            // Run a complex step that uses visibility trees as an aid for a more
             // complete solving attempt with solution combinations checkings
             runComplexStep()
             _print("End of complex + trivial cycle.")
