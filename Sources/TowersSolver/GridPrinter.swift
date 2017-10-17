@@ -76,6 +76,14 @@ public class GridPrinter {
         }
     }
     
+    public func fillRect(char: Character, x: Int, y: Int, w: Int, h: Int) {
+        for _y in y..<y+h {
+            for _x in x..<x+w {
+                putChar(char, x: _x, y: _y)
+            }
+        }
+    }
+    
     public func putRect(x: Int, y: Int, w: Int, h: Int) {
         for _x in x...x+w {
             put("-", x: _x, y: y)
@@ -85,6 +93,31 @@ public class GridPrinter {
             put("|", x: x, y: _y)
             put("|", x: x + w, y: _y)
         }
+    }
+    
+    public func putChar(_ char: Character, x: Int, y: Int) {
+        var offset = y * bufferWidth + x
+        
+        // Out of buffer's reach
+        if offset >= buffer.count - 2 {
+            return
+        }
+        if offset < 0 {
+            return
+        }
+        
+        // Wrap-around (- 2 to not eat the line-ending character at bufferWidth - 1)
+        if offset % bufferWidth == (bufferWidth - 1) {
+            offset += 1
+            
+            if offset >= buffer.count - 2 {
+                return
+            }
+        }
+        
+        putChar(char, offset: offset)
+        
+        offset += 1
     }
     
     private func putChar(_ char: Character, offset: Int) {
@@ -309,6 +342,9 @@ public extension GridPrinter {
     public func printGrid(grid: Grid) {
         resetBuffer()
         
+        // For visual hint
+        let heights = Array("▂▃▄▅▆▇█".characters)
+        
         let originX = 2
         let originY = 1
         
@@ -346,6 +382,12 @@ public extension GridPrinter {
                         putString(h.description, x: _cx, y: _cy)
                     }
                 case .solved(let value):
+                    // Draw a small visual representation of the (relative) height
+                    let offset = Int((Float(value) / Float(grid.size)) * Float(heights.count) - 1)
+                    let hglyph = heights[offset]
+                    
+                    fillRect(char: hglyph, x: x + 1, y: y + h - 1, w: w - 1, h: 1)
+                    
                     putString(value.description, x: x + w / 2, y: y + h / 2)
                 }
                 
