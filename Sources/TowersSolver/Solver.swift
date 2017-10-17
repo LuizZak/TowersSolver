@@ -411,40 +411,28 @@ public class Solver {
         // Construct all possible solution permutations for the array of towers
         let root = TowerVisibilityNode.visibilities(from: towers)
         
-        let possible: [[Int]]
+        
+        let possibleSets: [Set<Int>]
         
         // 0 means no restriction for visible tower count, all permutations are
         // possible.
         if visible == 0 {
-            possible = root.permutations()
+            possibleSets = (0..<towers.count).map {
+                root.possibleSolutionHeights(at: $0)
+            }
         } else {
-            possible = root.permutations(ofVisibleTowers: visible)
+            // Create an array containing sets where each index represents the
+            // tower that is 'that-index' distance away from the edge, and each
+            // set within is a set of all distinct cell hints found at that index
+            // from all input solution permutations.
+            possibleSets =
+                root.permutations(ofVisibleTowers: visible)
+                    .reduce(into: (0..<towers.count).map(Set<Int>.init)) { (res, heights) in
+                        for (i, h) in heights.enumerated() {
+                            res[i].insert(h)
+                        }
+                    }
         }
-        
-        // Returns an array containing sets where each index represents the tower
-        // that is 'that-index' distance away from the edge, and each set within
-        // is a set of all cell hints found at that index from all input solution
-        // permutations.
-        func groupAllMatching(in permutations: [[Int]]) -> [Set<Int>] {
-            // No permutations- return array of empty sets
-            if permutations.count == 0 {
-                return (0..<towers.count).map { _ in [] }
-            }
-            
-            var _sets: [Set<Int>] = []
-            // Fill sets w/ first permutation available
-            _sets = permutations[0].map { [$0] }
-            
-            for perm in permutations {
-                for (i, v) in perm.enumerated() {
-                    _sets[i].insert(v)
-                }
-            }
-            
-            return _sets
-        }
-        
-        let possibleSets = groupAllMatching(in: possible)
         
         for (i, possibleSet) in possibleSets.enumerated() {
             // Only one possible solution for this cell!
