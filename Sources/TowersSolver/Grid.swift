@@ -46,7 +46,7 @@ public struct Grid {
     ///
     /// Solved cells are left untouched.
     public mutating func resetHints(toAllPossible: Bool) {
-        let set = Set((1...size))
+        let set = Set(1...size)
         
         cells = cells.map { cell in
             switch cell {
@@ -119,51 +119,19 @@ public struct Grid {
     
     /// Stores the rows of visibility hints around the grid.
     public struct Visibilities {
-        public var visibilities: [[Int]]
+        public var top: [Int]
+        public var right: [Int]
+        public var bottom: [Int]
+        public var left: [Int]
         
         public init(size: Int) {
             // Init with all zeroes on all corners
-            visibilities = Array(repeating: [], count: 4)
+            let runs = Array(repeating: 0, count: size)
             
-            let runs = (0..<size).map { _ in 0 }
-            
-            visibilities[0] = runs
-            visibilities[2] = runs
-            visibilities[1] = runs
-            visibilities[3] = runs
-        }
-        
-        public var top: [Int] {
-            get {
-                return visibilities[0]
-            }
-            set {
-                visibilities[0] = newValue
-            }
-        }
-        public var right: [Int] {
-            get {
-                return visibilities[1]
-            }
-            set {
-                visibilities[1] = newValue
-            }
-        }
-        public var bottom: [Int] {
-            get {
-                return visibilities[2]
-            }
-            set {
-                visibilities[2] = newValue
-            }
-        }
-        public var left: [Int] {
-            get {
-                return visibilities[3]
-            }
-            set {
-                visibilities[3] = newValue
-            }
+            top = runs
+            right = runs
+            bottom = runs
+            left = runs
         }
     }
     

@@ -47,6 +47,10 @@ public class Solver {
     }
     
     private func markSolvedCell(x: Int, y: Int, height: Int) {
+        guard grid.cellAt(x: x, y: y).solution != height else {
+            return
+        }
+        
         grid.markSolved(x: x, y: y, height: height)
         
         // Now expand on all four directions and remove the number from any existing
@@ -250,7 +254,7 @@ public class Solver {
         
         // Case 1: For visible = 1, the very first tower is always the maximum
         // height
-        if visible == 1 && towers[0].solution != towers.count {
+        if !towers[0].hasSolution && visible == 1 {
             set(0, towers.count)
             
             if interactive && descriptive {
@@ -317,7 +321,7 @@ public class Solver {
         // 1 to visible - 1 (in order), then the next tower must be the tallest
         // possible tower occluding all others, otherwise the solution will be
         // visible + 1 (and thus invalid).
-        if visible > 1 && visible < towers.count && towers[visible - 1].solution == nil {
+        if visible > 1 && visible < towers.count && !towers[visible - 1].hasSolution {
             if towers[0..<visible-1].solutionHeights() == Array(1..<visible) {
                 set(visible - 1, towers.count)
                 
@@ -435,8 +439,12 @@ public class Solver {
         }
         
         for (i, possibleSet) in possibleSets.enumerated() {
+            guard !towers[i].hasSolution else {
+                continue
+            }
+            
             // Only one possible solution for this cell!
-            if possibleSet.count == 1 && towers[i].solution != possibleSet.first! {
+            if possibleSet.count == 1 {
                 solve(i, possibleSet.first!)
                 
                 if interactive && descriptive {
