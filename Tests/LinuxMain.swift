@@ -1,6 +1,6 @@
 import XCTest
 @testable import TowersSolverTests
 
-XCMain([
+XCTMain([
     testCase(TowersSolverTests.allTests)
 ])
