@@ -1,4 +1,9 @@
-import Foundation
+#if os(macOS)
+    import Darwin.C
+#else
+    import Glibc
+#endif
+
 import TowersSolver
 
 do {
@@ -56,11 +61,11 @@ do {
     
     solver.gridPrinter.printGrid(grid: solver.grid)
     
-    let time = CFAbsoluteTimeGetCurrent()
+    let start = clock()
     
     solver.solve()
-    
-    let duration = CFAbsoluteTimeGetCurrent() - time
+
+    let duration = clock() - start
     
     print("")
     print("After solve:")
@@ -68,6 +73,8 @@ do {
     
     GridPrinter.printGrid(grid: solver.grid)
     
-    print("Total time: \(String(format: "%.2f", duration))s")
+    let msec = Float(duration) / Float(CLOCKS_PER_SEC)
+
+    print("Total time: \(String(format: "%.2f", msec))s")
     print("Total backtracked guess(es): \(solver.totalGuesses)")
 }

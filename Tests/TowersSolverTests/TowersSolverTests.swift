@@ -9,6 +9,17 @@ import XCTest
 import TowersSolver
 
 class TowersSolverTests: XCTestCase {
+
+    static var allTests = [
+        ("testResetToAllPossible", testResetToAllPossible),
+        ("testIsConsistent", testIsConsistent),
+        ("testIsConsistentWithNonSolvedGrid", testIsConsistentWithNonSolvedGrid),
+        ("testTrivialSolve", testTrivialSolve),
+        ("testTrivialSolveIncompleteHints", testTrivialSolveIncompleteHints),
+        ("testSimpleSolve", testSimpleSolve),
+        ("testComplexSolve", testComplexSolve),
+        ("testVeryComplexSolve", testVeryComplexSolve)
+    ]
     
     func testResetToAllPossible() {
         var grid = Grid(size: 5)
