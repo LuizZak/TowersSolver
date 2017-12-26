@@ -1,5 +1,5 @@
 #if os(macOS)
-    import Darwin.C
+    import Foundation
 #else
     import Glibc
 #endif
@@ -74,7 +74,7 @@ do {
     GridPrinter.printGrid(grid: solver.grid)
     
     let msec = Float(duration) / Float(CLOCKS_PER_SEC)
-
+    
     print("Total time: \(String(format: "%.2f", msec))s")
     print("Total backtracked guess(es): \(solver.totalGuesses)")
 }

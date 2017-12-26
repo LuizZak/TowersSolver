@@ -415,7 +415,6 @@ public class Solver {
         // Construct all possible solution permutations for the array of towers
         let root = TowerVisibilityNode.visibilities(from: towers)
         
-        
         let possibleSets: [Set<Int>]
         
         // 0 means no restriction for visible tower count, all permutations are
