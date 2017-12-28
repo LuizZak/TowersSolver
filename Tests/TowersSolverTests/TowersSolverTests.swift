@@ -52,7 +52,8 @@ class TowersSolverTests: XCTestCase {
         XCTAssertFalse(solver.hasEmptySolutionCells())
         
         // Flip all visibilities over.
-        // Grid should still be valid, but now tower visibilities are flipped over
+        // Grid should still be valid, but now since tower visibilities do not
+        // match the grid heights, the board should be considered inconsistent.
         (solver.grid.visibilities.top, solver.grid.visibilities.bottom) =
         (solver.grid.visibilities.bottom, solver.grid.visibilities.top)
         
@@ -67,7 +68,7 @@ class TowersSolverTests: XCTestCase {
         grid.visibilities.right = [1, 2, 3]
         grid.visibilities.bottom = [1, 2, 3]
         
-        // Missing this cell
+        // Missing this cell to make board unsolved
         // grid.markSolved(x: 0, y: 0, height: 2)
         grid.markSolved(x: 1, y: 0, height: 1)
         grid.markSolved(x: 2, y: 0, height: 3)

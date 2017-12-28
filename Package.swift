@@ -17,11 +17,17 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(name: "Console"),
         .target(name: "TowersSolver", dependencies: ["Console"]),
+        .target(name: "LoopySolver", dependencies: ["Console"]),
         .target(name: "App", dependencies: ["TowersSolver"]),
         .testTarget(
             name: "TowersSolverTests",
             dependencies: ["TowersSolver"],
             path: "Tests/TowersSolverTests"
+        ),
+        .testTarget(
+            name: "LoopySolverTests",
+            dependencies: ["LoopySolver"],
+            path: "Tests/LoopySolverTests"
         )
     ]
 )
