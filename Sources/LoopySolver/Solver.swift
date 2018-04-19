@@ -2,9 +2,9 @@ import Foundation
 
 /// Solver for a Loopy match
 public class Solver {
-    public var grid: Grid
+    public var grid: LoopyGrid
     
-    public init(grid: Grid) {
+    public init(grid: LoopyGrid) {
         self.grid = grid
     }
     

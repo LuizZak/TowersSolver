@@ -7,6 +7,7 @@ let package = Package(
     name: "TowersSolver",
     products: [
         .executable(name: "App", targets: ["App"]),
+        .library(name: "LoopySolver", targets: ["LoopySolver"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -16,8 +17,9 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(name: "Console"),
-        .target(name: "TowersSolver", dependencies: ["Console"]),
-        .target(name: "LoopySolver", dependencies: ["Console"]),
+        .target(name: "Geometry"),
+        .target(name: "TowersSolver", dependencies: ["Console", "Geometry"]),
+        .target(name: "LoopySolver", dependencies: ["Console", "Geometry"]),
         .target(name: "App", dependencies: ["TowersSolver"]),
         .testTarget(
             name: "TowersSolverTests",
@@ -28,6 +30,11 @@ let package = Package(
             name: "LoopySolverTests",
             dependencies: ["LoopySolver"],
             path: "Tests/LoopySolverTests"
+        ),
+        .testTarget(
+            name: "GeometryTests",
+            dependencies: ["Geometry"],
+            path: "Tests/GeometryTests"
         )
     ]
 )

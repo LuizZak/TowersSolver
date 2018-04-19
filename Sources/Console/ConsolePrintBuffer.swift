@@ -114,7 +114,7 @@ open class ConsolePrintBuffer {
         var offset = y * bufferWidth + x
         
         // Out of buffer's reach
-        if offset >= buffer.count - 2 {
+        if offset > buffer.count - 2 {
             return
         }
         if offset < 0 {
@@ -125,7 +125,7 @@ open class ConsolePrintBuffer {
         if offset % bufferWidth == (bufferWidth - 1) {
             offset += 1
             
-            if offset >= buffer.count - 2 {
+            if offset > buffer.count - 2 {
                 return
             }
         }
