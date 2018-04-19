@@ -300,7 +300,16 @@ public class Solver {
         // solution, and all positions occluded by the tall tower contain the
         // sequence of towers from Tallest to N-th tallest (in any order), then
         // the positions before the tallest tower must be a sequence of shortest
-        // to N-1 tall tower, because that's the only way to solve those positions.
+        // to N-1 tall tower, because that's the only way to solve those positions:
+        //
+        // On the case bellow, the missing tower heights are 1 and 2:
+        //
+        // 3: - - 5 3 4
+        //
+        // The only way they can be arranged such that the '3' hint is accounted
+        // for is sequentially, from lowest to highest:
+        //
+        // 3: 1 2 5 3 4
         if visible > 1 && towers[visible - 1].solution == towers.count {
             // Check occluded tower solutions
             let sol = towers[(visible-1)...].solutionHeights()
@@ -320,7 +329,16 @@ public class Solver {
         // Case 5: If the sequence of towers from the first position go from
         // 1 to visible - 1 (in order), then the next tower must be the tallest
         // possible tower occluding all others, otherwise the solution will be
-        // visible + 1 (and thus invalid).
+        // visible + 1 (and thus invalid):
+        //
+        // 3: 1 2 - - -
+        //
+        // If any other tower is placed at the third position, the 5th tower will
+        // be visible, and thus the visible tower count will be > 3, so the middle
+        // cell must be the tallest tower:
+        //
+        // 3: 1 2 5 - -
+        //
         if visible > 1 && visible < towers.count && !towers[visible - 1].hasSolution {
             if towers[0..<visible-1].solutionHeights() == Array(1..<visible) {
                 set(visible - 1, towers.count)
@@ -663,6 +681,13 @@ public extension Solver {
     /// precise count of tower heights (or doesn't have repeats, in case they are
     /// not fully solved yet.)
     public func isConsistent() -> Bool {
+        // Using `throw` to skip working on all lines, instead of simply returning
+        // within `runStepAcrossLines` bellow, which would skip to the next line
+        // and do the work again for that line.
+        //
+        // Since when an inconsistency is found the grid is considered completely
+        // inconsistent, there's no reason to continue analyzing other lines once
+        // we detect an inconsistency in an earlier one.
         struct Inconsistent: Error { }
         
         let allHeights = Set(1...grid.size)

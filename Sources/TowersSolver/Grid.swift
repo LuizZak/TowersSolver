@@ -190,19 +190,6 @@ public enum Cell: Equatable {
         }
     }
     
-    public static func ==(lhs: Cell, rhs: Cell) -> Bool {
-        switch (lhs, rhs) {
-        case (.empty, .empty):
-            return true
-        case let (.hint(l), .hint(r)):
-            return l == r
-        case let (.solved(l), .solved(r)):
-            return l == r
-        default:
-            return false
-        }
-    }
-    
     /// Returns a cell for a specified set of heights, with a different case
     /// that best matches the heights list.
     ///

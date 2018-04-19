@@ -240,7 +240,7 @@ extension TowerVisibilityNode {
 /// From the first index, traverses down the list and counts the number of times
 /// a larger integer than the largest so far is found.
 ///
-/// Always returns `> 1`, as the first index is counted as an increase as well
+/// Always returns `>= 1`, as the first index is counted as an increase as well
 /// (increase from -infinity)
 func countIncreases<T: Comparable>(in list: [T]) -> Int {
     guard var smallest = list.first else {

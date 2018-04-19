@@ -1,6 +1,6 @@
 # TowersSolver
 
-A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 4.0](https://swift.org).
+A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 4.1](https://swift.org).
 
 Towers is a logic game where a _at most_ half-filled grid is presented and is to be filled with towers of height 1 through N _(N = length of square grid's side)_, such that all lines and columns have all possible tower heights, but no line or column has repeated tower heights.
 
@@ -59,7 +59,7 @@ But other puzzle combinations can be fed by changing the initial grid in `main.s
 
 ## Building and Running
 
-Requires: Xcode 9.0 & Swift 4.0
+Requires: Xcode 9.3 & Swift 4.1
 
 - Clone the project and run `$ swift build`
 - Run the resulting App that was built, optionally opting-in running in interactive mode (which I recommend, cause it's cool to see the solver's thought process).
