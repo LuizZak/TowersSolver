@@ -53,8 +53,9 @@ public class Solver {
     
     public func solve() -> Result {
         // Keep applying passes until the grid no longer changes between steps
-        while true {
+        while !isSolved {
             let newGrid = applySteps(to: grid)
+            
             defer { grid = newGrid }
             
             // No changes detected- stop solve attempts since no further changes
