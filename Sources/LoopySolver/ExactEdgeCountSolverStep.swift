@@ -16,6 +16,6 @@ public class ExactEdgeCountSolverStep: SolverStep {
             }
         }
         
-        return grid
+        return controller.grid
     }
 }

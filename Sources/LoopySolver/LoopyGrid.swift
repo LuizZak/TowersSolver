@@ -130,8 +130,6 @@ public struct LoopyGrid: Equatable {
     
     /// Returns an array of all edge indices that enclose a face with a given id.
     public func edgeIds(forFace id: Face.Id) -> [Edge.Id] {
-        var edgeIndices: [Edge.Id] = []
-        
         let face = faceWithId(id)
         return face.localToGlobalEdges
     }

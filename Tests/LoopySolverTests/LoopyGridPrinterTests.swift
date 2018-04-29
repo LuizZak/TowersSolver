@@ -1,12 +1,5 @@
-//
-//  LoopyGridPrinterTests.swift
-//  LoopySolverTests
-//
-//  Created by Luiz Silva on 27/12/2017.
-//
-
 import XCTest
-@testable import Geometry
+import Geometry
 @testable import LoopySolver
 
 class LoopyGridPrinterTests: XCTestCase {

@@ -1,10 +1,3 @@
-//
-//  LoopyGridTests.swift
-//  TowersSolver
-//
-//  Created by Luiz Fernando Silva on 26/12/17.
-//
-
 import XCTest
 @testable import LoopySolver
 import Geometry

@@ -34,6 +34,6 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         XCTAssertEqual(result.edgeIds(forFace: 1)[0].edge(in: result).state, .normal)
         XCTAssertEqual(result.edgeIds(forFace: 1)[1].edge(in: result).state, .normal)
         XCTAssertEqual(result.edgeIds(forFace: 1)[2].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[3].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 1)[3].edge(in: result).state, .marked)
     }
 }

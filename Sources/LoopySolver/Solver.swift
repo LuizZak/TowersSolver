@@ -13,19 +13,23 @@ public class Solver {
     /// 2. All numbered faces must have that number of their edges marked as part
     /// of the solution.
     public var isSolved: Bool {
-        let markedEdges = grid.edges.filter { $0.state == .marked }
-        if !markedEdges.isLoop {
-            return false
-        }
-        
         for faceId in grid.faceIds {
-            guard let hint = grid.faceWithId(faceId).hint else { continue }
+            let face = grid.faceWithId(faceId)
+            guard let hint = face.hint else { continue }
             
-            let marked = grid.edgeIds(forFace: faceId).edges(in: grid).filter { $0.state == .marked }
+            let marked =
+                face.localToGlobalEdges
+                    .edges(in: grid)
+                    .filter { $0.state == .marked }
             
             if marked.count != hint {
                 return false
             }
+        }
+        
+        let markedEdges = grid.edges.filter { $0.state == .marked }
+        if !markedEdges.isLoop {
+            return false
         }
         
         return true
@@ -39,6 +43,8 @@ public class Solver {
         steps.append(ZeroSolverStep())
         steps.append(DeadEndRemovalSolverStep())
         steps.append(CornerSolverStep())
+        steps.append(ExactEdgeCountSolverStep())
+        steps.append(TwoEdgesPerVertexSolverStep())
     }
     
     public func solve() -> Result {
