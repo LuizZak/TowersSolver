@@ -210,13 +210,7 @@ public extension Sequence where Iterator.Element == Cell {
     
     /// Returns `true` if all towers in this sequence have a solution assigned.
     public func areSolved() -> Bool {
-        for cell in self {
-            guard case .solved = cell else {
-                return false
-            }
-        }
-        
-        return true
+        return !contains(where: { !$0.hasSolution })
     }
     
     /// For each cell in this sequence, returns the height associated with its

@@ -711,8 +711,9 @@ public extension Solver {
                     // We can already check for invalid solutions when the current
                     // set results in higher number of possible visible towers
                     // than the visibility hint, even if solutions are still
-                    // missing (any other solution would at least keep the visible
-                    // tower count, and at most increase it by one)
+                    // missing (any other solution would be able to at least keep
+                    // the visible tower count, and at most increase it by only
+                    // one)
                     if v > 0 && countIncreases(in: heights.filter { $0 != 0 }) > v {
                         throw Inconsistent()
                     }
