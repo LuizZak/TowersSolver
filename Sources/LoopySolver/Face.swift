@@ -31,6 +31,11 @@ public struct Face: Equatable {
         return localToGlobalEdges.count
     }
     
+    /// Returns `true` if this face contains a given edge id
+    public func containsEdge(id: Edge.Id) -> Bool {
+        return localToGlobalEdges.contains(id)
+    }
+    
     /// Returns an array of local edge indices for this face based on a given list
     /// of global edge indices.
     public func toLocalEdges(_ edges: [Edge.Id]) -> [Int] {

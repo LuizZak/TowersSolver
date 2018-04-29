@@ -48,6 +48,7 @@ public class Solver {
         steps.append(ExactEdgeCountSolverStep())
         steps.append(TwoEdgesPerVertexSolverStep())
         steps.append(SolePathEdgeExtenderSolverStep())
+        steps.append(CornerEntrySolverStep())
     }
     
     public func solve() -> Result {

@@ -24,7 +24,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         }
         
         let gridWidth = totalWidth(for: grid)
-        let gridHeight = totalWidth(for: grid)
+        let gridHeight = totalHeight(for: grid)
         
         let availableWidth = Float(width)
         let availableHeight = Float(height)

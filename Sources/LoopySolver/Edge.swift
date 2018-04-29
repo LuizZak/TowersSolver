@@ -27,15 +27,23 @@ public struct Edge: Hashable {
     }
     
     public init(start: Int, end: Int) {
+        self.init(start: start, end: end, state: .normal)
+    }
+    
+    public init(start: Int, end: Int, state: State) {
         self.start = min(start, end)
         self.end = max(start, end)
-        state = .normal
+        self.state = state
+    }
+    
+    /// Returns `true` if either the start/end vertices match a given vertex index.
+    public func sharesVertex(_ vertex: Int) -> Bool {
+        return start == vertex || end == vertex
     }
     
     /// Returns `true` if this edge shares a vertex index with a given edge.
     public func sharesVertex(with edge: Edge) -> Bool {
-        return start == edge.start || end == edge.start
-            || start == edge.end || end == edge.end
+        return sharesVertex(edge.start) || sharesVertex(edge.end)
     }
     
     public static func ==(lhs: Edge, rhs: Edge) -> Bool {

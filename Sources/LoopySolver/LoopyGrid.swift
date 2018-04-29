@@ -51,6 +51,25 @@ public struct LoopyGrid: Equatable {
         vertices.append(vertex)
     }
     
+    /// Creates an edge between the given two vertices.
+    ///
+    /// Returns the identifier for the edge.
+    ///
+    /// If an existing edge already exists between the two vertices, that edge's
+    /// identifier is returned, instead.
+    @discardableResult
+    public mutating func createEdge(from start: Int, to end: Int) -> Edge.Id {
+        if let id = edgeIndex(vertex1: start, vertex2: end) {
+            return id
+        }
+        
+        let edge = Edge(start: start, end: end)
+        
+        edges.append(edge)
+        
+        return Edge.Id(edges.count - 1)
+    }
+    
     /// Creates a face with a given set of vertex indices on this grid, with an
     /// optional accompanying initial hint.
     ///
@@ -67,14 +86,8 @@ public struct LoopyGrid: Equatable {
         for (i, start) in indices.enumerated() {
             let end = indices[(i + 1) % indices.count]
             
-            let edge = Edge(start: start, end: end)
-            
-            if let index = edges.index(of: edge) {
-                face.localToGlobalEdges.append(.init(index))
-            } else {
-                face.localToGlobalEdges.append(.init(edges.count))
-                edges.append(edge)
-            }
+            let edgeId = createEdge(from: start, to: end)
+            face.localToGlobalEdges.append(edgeId)
         }
         
         faces.append(face)
@@ -88,6 +101,18 @@ public struct LoopyGrid: Equatable {
     
     public func edgeWithId(_ id: Edge.Id) -> Edge {
         return edges[id.value]
+    }
+    
+    /// Returns a matching Edge Id for a given edge.
+    /// Returns `nil`, in case the edge is not found within this graph.
+    ///
+    /// This method uses only the edge's start and end indices and ignores any
+    /// other metadata associated with the edge.
+    public func edgeId(forEdge edge: Edge) -> Edge.Id? {
+        return
+            edges
+                .index(where: { $0.start == edge.start && $0.end == edge.end })
+                .map(Edge.Id.init(_:))
     }
     
     /// Returns `true` if a given face is considered solved on this grid.
@@ -143,14 +168,26 @@ public struct LoopyGrid: Equatable {
     
     /// Returns an array of faces within this grid that share a common edge.
     /// Either one or two faces share a common edge at all times.
-    ///
-    /// - precondition: `edgeIndex < edges.count`
     public func facesSharing(edgeId: Edge.Id) -> [Face.Id] {
         let edge = edgeWithId(edgeId)
         
+        return facesSharing(edge: edge)
+    }
+    
+    /// Returns an array of faces within this grid that share a common edge.
+    /// Either one or two faces share a common edge at all times.
+    public func facesSharing(edge: Edge) -> [Face.Id] {
         return filterFaceIndices { face in
             face.indices.contains(edge.start) && face.indices.contains(edge.end)
         }
+    }
+    
+    /// Returns `true` if a given edge forms the side of a given face.
+    public func faceContainsEdge(face: Face, edge: Edge) -> Bool {
+        guard let id = edgeId(forEdge: edge) else {
+            return false
+        }
+        return face.containsEdge(id: id)
     }
     
     private func filterFaceIndices(where predicate: (Face) -> Bool) -> [Face.Id] {
