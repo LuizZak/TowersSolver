@@ -52,9 +52,5 @@ class QuadTreeTests: XCTestCase {
     
     struct Cell: QuadTreeValue {
         var bounds: FloatRectangle
-
-        public static func ==(lhs: Cell, rhs: Cell) -> Bool {
-            return lhs.bounds == rhs.bounds
-        }
     }
 }

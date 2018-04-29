@@ -13,17 +13,6 @@ public struct Vector2<T: Numeric & Hashable>: Hashable {
         self.x = x
         self.y = y
     }
-    
-    public var hashValue: Int {
-        var hash = 7
-        hash = (hash * 13) + x.hashValue
-        hash = (hash * 13) + y.hashValue
-        return hash
-    }
-    
-    public static func ==(lhs: Vector2, rhs: Vector2) -> Bool {
-        return lhs.x == rhs.x && lhs.y == rhs.y
-    }
 }
 
 // MARK: - Basic operators
@@ -62,7 +51,7 @@ public extension Vector2 {
 }
 
 // MARK: - Comparison
-public extension Vector2 where T: Comparable {
+extension Vector2: Comparable where T: Comparable {
     public static func <(lhs: Vector2, rhs: Vector2) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y
     }
@@ -178,26 +167,12 @@ public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
 /// The returned Vector2 has the smallest x,y coordinates found on the vectors
 /// list.
 public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T> {
-    var res = a
-    
-    for v in [b] + rem {
-        res.x = min(v.x, res.x)
-        res.y = min(v.y, res.y)
-    }
-    
-    return res
+    return rem.reduce(min(a, b), min)
 }
 
 /// Returns the maximal vector across the given vectors.
 /// The returned Vector2 has the largest x,y coordinates found on the vectors
 /// list.
 public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T> {
-    var res = a
-    
-    for v in [b] + rem {
-        res.x = max(v.x, res.x)
-        res.y = max(v.y, res.y)
-    }
-    
-    return res
+    return rem.reduce(max(a, b), max)
 }

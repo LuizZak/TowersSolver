@@ -36,7 +36,7 @@ public extension Polygon where T: FloatingPoint {
     
     /// Returns whether a global point is inside this body
     public func contains(_ pt: Vector) -> Bool {
-        if vertices.count < 2 {
+        guard vertices.count > 2, var v1 = vertices.last else {
             return false
         }
         
@@ -61,7 +61,6 @@ public extension Polygon where T: FloatingPoint {
         // ammount of edges to test against.
         // This basic assumption may not hold for every body, but for most
         // bodies (specially round), this may hold true most of the time.
-        var v1 = vertices.last!
         for v2 in vertices {
             defer {
                 v1 = v2
@@ -76,7 +75,7 @@ public extension Polygon where T: FloatingPoint {
             
             // Check if the edge crosses the imaginary horizontal line from
             // top to bottom or bottom to top
-            if ((v1.y <= pt.y) && (v2.y > pt.y)) || ((v1.y > pt.y) && (v2.y <= pt.y)) {
+            if ((v1.y < pt.y) && (v2.y > pt.y)) || ((v1.y > pt.y) && (v2.y < pt.y)) {
                 // this line crosses the test line at some point... does it
                 // do so within our test range?
                 let slope = (v2.x - v1.x) / (v2.y - v1.y)

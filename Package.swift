@@ -18,9 +18,27 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(name: "Console"),
         .target(name: "Geometry"),
+        .target(name: "Interval"),
+        .target(name: "Commons"),
         .target(name: "TowersSolver", dependencies: ["Console", "Geometry"]),
-        .target(name: "LoopySolver", dependencies: ["Console", "Geometry"]),
+        .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "App", dependencies: ["TowersSolver"]),
+        // Tests
+        .testTarget(
+            name: "GeometryTests",
+            dependencies: ["Geometry"],
+            path: "Tests/GeometryTests"
+        ),
+        .testTarget(
+            name: "IntervalTests",
+            dependencies: ["Interval"],
+            path: "Tests/IntervalTests"
+        ),
+        .testTarget(
+            name: "CommonsTests",
+            dependencies: ["Commons"],
+            path: "Tests/CommonsTests"
+        ),
         .testTarget(
             name: "TowersSolverTests",
             dependencies: ["TowersSolver"],
@@ -30,11 +48,6 @@ let package = Package(
             name: "LoopySolverTests",
             dependencies: ["LoopySolver"],
             path: "Tests/LoopySolverTests"
-        ),
-        .testTarget(
-            name: "GeometryTests",
-            dependencies: ["Geometry"],
-            path: "Tests/GeometryTests"
         )
     ]
 )

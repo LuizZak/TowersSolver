@@ -10,8 +10,8 @@ public class LoopyGridQuerier {
     
     public init(grid: LoopyGrid) {
         self.grid = grid
-        faces = grid.faces.map {
-            GridFace(grid: grid, faceId: $0)
+        faces = grid.faces.enumerated().map {
+            GridFace(grid: grid, faceId: .init($0.offset))
         }
     }
     
@@ -23,7 +23,7 @@ public class LoopyGridQuerier {
     /// vertices
     private class GridFace: QuadTreeValue {
         let grid: LoopyGrid
-        let faceId: Int
+        let faceId: Face.Id
         
         let polygon: Polygon<Float>
         
@@ -31,11 +31,11 @@ public class LoopyGridQuerier {
             return polygon.bounds
         }
         
-        init(grid: LoopyGrid, faceId: Int) {
+        init(grid: LoopyGrid, faceId: Face.Id) {
             self.grid = grid
             self.faceId = faceId
             
-            let points = grid.polygonFor(faceId: faceId)
+            let points = grid.polygonFor(face: faceId)
             polygon = Polygon(vertices: points)
         }
         

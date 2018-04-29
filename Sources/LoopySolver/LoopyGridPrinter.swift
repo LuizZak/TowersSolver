@@ -1,6 +1,12 @@
-import Console
 import Foundation
+import Console
 import Geometry
+
+#if os(macOS)
+    import Darwin.C
+#else
+    import Glibc
+#endif
 
 /// Helper for printing grids to the console using ASCII text.
 public class LoopyGridPrinter: ConsolePrintBuffer {
@@ -30,37 +36,35 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             return (x: Int(x), y: Int(y))
         }
         
-        for f in grid.faces {
-            let poly = grid.polygonFor(faceId: f)
-            if poly.count <= 1 {
+        for edge in grid.edges {
+            let v1 = grid.vertices[edge.start]
+            let v2 = grid.vertices[edge.end]
+            
+            let (x1, y1) = toScreen(v1.x, v1.y)
+            let (x2, y2) = toScreen(v2.x, v2.y)
+            
+            if (x1, y1) == (x2, y2) {
                 continue
             }
             
-            // Draw in lines for edges of faces
-            var v1 = poly[poly.count - 1]
-            for v2 in poly {
-                let (x1, y1) = toScreen(v1.x, v1.y)
-                let (x2, y2) = toScreen(v2.x, v2.y)
+            let scalars = lineScalars(forState: edge.state)
+            
+            bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
+                let scalar = normalLineScalar(forAngle: angle, angleScalars: scalars)
                 
-                if (x1, y1) == (x2, y2) {
-                    continue
-                }
-                
-                bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
-                    let scalar = normalLineScalar(forAngle: angle)
-                    
-                    put(scalar, x: plotX, y: plotY)
-                }
-                
-                v1 = v2
+                put(scalar, x: plotX, y: plotY)
             }
+        }
+        
+        for faceIndex in 0..<grid.faces.count {
+            let poly = grid.polygonFor(face: .init(faceIndex))
             
             // Print the face's hint at its geometrical center
-            let center = poly.reduce(Vertex(x: 0, y: 0), +) / Float(poly.count)
+            let center = poly.reduce(into: Vertex(x: 0, y: 0), +=) / Float(poly.count)
             
             let (x, y) = toScreen(center.x, center.y)
             
-            if let hint = grid.hintFor(faceId: f) {
+            if let hint = grid.faces[faceIndex].hint {
                 putString(hint.description, x: x, y: y)
             }
         }
@@ -102,8 +106,19 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         return maxY.y - minY.y
     }
     
-    internal func normalLineScalar(forAngle angle: Float) -> UnicodeScalar {
-        let lines: [UnicodeScalar] = ["│", "/", "╱", "─", "╲", "\\", "│"]
+    internal func lineScalars(forState state: Edge.State) -> [UnicodeScalar] {
+        switch state {
+        case .normal:
+            return ["│", "/", "╱", "─", "╲", "\\", "│"]
+        case .marked:
+            return ["│", "/", "╱", "─", "╲", "\\", "│"]
+        case .disabled:
+            return [" "]
+        }
+    }
+    
+    internal func normalLineScalar(forAngle angle: Float, angleScalars: [UnicodeScalar]) -> UnicodeScalar {
+        precondition(angleScalars.count > 0)
         
         // For an angle that goes from 270º to 90º (passing through 0/360º), turn
         // the angle 90º counterclockwise and normalize it between 0 and 180ª.
@@ -111,9 +126,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         // character.
         let normalized = (angle + .pi / 2).truncatingRemainder(dividingBy: .pi) / .pi
         
-        let index = Int((normalized * Float(lines.count - 1)).rounded(.toNearestOrEven))
+        let index = Int((normalized * Float(angleScalars.count - 1)).rounded(.toNearestOrEven))
         
-        return lines[index]
+        return angleScalars[index]
     }
     
     func bresenham(x1: Int, y1: Int, x2: Int, y2: Int, plot: (_ x: Int, _ y: Int, _ angle: Float) -> Void) {
@@ -153,7 +168,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         }
     }
     
-    func internalBresenham(_ p1: (x: Int, y: Int), _ p2: (x: Int, y: Int), steep: Bool, plot: ((x: Int, y: Int)) -> Void) {
+    func internalBresenham(_ p1: (x: Int, y: Int), _ p2: (x: Int, y: Int), steep: Bool,
+                           plot: ((x: Int, y: Int)) -> Void) {
+        
         let dX = p2.x - p1.x
         let dY = p2.y - p1.y
         
@@ -168,7 +185,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         
         for x in x + 1...p2.x {
             error += slope
-            if (error >= 0.5) {
+            if error >= 0.5 {
                 y += yStep
                 error -= 1
             }

@@ -40,7 +40,10 @@ class LoopyGridPrinterTests: XCTestCase {
         
         let grid = generator.generate()
         
+        let controller = LoopyGridController(grid: grid)
+        controller.setEdges(state: .disabled, forFace: .init(0))
+        
         let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
-        printer.printGrid(grid: grid, width: 60, height: 30)
+        printer.printGrid(grid: controller.grid, width: 60, height: 30)
     }
 }

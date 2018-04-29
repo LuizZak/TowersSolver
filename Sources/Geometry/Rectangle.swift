@@ -32,7 +32,8 @@ public struct RectangleOf<T: Numeric & Hashable & Comparable>: Hashable {
     }
     
     public init(x: T, y: T, width: T, height: T) {
-        self.init(minimum: Vector(x: x, y: y), maximum: Vector(x: x + width, y: y + height))
+        self.init(minimum: Vector(x: x, y: y),
+                  maximum: Vector(x: x + width, y: y + height))
     }
     
     public init(boundsFor points: [Vector]) {

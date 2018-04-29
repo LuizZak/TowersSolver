@@ -1,59 +1,173 @@
 import Geometry
 
 /// A grid for a loopy game.
-/// Consists of a collection of vertices laid in 
-public struct LoopyGrid {
-    private var _faces: [Face]
-    
+/// Consists of a collection of vertices laid on a grid, connected with edges
+/// forming faces.
+public struct LoopyGrid: Equatable {
     /// The list of vertices on this grid.
     /// Each vertex is always connected to two or more edges, and always belongs
     /// to one or more faces.
     public var vertices: [Vertex]
     
-    /// Array of faces for this grid, made up of three or more vertices, referenced
-    /// by index.
-    public var faces: [Face.Id] {
-        return _faces.map { $0.id }
+    /// List of edges that connect vertices
+    public var edges: [Edge]
+    
+    /// List of edge IDs in this grid.
+    ///
+    /// Every edge in `edges` has a matching edge ID within this array, and vice-versa.
+    public var edgeIds: [Edge.Id] {
+        return edges.enumerated().map {
+            Edge.Id($0.offset)
+        }
+    }
+    
+    /// List of faces in this grid.
+    ///
+    /// Faces are compositions of vertex indices, with an optional hint associated.
+    public var faces: [Face]
+    
+    /// List of face IDs in this grid.
+    ///
+    /// Every face in `faces` has a matching face ID within this array, and vice-versa.
+    public var faceIds: [Face.Id] {
+        return faces.enumerated().map {
+            Face.Id($0.offset)
+        }
     }
     
     public init() {
         vertices = []
-        _faces = []
+        edges = []
+        faces = []
     }
     
     public mutating func clear() {
         vertices = []
-        _faces = []
+        edges = []
+        faces = []
     }
     
     public mutating func addVertex(_ vertex: Vertex) {
         vertices.append(vertex)
     }
     
+    /// Creates a face with a given set of vertex indices on this grid, with an
+    /// optional accompanying initial hint.
+    ///
+    /// - precondition: `indices` features no repeated vertex indices.
     @discardableResult
     public mutating func createFace(withVertexIndices indices: [Int], hint: Int?) -> Face.Id {
-        let id = faces.count + 1
-        let face = Face(id: id, indices: indices, hint: hint)
-        _faces.append(face)
+        precondition(Set(indices).sorted() == indices.sorted(),
+                     "indices list contains repeated vertex indices! \(indices)")
         
-        return id
+        var face = Face(indices: indices, localToGlobalEdges: [], hint: hint)
+        
+        // Make edges, connecting all vertices from the first to the last, and
+        // the last connecting back to the first vertex
+        for (i, start) in indices.enumerated() {
+            let end = indices[(i + 1) % indices.count]
+            
+            let edge = Edge(start: start, end: end)
+            
+            if let index = edges.index(of: edge) {
+                face.localToGlobalEdges.append(.init(index))
+            } else {
+                face.localToGlobalEdges.append(.init(edges.count))
+                edges.append(edge)
+            }
+        }
+        
+        faces.append(face)
+        
+        return .init(faces.count - 1)
+    }
+    
+    public func faceWithId(_ id: Face.Id) -> Face {
+        return faces[id.value]
+    }
+    
+    public func edgeWithId(_ id: Edge.Id) -> Edge {
+        return edges[id.value]
+    }
+    
+    /// Returns `true` if a given face is considered solved on this grid.
+    ///
+    /// Faces are solved if they are surrounded by exactly as many marked edges
+    /// as their hint points.
+    ///
+    /// Non-hinted faces are always considered to be 'solved'.
+    public func isFaceSolved(_ faceId: Face.Id) -> Bool {
+        guard let hint = faceWithId(faceId).hint else {
+            return true
+        }
+        
+        let edges = edgeIds(forFace: faceId).edges(in: self)
+        return edges.filter({ $0.state == .marked }).count == hint
     }
     
     /// Returns an array of vertices that make up a specified polygon face
-    public func polygonFor(faceId: Face.Id) -> [Vertex] {
-        return faceWith(id: faceId)?.indices.map { vertices[$0] } ?? []
+    public func polygonFor(face: Face.Id) -> [Vertex] {
+        return faceWithId(face).indices.map { vertices[$0] }
     }
     
-    public func hintFor(faceId: Int) -> Int? {
-        return faceWith(id: faceId)?.hint
+    /// Returns the index for the edge of the given vertices.
+    /// Detects both direction of edges.
+    /// Returns `nil`, if no edge is present between the two edges.
+    public func edgeIndex(vertex1: Int, vertex2: Int) -> Edge.Id? {
+        return edges.enumerated().first { (i, edge) in
+            (edge.start == vertex1 && edge.end == vertex2)
+                || (edge.start == vertex2 && edge.end == vertex1)
+        }.map { Edge.Id($0.offset) }
     }
     
-    private func faceWith(id: Face.Id) -> Face? {
-        return _faces.first(where: { $0.id == id })
+    /// Returns an array of all edges within this grid sharing a given common
+    /// vertex index.
+    public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
+        return filterEdgeIndices { edge in
+            edge.start == vertexIndex || edge.end == vertexIndex
+        }
     }
     
-    /// Returns an array of faces within this grid that share the given vertex.
+    /// Returns an array of all edge indices that enclose a face with a given id.
+    public func edgeIds(forFace id: Face.Id) -> [Edge.Id] {
+        var edgeIndices: [Edge.Id] = []
+        
+        let face = faceWithId(id)
+        return face.localToGlobalEdges
+    }
+    
+    /// Returns an array of faces within this grid that share a given vertex index.
     public func facesSharing(vertexIndex: Int) -> [Face.Id] {
-        return _faces.filter { $0.indices.contains(vertexIndex) }.map { $0.id }
+        return filterFaceIndices { face in
+            face.indices.contains(vertexIndex)
+        }
+    }
+    
+    /// Returns an array of faces within this grid that share a common edge.
+    /// Either one or two faces share a common edge at all times.
+    ///
+    /// - precondition: `edgeIndex < edges.count`
+    public func facesSharing(edgeId: Edge.Id) -> [Face.Id] {
+        let edge = edgeWithId(edgeId)
+        
+        return filterFaceIndices { face in
+            face.indices.contains(edge.start) && face.indices.contains(edge.end)
+        }
+    }
+    
+    private func filterFaceIndices(where predicate: (Face) -> Bool) -> [Face.Id] {
+        return faces
+            .enumerated()
+            .filter { predicate($1) }
+            .map { pair in pair.offset }
+            .map { Face.Id.init($0) }
+    }
+    
+    private func filterEdgeIndices(where predicate: (Edge) -> Bool) -> [Edge.Id] {
+        return edges
+            .enumerated()
+            .filter { predicate($1) }
+            .map { pair in pair.offset }
+            .map { Edge.Id.init($0) }
     }
 }

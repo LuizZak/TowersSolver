@@ -23,7 +23,7 @@ class PolygonTests: XCTestCase {
             Vertex(x: 20, y: 20),
             Vertex(x: 0, y: 20),
         ]
-        let poly = Geometry.Polygon(vertices: vecs)
+        let poly = Polygon(vertices: vecs)
         
         XCTAssert(poly.contains(Vertex(x: 0.1, y: 0.1)))
         XCTAssert(poly.contains(Vertex(x: 3, y: 3)))
@@ -42,7 +42,7 @@ class PolygonTests: XCTestCase {
             Vertex(x: 20, y: 20),
             Vertex(x: 0, y: 20),
             ]
-        let poly = Geometry.Polygon(vertices: vecs)
+        let poly = Polygon(vertices: vecs)
         
         XCTAssertEqual(0, poly.bounds.left)
         XCTAssertEqual(20, poly.bounds.right)
@@ -58,7 +58,7 @@ class PolygonTests: XCTestCase {
             Vertex(x: 20, y: 20),
             Vertex(x: 0, y: 20),
             ]
-        var poly = Geometry.Polygon(vertices: vecs)
+        var poly = Polygon(vertices: vecs)
         
         poly.vertices = [
             Vertex(x: 0, y: -10),

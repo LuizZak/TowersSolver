@@ -40,13 +40,26 @@ public class QuadTree<Value: QuadTreeValue> {
         }
         
         let quads = split()
-        let quadsArray = QuadTree.quadrantsArray(quads)
         
-        for quad in quadsArray {
-            if quad.bounds.contains(rect: value.bounds) {
-                quad.addValue(value)
-                return
+        func verifyQuadrants(with work: (QuadTree) -> Bool) -> Bool {
+            if work(quads.q1) || work(quads.q2) || work(quads.q3) || work(quads.q4) {
+                return true
             }
+            return false
+        }
+        
+        let added =
+            verifyQuadrants(with: { (quad) -> Bool in
+                if quad.bounds.contains(rect: value.bounds) {
+                    quad.addValue(value)
+                    return true
+                }
+                
+                return false
+            })
+        
+        if added {
+            return
         }
         
         // Did not fit in any of the sub-quadrants- add value to itself
@@ -77,10 +90,6 @@ public class QuadTree<Value: QuadTreeValue> {
         quadrants = quads
         
         return quads
-    }
-    
-    internal static func quadrantsArray(_ quads: Quadrants) -> [QuadTree] {
-        return [quads.q1, quads.q2, quads.q3, quads.q4]
     }
 }
 
