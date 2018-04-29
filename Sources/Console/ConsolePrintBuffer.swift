@@ -91,13 +91,22 @@ open class ConsolePrintBuffer {
     }
     
     public func putRect(x: Int, y: Int, w: Int, h: Int) {
+        putHorizontalLine("-", x: x, y: y, w: w)
+        putHorizontalLine("-", x: x, y: y + h, w: w)
+        
+        putVerticalLine("|", x: x, y: y, h: h)
+        putVerticalLine("|", x: x + w, y: y, h: h)
+    }
+    
+    public func putHorizontalLine(_ char: UnicodeScalar, x: Int, y: Int, w: Int) {
         for _x in x...x+w {
-            put("-", x: _x, y: y)
-            put("-", x: _x, y: y + h)
+            put(char, x: _x, y: y)
         }
+    }
+    
+    public func putVerticalLine(_ char: UnicodeScalar, x: Int, y: Int, h: Int) {
         for _y in y...y+h {
-            put("|", x: x, y: _y)
-            put("|", x: x + w, y: _y)
+            put(char, x: x, y: _y)
         }
     }
     
@@ -105,7 +114,7 @@ open class ConsolePrintBuffer {
         var offset = y * bufferWidth + x
         
         // Out of buffer's reach
-        if offset >= buffer.count - 2 {
+        if offset > buffer.count - 2 {
             return
         }
         if offset < 0 {
@@ -116,7 +125,7 @@ open class ConsolePrintBuffer {
         if offset % bufferWidth == (bufferWidth - 1) {
             offset += 1
             
-            if offset >= buffer.count - 2 {
+            if offset > buffer.count - 2 {
                 return
             }
         }

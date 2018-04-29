@@ -82,7 +82,7 @@ public extension GridPrinter {
         print()
     }
     
-    static func printGrid(grid: Grid) {
+    public static func printGrid(grid: Grid) {
         let printer = GridPrinter(bufferWidth: 80, bufferHeight: 35)
         printer.printGrid(grid: grid)
     }

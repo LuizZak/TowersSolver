@@ -182,12 +182,11 @@ public enum Cell: Equatable {
     }
     
     public var solution: Int? {
-        switch self {
-        case .solved(let s):
+        if case .solved(let s) = self {
             return s
-        default:
-            return nil
         }
+        
+        return nil
     }
     
     /// Returns a cell for a specified set of heights, with a different case
