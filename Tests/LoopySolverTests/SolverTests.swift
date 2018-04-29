@@ -17,6 +17,30 @@ class SolverTests: XCTestCase {
         let result = solver.solve()
         
         XCTAssertEqual(result, .solved)
+        
+        let printer = LoopyGridPrinter(bufferWidth: 40, bufferHeight: 20)
+        printer.printGrid(grid: solver.grid)
+    }
+    
+    func testSolveTricky() {
+        // .___.___.___.
+        // !___!___!_3_!
+        // !_1_!___!_1_!
+        // !___!_3_!_3_!
+        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        gridGen.setHint(x: 2, y: 0, hint: 3)
+        gridGen.setHint(x: 0, y: 1, hint: 1)
+        gridGen.setHint(x: 2, y: 1, hint: 1)
+        gridGen.setHint(x: 1, y: 2, hint: 3)
+        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let solver = Solver(grid: gridGen.generate())
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        
+        let printer = LoopyGridPrinter(bufferWidth: 40, bufferHeight: 20)
+        printer.printGrid(grid: solver.grid)
     }
     
     func testIsSolved() {

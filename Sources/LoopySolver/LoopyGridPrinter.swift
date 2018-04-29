@@ -111,7 +111,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         case .normal:
             return ["│", "/", "╱", "─", "╲", "\\", "│"]
         case .marked:
-            return ["│", "/", "╱", "─", "╲", "\\", "│"]
+            return ["║", "/", "╱", "═", "╲", "\\", "║"]
         case .disabled:
             return [" "]
         }

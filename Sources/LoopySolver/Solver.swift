@@ -37,6 +37,8 @@ public class Solver {
     
     public init(grid: LoopyGrid) {
         self.grid = grid
+        
+        addSteps()
     }
     
     private func addSteps() {
@@ -45,17 +47,20 @@ public class Solver {
         steps.append(CornerSolverStep())
         steps.append(ExactEdgeCountSolverStep())
         steps.append(TwoEdgesPerVertexSolverStep())
+        steps.append(SolePathEdgeExtenderSolverStep())
     }
     
     public func solve() -> Result {
         // Keep applying passes until the grid no longer changes between steps
         while true {
             let newGrid = applySteps(to: grid)
+            defer { grid = newGrid }
+            
+            // No changes detected- stop solve attempts since no further changes
+            // will be made, anyway.
             if grid == newGrid {
                 break
             }
-            
-            grid = newGrid
         }
         
         return isSolved ? .solved : .unsolved

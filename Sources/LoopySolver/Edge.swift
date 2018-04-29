@@ -20,7 +20,10 @@ public struct Edge: Hashable {
     }
     
     public var hashValue: Int {
-        return start.hashValue + end.hashValue
+        var hash = 3
+        hash = hash * 7 + (start.hashValue + end.hashValue)
+        hash = hash * 7 + state.hashValue
+        return hash
     }
     
     public init(start: Int, end: Int) {
@@ -36,6 +39,10 @@ public struct Edge: Hashable {
     }
     
     public static func ==(lhs: Edge, rhs: Edge) -> Bool {
+        if lhs.state != rhs.state {
+            return false
+        }
+        
         if lhs.start == rhs.start && lhs.end == rhs.end {
             return true
         }
