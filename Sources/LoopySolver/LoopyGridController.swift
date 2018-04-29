@@ -8,6 +8,12 @@ public class LoopyGridController {
         self.grid = grid
     }
     
+    public func setAllEdges(state: Edge.State) {
+        for i in 0..<grid.edges.count {
+            grid.edges[i].state = state
+        }
+    }
+    
     public func setEdges(state: Edge.State, forFace id: Face.Id) {
         for edge in grid.edgeIds(forFace: id) {
             grid.edges[edge.value].state = state

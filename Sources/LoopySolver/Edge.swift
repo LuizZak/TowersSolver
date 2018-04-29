@@ -46,6 +46,13 @@ public struct Edge: Hashable {
         return sharesVertex(edge.start) || sharesVertex(edge.end)
     }
     
+    /// Returns `true` if this edge has the same vertex start/end values as a given
+    /// edge, without taking into acount the directionality of the start/end
+    /// values.
+    public func matchesEdgeVertices(_ edge: Edge) -> Bool {
+        return sharesVertex(edge.start) && sharesVertex(edge.end)
+    }
+    
     public static func ==(lhs: Edge, rhs: Edge) -> Bool {
         if lhs.state != rhs.state {
             return false

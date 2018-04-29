@@ -11,19 +11,20 @@ class CornerSolverStepTests: XCTestCase {
     }
     
     func testApplyOnTrivial() {
-        // Create a simple 2x2 square grid like so:
-        //   _______
-        //  |_3_|_0_|
-        //  |_1_|_2_|
+        // Create a simple 3x3 square grid like so:
+        //  .___.___.___.
+        //  !_3_!___!_0_!
+        //  !___!___!___!
+        //  !_1_!___!_2_!
         //
         // The expected result should have the two outer edges of the `3` cell
         // marked as part of the solution, and the outer corners of `0` and `1`
         // marked as not part of the solution.
-        let gridGen = LoopySquareGrid(width: 2, height: 2)
+        let gridGen = LoopySquareGrid(width: 3, height: 3)
         gridGen.setHint(x: 0, y: 0, hint: 3)
-        gridGen.setHint(x: 1, y: 0, hint: 0)
-        gridGen.setHint(x: 0, y: 1, hint: 1)
-        gridGen.setHint(x: 1, y: 1, hint: 2)
+        gridGen.setHint(x: 2, y: 0, hint: 0)
+        gridGen.setHint(x: 0, y: 2, hint: 1)
+        gridGen.setHint(x: 2, y: 2, hint: 2)
         let grid = gridGen.generate()
         
         let result = sut.apply(to: grid)
@@ -35,19 +36,19 @@ class CornerSolverStepTests: XCTestCase {
         XCTAssertEqual(result.edgeIds(forFace: 0)[2].edge(in: result).state, .normal)
         XCTAssertEqual(result.edgeIds(forFace: 0)[3].edge(in: result).state, .marked)
         // `0`
-        XCTAssertEqual(result.edgeIds(forFace: 1)[0].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[1].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[2].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[3].edge(in: result).state, .normal)
-        // `1`
-        XCTAssertEqual(result.edgeIds(forFace: 2)[0].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 2)[1].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 2)[0].edge(in: result).state, .disabled)
+        XCTAssertEqual(result.edgeIds(forFace: 2)[1].edge(in: result).state, .disabled)
         XCTAssertEqual(result.edgeIds(forFace: 2)[2].edge(in: result).state, .disabled)
         XCTAssertEqual(result.edgeIds(forFace: 2)[3].edge(in: result).state, .disabled)
+        // `1`
+        XCTAssertEqual(result.edgeIds(forFace: 6)[0].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 6)[1].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 6)[2].edge(in: result).state, .disabled)
+        XCTAssertEqual(result.edgeIds(forFace: 6)[3].edge(in: result).state, .disabled)
         // `2`
-        XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[1].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[2].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[3].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 8)[0].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 8)[1].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 8)[2].edge(in: result).state, .normal)
+        XCTAssertEqual(result.edgeIds(forFace: 8)[3].edge(in: result).state, .normal)
     }
 }

@@ -47,19 +47,22 @@ private class InternalSolver {
             return
         }
         
+        // Detect sequential edges that exceed the required number for the face
+        for edge in face.localToGlobalEdges {
+            let edges =
+                GraphUtils.singlePathEdges(in: grid, fromEdge: edge)
+                    .filter { grid.faceContainsEdge(face: face, edge: $0) }
+            
+            if edges.count > hint {
+                controller.setEdges(state: .disabled, forEdges: edges)
+            }
+        }
+        
         let nonShared = controller.nonSharedEdges(forFace: faceId)
         
         // Can only solve when the non-shared edges form a single sequential line
         // across the outer side of the face
         if !nonShared.edges(in: grid).isUniqueSegment {
-            return
-        }
-        
-        // If the number of edges not shared among other faces exceeds the hint,
-        // then the unshared sequential edges are not part of the solution
-        if nonShared.count > hint {
-            controller.setEdges(state: .disabled, forEdges: nonShared)
-            
             return
         }
         

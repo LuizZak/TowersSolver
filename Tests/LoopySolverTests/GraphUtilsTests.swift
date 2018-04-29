@@ -87,4 +87,37 @@ class GraphUtilsTests: XCTestCase {
         XCTAssertEqual(result4.count, 1)
         XCTAssert(result3.contains(Edge(start: 2, end: 4)))
     }
+    
+    func testBugWithDuplicatedEdgeReporting() {
+        // Tests a case where the algorithm would report the same edge twice:
+        //
+        // •══•  •   •
+        // ║  Y
+        // •  •XX•   •
+        // ║     ║
+        // •══•  •═══•
+        //    ║      ║
+        // •  •══•═══•
+        //
+        // Querying for the single path edges of the (marked) edge signaled with
+        // 'XX' results in edge 'Y' (marked as well) being reported twice in the
+        // results array.
+        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let controller = LoopyGridController(grid: gridGen.generate())
+        controller.setAllEdges(state: .disabled)
+        controller.setEdges(state: .marked, forFace: 0)
+        controller.setEdges(state: .marked, forFace: 3)
+        controller.setEdges(state: .marked, forFace: 4)
+        controller.setEdges(state: .marked, forFace: 7)
+        controller.setEdges(state: .marked, forFace: 8)
+        controller.setEdge(state: .disabled, forFace: 0, edgeIndex: 2)
+        controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 1)
+        controller.setEdge(state: .disabled, forFace: 4, edgeIndex: 2)
+        controller.setEdge(state: .disabled, forFace: 7, edgeIndex: 1)
+        let grid = controller.grid
+        
+        let result = GraphUtils.singlePathEdges(in: grid, fromEdge: grid.edges[6])
+        let resultIds = result.map { grid.edgeId(forEdge: $0)! }.map { $0.value }.sorted()
+        XCTAssertEqual(resultIds, [0, 1, 3, 6, 11, 12, 13, 16, 17, 21, 22, 23])
+    }
 }
