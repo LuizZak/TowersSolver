@@ -40,7 +40,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
     func testApplyOnMarkedEdges() {
         // Create a simple 2x2 square grid with marked edges like so:
         //  .   .___.
-        //  . 2 ._3_!
+        //  . 2 !_3_!
         //
         // Result should be a grid with the left-most edge of the `3` cell disabled.
         let gridGen = LoopySquareGrid(width: 2, height: 1)

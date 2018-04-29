@@ -43,6 +43,78 @@ class SolverTests: XCTestCase {
         printer.printGrid(grid: solver.grid)
     }
     
+    func testSolveTricky7x7() {
+        // .___.___.___.___.___.___.___.
+        // !_3_!___!_3_!_3_!_2_!_2_!___!
+        // !___!___!_1_!___!_2_!_2_!___!
+        // !___!_1_!___!___!___!_2_!___!
+        // !_2_!_2_!_1_!_2_!___!_0_!___!
+        // !___!_3_!___!___!_2_!_1_!_1_!
+        // !___!___!___!___!_2_!_2_!_1_!
+        // !_2_!_3_!___!_3_!___!___!___!
+        //
+        let gridGen = LoopySquareGrid(width: 7, height: 7)
+        gridGen.setHint(x: 0, y: 0, hint: 3)
+        gridGen.setHint(x: 2, y: 0, hint: 3)
+        gridGen.setHint(x: 3, y: 0, hint: 3)
+        gridGen.setHint(x: 4, y: 0, hint: 2)
+        gridGen.setHint(x: 5, y: 0, hint: 2)
+        //
+        gridGen.setHint(x: 2, y: 1, hint: 1)
+        gridGen.setHint(x: 4, y: 1, hint: 2)
+        gridGen.setHint(x: 5, y: 1, hint: 2)
+        //
+        gridGen.setHint(x: 1, y: 2, hint: 1)
+        gridGen.setHint(x: 5, y: 2, hint: 2)
+        //
+        gridGen.setHint(x: 0, y: 3, hint: 2)
+        gridGen.setHint(x: 1, y: 3, hint: 2)
+        gridGen.setHint(x: 2, y: 3, hint: 1)
+        gridGen.setHint(x: 3, y: 3, hint: 2)
+        gridGen.setHint(x: 5, y: 3, hint: 0)
+        //
+        gridGen.setHint(x: 1, y: 4, hint: 3)
+        gridGen.setHint(x: 4, y: 4, hint: 2)
+        gridGen.setHint(x: 5, y: 4, hint: 1)
+        gridGen.setHint(x: 6, y: 4, hint: 1)
+        //
+        gridGen.setHint(x: 4, y: 5, hint: 2)
+        gridGen.setHint(x: 5, y: 5, hint: 2)
+        gridGen.setHint(x: 6, y: 5, hint: 1)
+        //
+        gridGen.setHint(x: 0, y: 6, hint: 2)
+        gridGen.setHint(x: 1, y: 6, hint: 3)
+        gridGen.setHint(x: 3, y: 6, hint: 3)
+        let solver = Solver(grid: gridGen.generate())
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        
+        let printer = LoopyGridPrinter(bufferWidth: 70, bufferHeight: 40)
+        printer.printGrid(grid: solver.grid)
+    }
+    
+    func testSolveHard() {
+        // .___.___.___.
+        // !___!_2_!___!
+        // !___!_3_!___!
+        // !_2_!___!_2_!
+        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        gridGen.setHint(x: 1, y: 0, hint: 2)
+        gridGen.setHint(x: 1, y: 1, hint: 3)
+        gridGen.setHint(x: 0, y: 2, hint: 2)
+        gridGen.setHint(x: 2, y: 2, hint: 2)
+        let solver = Solver(grid: gridGen.generate())
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        
+        let printer = LoopyGridPrinter(bufferWidth: 40, bufferHeight: 20)
+        printer.printGrid(grid: solver.grid)
+    }
+    
     func testIsSolved() {
         // Grid looks like this:
         //

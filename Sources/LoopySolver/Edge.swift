@@ -91,6 +91,9 @@ public extension Sequence where Element == Edge {
     /// a singular chain.
     public var isUniqueSegment: Bool {
         let array = Array(self)
+        if array.count == 0 {
+            return false
+        }
         if array.count == 1 {
             return true
         }
