@@ -310,6 +310,7 @@ public class Solver {
         // for is sequentially, from lowest to highest:
         //
         // 3: 1 2 5 3 4
+        //
         if visible > 1 && towers[visible - 1].solution == towers.count {
             // Check occluded tower solutions
             let sol = towers[(visible-1)...].solutionHeights()

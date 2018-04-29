@@ -15,7 +15,10 @@ class DeadEndRemovalSolverStepTests: XCTestCase {
         //  .  .__.
         //  !__!__!
         //
-        // Result should be a grid with the left and bottom-left edges disabled.
+        // Result should be a grid with the left and bottom-left edges disabled:
+        //  .  .__.
+        //  .  !__!
+        //
         let gridGen = LoopySquareGrid(width: 2, height: 1)
         var grid = gridGen.generate()
         grid.edges[0].state = .disabled
