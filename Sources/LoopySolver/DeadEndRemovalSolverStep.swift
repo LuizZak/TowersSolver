@@ -24,10 +24,14 @@ public class DeadEndRemovalSolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var grid: LoopyGrid
+    var controller: LoopyGridController
+    
+    var grid: LoopyGrid {
+        return controller.grid
+    }
     
     init(grid: LoopyGrid) {
-        self.grid = grid
+        controller = LoopyGridController(grid: grid)
     }
     
     func apply() {
@@ -49,8 +53,8 @@ private class InternalSolver {
             
             let enabled = edges.filter({ $0.isEnabled })
             
-            if enabled.count == 1, let id = grid.edgeIndex(vertex1: enabled[0].start, vertex2: enabled[0].end) {
-                grid.edges[id.value].state = .disabled
+            if enabled.count == 1 {
+                controller.setEdges(state: .disabled, forEdges: enabled)
             }
         }
     }
