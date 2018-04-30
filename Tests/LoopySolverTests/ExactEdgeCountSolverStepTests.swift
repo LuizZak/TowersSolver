@@ -19,11 +19,11 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
-        var grid = gridGen.generate()
-        grid.edges[0].state = .disabled
-        grid.edges[3].state = .disabled
+        var field = gridGen.generate()
+        field.edges[0].state = .disabled
+        field.edges[3].state = .disabled
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // left square
         XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .disabled)
@@ -46,12 +46,12 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
-        var grid = gridGen.generate()
-        grid.edges[4].state = .marked
-        grid.edges[5].state = .marked
-        grid.edges[6].state = .marked
+        var field = gridGen.generate()
+        field.edges[4].state = .marked
+        field.edges[5].state = .marked
+        field.edges[6].state = .marked
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // left square
         XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .normal)

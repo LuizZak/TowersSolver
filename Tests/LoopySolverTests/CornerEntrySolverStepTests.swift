@@ -20,10 +20,10 @@ class CornerEntrySolverStepTests: XCTestCase {
         // `1` face all disabled.
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 1, y: 1, hint: 1)
-        var grid = gridGen.generate()
-        grid.edges[5].state = .marked
+        var field = gridGen.generate()
+        field.edges[5].state = .marked
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // `1` face
         XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .normal)
@@ -43,11 +43,11 @@ class CornerEntrySolverStepTests: XCTestCase {
         // disabled.
         let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
-        var grid = gridGen.generate()
-        grid.edges[5].state = .marked
-        grid.edges[6].state = .disabled
+        var field = gridGen.generate()
+        field.edges[5].state = .marked
+        field.edges[6].state = .disabled
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // `1` face
         XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .disabled)
@@ -67,13 +67,13 @@ class CornerEntrySolverStepTests: XCTestCase {
         // `1` face disabled.
         let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
-        var grid = gridGen.generate()
-        grid.edges[5].state = .marked
-        grid.edges[8].state = .disabled
-        grid.edges[11].state = .disabled
-        grid.edges[13].state = .disabled
+        var field = gridGen.generate()
+        field.edges[5].state = .marked
+        field.edges[8].state = .disabled
+        field.edges[11].state = .disabled
+        field.edges[13].state = .disabled
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // `1` face
         XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .normal)

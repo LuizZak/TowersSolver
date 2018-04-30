@@ -114,10 +114,10 @@ class GraphUtilsTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 1)
         controller.setEdge(state: .disabled, forFace: 4, edgeIndex: 2)
         controller.setEdge(state: .disabled, forFace: 7, edgeIndex: 1)
-        let grid = controller.field
+        let field = controller.field
         
-        let result = GraphUtils.singlePathEdges(in: grid, fromEdge: grid.edges[6])
-        let resultIds = result.map { grid.edgeId(forEdge: $0)! }.map { $0.value }.sorted()
+        let result = GraphUtils.singlePathEdges(in: field, fromEdge: field.edges[6])
+        let resultIds = result.map { field.edgeId(forEdge: $0)! }.map { $0.value }.sorted()
         XCTAssertEqual(resultIds, [0, 1, 3, 6, 11, 12, 13, 16, 17, 21, 22, 23])
     }
 }

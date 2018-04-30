@@ -22,9 +22,9 @@ class ZeroSolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 0, hint: 1)
         gridGen.setHint(x: 0, y: 1, hint: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
-        let grid = gridGen.generate()
+        let field = gridGen.generate()
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // `0`
         XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .disabled)

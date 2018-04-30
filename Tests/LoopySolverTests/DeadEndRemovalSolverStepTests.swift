@@ -20,10 +20,10 @@ class DeadEndRemovalSolverStepTests: XCTestCase {
         //  .  !__!
         //
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
-        var grid = gridGen.generate()
-        grid.edges[0].state = .disabled
+        var field = gridGen.generate()
+        field.edges[0].state = .disabled
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // left square
         XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .disabled)

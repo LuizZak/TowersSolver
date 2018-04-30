@@ -25,9 +25,9 @@ class CornerSolverStepTests: XCTestCase {
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 0, y: 2, hint: 1)
         gridGen.setHint(x: 2, y: 2, hint: 2)
-        let grid = gridGen.generate()
+        let field = gridGen.generate()
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: field)
         
         // Check outer two edges of `3` cell where marked, while the inner edges
         // where not
