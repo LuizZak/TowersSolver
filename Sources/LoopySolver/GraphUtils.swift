@@ -39,7 +39,6 @@ public enum GraphUtils {
     /// just the starting edge is returned.
     public static func singlePathEdges(in graph: LoopyField, fromEdge edge: Edge, excludeDisabled: Bool = true) -> [Edge] {
         var result: [Edge] = []
-        var stack = [edge]
         
         // Only include edges not already accounted for in the result array
         let includeFilter: (Edge) -> Bool = { edge in
@@ -49,6 +48,33 @@ public enum GraphUtils {
             
             return !result.contains(where: edge.matchesEdgeVertices)
         }
+        
+        // First, find the logical start of the traversal by traversing through
+        // the left of the edges until the beginning of the straight edges chain
+        let edgeStart: Edge = { () -> Edge in
+            var next = edge
+            var visited: [Edge] = []
+            
+            while true {
+                visited.append(next)
+                
+                let edgesLeft =
+                    graph.edgesSharing(vertexIndex: next.start)
+                        .edges(in: graph)
+                        .filter(includeFilter)
+                        .filter { !visited.contains($0) }
+                
+                if edgesLeft.count == 1 {
+                    next = edgesLeft[0]
+                } else {
+                    break
+                }
+            }
+            
+            return next
+        }()
+        
+        var stack = [edgeStart]
         
         while let next = stack.popLast() {
             // Already visited

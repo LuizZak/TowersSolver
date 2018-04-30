@@ -49,6 +49,21 @@ public struct Face: Equatable {
     }
 }
 
+public extension Key where T == Face, U == Int {
+    /// Returns the face represented by this face ID on a given field
+    public func face(in field: LoopyField) -> Face {
+        return field.faces[value]
+    }
+}
+
+public extension Sequence where Element == Face.Id {
+    /// Returns the actual faces represented by this list of face IDs on a given
+    /// field.
+    public func faces(in field: LoopyField) -> [Face] {
+        return map { $0.face(in: field) }
+    }
+}
+
 public extension Sequence where Element == Edge.Id {
     /// Returns an array of local edge indices for a given face based on this
     /// sequence of global edge indices.

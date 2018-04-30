@@ -153,6 +153,17 @@ public struct LoopyField: Equatable {
         }
     }
     
+    /// Returns an array of all edges that are connected to a given edge id.
+    public func edgesConnected(to edgeId: Edge.Id) -> [Edge.Id] {
+        let edge = edgeWithId(edgeId)
+        return edgesConnected(to: edge)
+    }
+    
+    /// Returns an array of all edges that are connected to a given edge.
+    public func edgesConnected(to edge: Edge) -> [Edge.Id] {
+        return filterEdgeIndices(where: edge.sharesVertex)
+    }
+    
     /// Returns an array of all edge indices that enclose a face with a given id.
     public func edgeIds(forFace id: Face.Id) -> [Edge.Id] {
         let face = faceWithId(id)
