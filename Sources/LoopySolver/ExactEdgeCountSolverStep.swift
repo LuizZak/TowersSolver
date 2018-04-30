@@ -10,6 +10,10 @@ public class ExactEdgeCountSolverStep: SolverStep {
             let face = field.faceWithId(faceId)
             let edges = face.localToGlobalEdges.edges(in: field)
             
+            if field.isFaceSolved(face) && !edges.contains(where: { $0.state == .normal }) {
+                continue
+            }
+            
             let enabledEdges = edges.filter { $0.isEnabled }
             
             if enabledEdges.count == face.hint {

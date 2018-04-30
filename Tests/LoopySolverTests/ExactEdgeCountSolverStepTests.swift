@@ -25,16 +25,19 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
+        let edgesForFace: (Int) -> [Edge] = {
+            result.edgeIds(forFace: $0).edges(in: result)
+        }
         // left square
-        XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 0)[1].edge(in: result).state, .marked)
-        XCTAssertEqual(result.edgeIds(forFace: 0)[2].edge(in: result).state, .marked)
-        XCTAssertEqual(result.edgeIds(forFace: 0)[3].edge(in: result).state, .disabled)
+        XCTAssertEqual(edgesForFace(0)[0].state, .disabled)
+        XCTAssertEqual(edgesForFace(0)[1].state, .marked)
+        XCTAssertEqual(edgesForFace(0)[2].state, .marked)
+        XCTAssertEqual(edgesForFace(0)[3].state, .disabled)
         // right square
-        XCTAssertEqual(result.edgeIds(forFace: 1)[0].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[1].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[2].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[3].edge(in: result).state, .marked)
+        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
+        XCTAssertEqual(edgesForFace(1)[1].state, .normal)
+        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
+        XCTAssertEqual(edgesForFace(1)[3].state, .marked)
     }
     
     func testApplyOnMarkedEdges() {
@@ -53,15 +56,18 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
+        let edgesForFace: (Int) -> [Edge] = {
+            result.edgeIds(forFace: $0).edges(in: result)
+        }
         // left square
-        XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 0)[1].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 0)[2].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 0)[3].edge(in: result).state, .normal)
+        XCTAssertEqual(edgesForFace(0)[0].state, .normal)
+        XCTAssertEqual(edgesForFace(0)[1].state, .disabled)
+        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
+        XCTAssertEqual(edgesForFace(0)[3].state, .normal)
         // right square
-        XCTAssertEqual(result.edgeIds(forFace: 1)[0].edge(in: result).state, .marked)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[1].edge(in: result).state, .marked)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[2].edge(in: result).state, .marked)
-        XCTAssertEqual(result.edgeIds(forFace: 1)[3].edge(in: result).state, .disabled)
+        XCTAssertEqual(edgesForFace(1)[0].state, .marked)
+        XCTAssertEqual(edgesForFace(1)[1].state, .marked)
+        XCTAssertEqual(edgesForFace(1)[2].state, .marked)
+        XCTAssertEqual(edgesForFace(1)[3].state, .disabled)
     }
 }

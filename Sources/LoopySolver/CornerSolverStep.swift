@@ -54,6 +54,10 @@ private class InternalSolver {
     
     func applyToFace(_ faceId: Face.Id) {
         let face = field.faceWithId(faceId)
+        let edges = face.localToGlobalEdges.edges(in: field)
+        if field.isFaceSolved(face) && !edges.contains(where: { $0.state == .normal }) {
+            return
+        }
         
         // Requires hint!
         guard let hint = face.hint else {
@@ -62,7 +66,7 @@ private class InternalSolver {
         
         // 1.
         // Detect sequential edges that exceed the required number for the face
-        for edge in face.localToGlobalEdges {
+        for edge in edges {
             let edges =
                 GraphUtils.singlePathEdges(in: field, fromEdge: edge)
                     .filter { field.faceContainsEdge(face: face, edge: $0) }

@@ -36,9 +36,15 @@ private class InternalSolver {
         
         for i in 0..<semifaces.count - 1 {
             let semi1 = semifaces[i].face(in: field)
+            if field.isFaceSolved(semi1) {
+                continue
+            }
             
             for j in i + 1..<semifaces.count {
                 let semi2 = semifaces[j].face(in: field)
+                if field.isFaceSolved(semi2) {
+                    continue
+                }
                 
                 // Test for a shared edge
                 if let edge = field.sharedEdge(between: semi1, semi2) {

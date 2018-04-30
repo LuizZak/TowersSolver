@@ -25,11 +25,14 @@ class CornerEntrySolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
+        let edgesForFace: (Int) -> [Edge] = {
+            result.edgeIds(forFace: $0).edges(in: result)
+        }
         // `1` face
-        XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[1].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[2].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[3].edge(in: result).state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
+        XCTAssertEqual(edgesForFace(3)[1].state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[2].state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[3].state, .disabled)
     }
     
     func testApplyOnFaceWithDisabledEdge() {
@@ -49,11 +52,14 @@ class CornerEntrySolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
+        let edgesForFace: (Int) -> [Edge] = {
+            result.edgeIds(forFace: $0).edges(in: result)
+        }
         // `1` face
-        XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[1].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[2].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[3].edge(in: result).state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[0].state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[1].state, .normal)
+        XCTAssertEqual(edgesForFace(3)[2].state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[3].state, .disabled)
     }
     
     func testApplyOnFaceWithLoopback() {
@@ -75,10 +81,53 @@ class CornerEntrySolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
+        let edgesForFace: (Int) -> [Edge] = {
+            result.edgeIds(forFace: $0).edges(in: result)
+        }
         // `1` face
-        XCTAssertEqual(result.edgeIds(forFace: 3)[0].edge(in: result).state, .normal)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[1].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[2].edge(in: result).state, .disabled)
-        XCTAssertEqual(result.edgeIds(forFace: 3)[3].edge(in: result).state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
+        XCTAssertEqual(edgesForFace(3)[1].state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[2].state, .disabled)
+        XCTAssertEqual(edgesForFace(3)[3].state, .disabled)
+    }
+    
+    func testApplyOnSemiCompleteFace() {
+        // Create a simple 3x2 square grid like so:
+        // . _ . _ . _ .
+        // ! _ ! _ ║ _ !
+        // ! _ ! 3 ! _ !
+        //
+        // Result should be a grid with the left and bottom edges of the `3` face
+        // all marked as part of the solution, and the edge to the bottom-right
+        // of the marked edge should be disabled, since the semi-complete face
+        // highjacked the line path.
+        let gridGen = LoopySquareGridGen(width: 3, height: 2)
+        gridGen.setHint(x: 1, y: 1, hint: 3)
+        var field = gridGen.generate()
+        field.edges[5].state = .marked
+        
+        let result = sut.apply(to: field)
+        
+        let edgesForFace: (Int) -> [Edge] = {
+            result.edgeIds(forFace: $0).edges(in: result)
+        }
+        
+        // Top-center face
+        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
+        XCTAssertEqual(edgesForFace(1)[1].state, .marked)
+        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
+        XCTAssertEqual(edgesForFace(1)[3].state, .normal)
+        // `3` face
+        XCTAssertEqual(edgesForFace(4)[0].state, .normal)
+        XCTAssertEqual(edgesForFace(4)[1].state, .normal)
+        XCTAssertEqual(edgesForFace(4)[2].state, .marked)
+        XCTAssertEqual(edgesForFace(4)[3].state, .marked)
+        // Bottom-right face
+        XCTAssertEqual(edgesForFace(5)[0].state, .disabled)
+        XCTAssertEqual(edgesForFace(5)[1].state, .normal)
+        XCTAssertEqual(edgesForFace(5)[2].state, .normal)
+        XCTAssertEqual(edgesForFace(5)[3].state, .normal)
+        
+        LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 5).printField(field: result)
     }
 }

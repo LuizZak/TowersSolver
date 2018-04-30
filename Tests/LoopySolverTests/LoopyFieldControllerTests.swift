@@ -31,7 +31,6 @@ class LoopyFieldControllerTests: XCTestCase {
         sut.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
         
         let edgeStates = sut.field.edges.map { $0.state }
-        
         XCTAssertEqual(
             edgeStates,
             [

@@ -52,13 +52,17 @@ private class InternalSolver {
             let edgeIds = field.edgesSharing(vertexIndex: i)
             let edges = edgeIds.edges(in: field)
             
-            let marked = edges.filter({ $0.state == .marked })
-            let enabled = edges.filter({ $0.state == .normal })
+            let marked = edges.filter { $0.state == .marked }
             
-            if marked.count == 1 && enabled.count == 1 {
+            guard marked.count == 1 else {
+                continue
+            }
+            
+            let enabled = edges.filter { $0.state == .normal }
+            
+            if enabled.count == 1 {
                 controller.setEdges(state: .marked, forEdges: enabled)
             }
         }
     }
 }
-

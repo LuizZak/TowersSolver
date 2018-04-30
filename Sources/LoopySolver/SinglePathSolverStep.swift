@@ -42,6 +42,9 @@ private class InternalSolver {
     
     func applyToFace(_ faceId: Face.Id) {
         let face = field.faceWithId(faceId)
+        if field.isFaceSolved(face) {
+            return
+        }
         
         guard let hint = face.hint else {
             return

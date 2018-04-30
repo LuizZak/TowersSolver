@@ -13,6 +13,12 @@
 ///     ! _ ! _ ║
 ///     ! _ ! 1 !
 ///
+/// This solver step also deals with cases of semi-complete edges that have an
+/// entry point that enters through an edge:
+///     . _ . _ .
+///     ! _ ! _ ║
+///     ! _ ! 3 !
+///
 public class CornerEntrySolverStep: SolverStep {
     public func apply(to field: LoopyField) -> LoopyField {
         let solver = InternalSolver(field: field)
@@ -39,6 +45,7 @@ private class InternalSolver {
     }
     
     func applyToVertex(_ vertexIndex: Int) {
+        
         let edgeIds = field.edgesSharing(vertexIndex: vertexIndex)
         let edges = edgeIds.edges(in: field)
         
@@ -48,6 +55,38 @@ private class InternalSolver {
         // Can only do work on loose ends of a loopy line (a vertex with a single
         // marked edge)
         guard marked.count == 1 else {
+            return
+        }
+        
+        // If any of the faces is semi-complete, apply a different logic here to
+        // 'hijack' the line into it's own path
+        if let semiComplete = field.facesSharing(vertexIndex: vertexIndex).faces(in: field).first(where: { $0.isSemiComplete }) {
+            if field.isFaceSolved(semiComplete) {
+                return
+            }
+            
+            // Can only account for edges coming into the face from an outside
+            // edge
+            if field.faceContainsEdge(face: semiComplete, edge: marked[0]) {
+                return
+            }
+            
+            let oppositeEdges = semiComplete
+                .localToGlobalEdges
+                .edges(in: field)
+                .filter { !$0.sharesVertex(vertexIndex) }
+            
+            controller.setEdges(state: .marked, forEdges: oppositeEdges)
+            
+            // Disable edges from other faces that share that vertex to finish
+            // hijacking the line path
+            let otherEdges = edgeIds
+                .filter { !semiComplete.containsEdge(id: $0) }
+                .edges(in: field)
+                .filter { marked[0] != $0 }
+            
+            controller.setEdges(state: .disabled, forEdges: otherEdges)
+            
             return
         }
         
@@ -73,6 +112,9 @@ private class InternalSolver {
     
     func applyToFace(_ faceId: Face.Id, vertex: Int) {
         let face = field.faceWithId(faceId)
+        if field.isFaceSolved(face) {
+            return
+        }
         
         // Requires hint!
         guard let hint = face.hint else {
