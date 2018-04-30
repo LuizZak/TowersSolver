@@ -19,7 +19,7 @@ class DeadEndRemovalSolverStepTests: XCTestCase {
         //  .  .__.
         //  .  !__!
         //
-        let gridGen = LoopySquareGrid(width: 2, height: 1)
+        let gridGen = LoopySquareGridGen(width: 2, height: 1)
         var grid = gridGen.generate()
         grid.edges[0].state = .disabled
         

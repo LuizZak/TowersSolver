@@ -58,11 +58,7 @@ public struct Edge: Hashable {
             return false
         }
         
-        if lhs.start == rhs.start && lhs.end == rhs.end {
-            return true
-        }
-        
-        return lhs.start == rhs.end && lhs.end == rhs.start
+        return lhs.start == rhs.start && lhs.end == rhs.end
     }
     
     /// Enumeration of possible states for an edge.
@@ -79,17 +75,17 @@ public struct Edge: Hashable {
 }
 
 public extension Key where T == Edge, U == Int {
-    /// Returns the edge represented by this edge ID on a given grid
-    public func edge(in grid: LoopyGrid) -> Edge {
-        return grid.edges[value]
+    /// Returns the edge represented by this edge ID on a given field
+    public func edge(in field: LoopyField) -> Edge {
+        return field.edges[value]
     }
 }
 
 public extension Sequence where Element == Edge.Id {
     /// Returns the actual edges represented by this list of edge IDs on a given
-    /// grid.
-    public func edges(in grid: LoopyGrid) -> [Edge] {
-        return map { $0.edge(in: grid) }
+    /// field.
+    public func edges(in field: LoopyField) -> [Edge] {
+        return map { $0.edge(in: field) }
     }
 }
 

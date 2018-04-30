@@ -5,7 +5,7 @@ import Geometry
 class LoopyGridPrinterTests: XCTestCase {
     
     func testPrintSample() {
-        var grid = LoopyGrid()
+        var grid = LoopyField()
         
         grid.addVertex(Vertex(x: 0, y: 0))
         grid.addVertex(Vertex(x: 50, y: 19))
@@ -19,12 +19,12 @@ class LoopyGridPrinterTests: XCTestCase {
         grid.createFace(withVertexIndices: [2, 4, 3], hint: 1)
         grid.createFace(withVertexIndices: [3, 5, 4], hint: nil)
         
-        let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
-        printer.printGrid(grid: grid)
+        let printer = LoopyFieldPrinter(bufferWidth: 120, bufferHeight: 60)
+        printer.printField(field: grid)
     }
     
     func testPrintSquareGrid() {
-        let generator = LoopySquareGrid(width: 6, height: 6)
+        let generator = LoopySquareGridGen(width: 6, height: 6)
         
         generator.setHint(x: 1, y: 1, hint: 1)
         generator.setHint(x: 2, y: 3, hint: 3)
@@ -33,10 +33,10 @@ class LoopyGridPrinterTests: XCTestCase {
         
         let grid = generator.generate()
         
-        let controller = LoopyGridController(grid: grid)
+        let controller = LoopyFieldController(field: grid)
         controller.setEdges(state: .disabled, forFace: .init(0))
         
-        let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
-        printer.printGrid(grid: controller.grid, width: 60, height: 30)
+        let printer = LoopyFieldPrinter(bufferWidth: 120, bufferHeight: 60)
+        printer.printField(field: controller.field, width: 60, height: 30)
     }
 }

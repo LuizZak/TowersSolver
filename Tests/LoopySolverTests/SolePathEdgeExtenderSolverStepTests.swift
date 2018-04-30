@@ -11,7 +11,7 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
     }
     
     func testApplyOnTrivial() {
-        // Create a grid with a loopy line that ends in a corner:
+        // Create a field with a loopy line that ends in a corner:
         //
         // .  .  .
         // !  x  .  (assuming 'x' is the mid vertical column disabled)
@@ -24,12 +24,12 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         // !  x  !
         // .  .  .
         //
-        let gridGen = LoopySquareGrid(width: 2, height: 2)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let gridGen = LoopySquareGridGen(width: 2, height: 2)
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setEdge(state: .disabled, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.field)
         
         // Top-left
         XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .marked)

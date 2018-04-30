@@ -7,19 +7,19 @@ class SolverTests: XCTestCase {
         // !___!_2_!_0_!
         // !___!___!___!
         // !___!_2_!_3_!
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 1, y: 0, hint: 2)
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 1, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 3)
-        let solver = Solver(grid: gridGen.generate())
+        let solver = Solver(field: gridGen.generate())
         
         let result = solver.solve()
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyGridPrinter(bufferWidth: 40, bufferHeight: 20)
-        printer.printGrid(grid: solver.grid)
+        let printer = LoopyFieldPrinter(bufferWidth: 40, bufferHeight: 20)
+        printer.printField(field: solver.field)
     }
     
     func testSolveTricky() {
@@ -27,20 +27,20 @@ class SolverTests: XCTestCase {
         // !___!___!_3_!
         // !_1_!___!_1_!
         // !___!_3_!_3_!
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 2, y: 0, hint: 3)
         gridGen.setHint(x: 0, y: 1, hint: 1)
         gridGen.setHint(x: 2, y: 1, hint: 1)
         gridGen.setHint(x: 1, y: 2, hint: 3)
         gridGen.setHint(x: 2, y: 2, hint: 3)
-        let solver = Solver(grid: gridGen.generate())
+        let solver = Solver(field: gridGen.generate())
         
         let result = solver.solve()
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyGridPrinter(bufferWidth: 40, bufferHeight: 20)
-        printer.printGrid(grid: solver.grid)
+        let printer = LoopyFieldPrinter(bufferWidth: 40, bufferHeight: 20)
+        printer.printField(field: solver.field)
     }
     
     func testSolveTricky7x7() {
@@ -53,7 +53,7 @@ class SolverTests: XCTestCase {
         // !___!___!___!___!_2_!_2_!_1_!
         // !_2_!_3_!___!_3_!___!___!___!
         //
-        let gridGen = LoopySquareGrid(width: 7, height: 7)
+        let gridGen = LoopySquareGridGen(width: 7, height: 7)
         gridGen.setHint(x: 0, y: 0, hint: 3)
         gridGen.setHint(x: 2, y: 0, hint: 3)
         gridGen.setHint(x: 3, y: 0, hint: 3)
@@ -85,14 +85,14 @@ class SolverTests: XCTestCase {
         gridGen.setHint(x: 0, y: 6, hint: 2)
         gridGen.setHint(x: 1, y: 6, hint: 3)
         gridGen.setHint(x: 3, y: 6, hint: 3)
-        let solver = Solver(grid: gridGen.generate())
+        let solver = Solver(field: gridGen.generate())
         
         let result = solver.solve()
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyGridPrinter(bufferWidth: 70, bufferHeight: 40)
-        printer.printGrid(grid: solver.grid)
+        let printer = LoopyFieldPrinter(bufferWidth: 70, bufferHeight: 40)
+        printer.printField(field: solver.field)
     }
     
     func testSolveHard() {
@@ -100,19 +100,19 @@ class SolverTests: XCTestCase {
         // !___!_2_!___!
         // !___!_3_!___!
         // !_2_!___!_2_!
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 1, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
         gridGen.setHint(x: 0, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 2)
-        let solver = Solver(grid: gridGen.generate())
+        let solver = Solver(field: gridGen.generate())
         
         let result = solver.solve()
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyGridPrinter(bufferWidth: 40, bufferHeight: 20)
-        printer.printGrid(grid: solver.grid)
+        let printer = LoopyFieldPrinter(bufferWidth: 40, bufferHeight: 20)
+        printer.printField(field: solver.field)
     }
     
     func testIsSolved() {
@@ -123,12 +123,12 @@ class SolverTests: XCTestCase {
         // !___!___!___!
         // !___!_2_!_3_!
         //
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 1, y: 0, hint: 2)
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 1, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 3)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 0)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
@@ -141,7 +141,7 @@ class SolverTests: XCTestCase {
         controller.setEdge(state: .marked, forFace: 7, edgeIndex: 2)
         controller.setEdge(state: .marked, forFace: 8, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 8, edgeIndex: 2)
-        let sut = Solver(grid: controller.grid)
+        let sut = Solver(field: controller.field)
         
         XCTAssert(sut.isSolved)
     }
@@ -154,12 +154,12 @@ class SolverTests: XCTestCase {
         // !___!___!___!
         // !___!_2_!_3_!
         //
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 1, y: 0, hint: 2)
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 1, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 3)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 0)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
@@ -171,7 +171,7 @@ class SolverTests: XCTestCase {
         controller.setEdge(state: .marked, forFace: 7, edgeIndex: 2)
         controller.setEdge(state: .marked, forFace: 8, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 8, edgeIndex: 2)
-        let sut = Solver(grid: controller.grid)
+        let sut = Solver(field: controller.field)
         
         XCTAssertFalse(sut.isSolved)
     }
@@ -184,12 +184,12 @@ class SolverTests: XCTestCase {
         // !___!___!___!
         // !___!_2_!_3_!
         //
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 1, y: 0, hint: 1) // This hint ends up being violated and two edges are marked!
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 1, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 3)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 0)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
@@ -201,7 +201,7 @@ class SolverTests: XCTestCase {
         controller.setEdge(state: .marked, forFace: 7, edgeIndex: 2)
         controller.setEdge(state: .marked, forFace: 8, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 8, edgeIndex: 2)
-        let sut = Solver(grid: controller.grid)
+        let sut = Solver(field: controller.field)
         
         XCTAssertFalse(sut.isSolved)
     }
@@ -219,11 +219,11 @@ class SolverTests: XCTestCase {
         // .___!___!
         // !___!
         //
-        let gridGen = LoopySquareGrid(width: 2, height: 2)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let gridGen = LoopySquareGridGen(width: 2, height: 2)
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setEdges(state: .marked, forFace: 1)
         controller.setEdges(state: .marked, forFace: 2)
-        let sut = Solver(grid: controller.grid)
+        let sut = Solver(field: controller.field)
         
         XCTAssertFalse(sut.isSolved)
     }

@@ -1,4 +1,4 @@
-/// Solves grid cells that are on a corner in two scenarios:
+/// Solves field cells that are on a corner in two scenarios:
 ///
 /// 1. When the number of required edges shared amongst other cells is smaller
 /// than the required solution of the cell.
@@ -14,33 +14,33 @@
 /// In this case, the outer edges cannot be part of the solution, since their
 /// singular path would exceed the solution of the face.
 public class CornerSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+    public func apply(to field: LoopyField) -> LoopyField {
+        let solver = InternalSolver(field: field)
         solver.apply()
         
-        return solver.grid
+        return solver.field
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
+    var controller: LoopyFieldController
     
-    var grid: LoopyGrid {
-        return controller.grid
+    var field: LoopyField {
+        return controller.field
     }
     
-    init(grid: LoopyGrid) {
-        controller = LoopyGridController(grid: grid)
+    init(field: LoopyField) {
+        controller = LoopyFieldController(field: field)
     }
     
     func apply() {
-        for id in grid.faceIds {
+        for id in field.faceIds {
             applyToFace(id)
         }
     }
     
     func applyToFace(_ faceId: Face.Id) {
-        let face = grid.faceWithId(faceId)
+        let face = field.faceWithId(faceId)
         
         // Requires hint!
         guard let hint = face.hint else {
@@ -50,8 +50,8 @@ private class InternalSolver {
         // Detect sequential edges that exceed the required number for the face
         for edge in face.localToGlobalEdges {
             let edges =
-                GraphUtils.singlePathEdges(in: grid, fromEdge: edge)
-                    .filter { grid.faceContainsEdge(face: face, edge: $0) }
+                GraphUtils.singlePathEdges(in: field, fromEdge: edge)
+                    .filter { field.faceContainsEdge(face: face, edge: $0) }
             
             if edges.count > hint {
                 controller.setEdges(state: .disabled, forEdges: edges)
@@ -62,7 +62,7 @@ private class InternalSolver {
         
         // Can only solve when the non-shared edges form a single sequential line
         // across the outer side of the face
-        if !nonShared.edges(in: grid).isUniqueSegment {
+        if !nonShared.edges(in: field).isUniqueSegment {
             return
         }
         

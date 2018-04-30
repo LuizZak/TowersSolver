@@ -16,7 +16,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         //  ._2_!_3_!
         //
         // Result should be a grid with the center and bottom-left edges marked.
-        let gridGen = LoopySquareGrid(width: 2, height: 1)
+        let gridGen = LoopySquareGridGen(width: 2, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
         var grid = gridGen.generate()
@@ -43,7 +43,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         //  . 2 !_3_!
         //
         // Result should be a grid with the left-most edge of the `3` cell disabled.
-        let gridGen = LoopySquareGrid(width: 2, height: 1)
+        let gridGen = LoopySquareGridGen(width: 2, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
         var grid = gridGen.generate()

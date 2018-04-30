@@ -18,7 +18,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         //
         // Result should be a grid with the left, bottom, and right edges of the
         // `1` face all disabled.
-        let gridGen = LoopySquareGrid(width: 2, height: 2)
+        let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var grid = gridGen.generate()
         grid.edges[5].state = .marked
@@ -41,7 +41,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         //
         // Result should be a grid with the bottom and left edges of the `1` face
         // disabled.
-        let gridGen = LoopySquareGrid(width: 2, height: 3)
+        let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var grid = gridGen.generate()
         grid.edges[5].state = .marked
@@ -65,7 +65,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         //
         // Result should be a grid with the bottom, left and right edges of the
         // `1` face disabled.
-        let gridGen = LoopySquareGrid(width: 2, height: 3)
+        let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var grid = gridGen.generate()
         grid.edges[5].state = .marked

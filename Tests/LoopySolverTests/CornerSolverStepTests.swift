@@ -20,7 +20,7 @@ class CornerSolverStepTests: XCTestCase {
         // The expected result should have the two outer edges of the `3` cell
         // marked as part of the solution, and the outer corners of `0` and `1`
         // marked as not part of the solution.
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 0, y: 0, hint: 3)
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 0, y: 2, hint: 1)

@@ -3,8 +3,8 @@ import LoopySolver
 
 class LoopyGridControllerTests: XCTestCase {
     func testNonSharedEdges() {
-        let grid = LoopySquareGrid(width: 3, height: 3).generate()
-        let sut = LoopyGridController(grid: grid)
+        let grid = LoopySquareGridGen(width: 3, height: 3).generate()
+        let sut = LoopyFieldController(field: grid)
         
         // Center face shares all edges with all connecting faces
         XCTAssert(sut.nonSharedEdges(forFace: 4).isEmpty)
@@ -22,15 +22,15 @@ class LoopyGridControllerTests: XCTestCase {
         //  !   !   !
         //  !___!___!
         //
-        let grid = LoopySquareGrid(width: 2, height: 2).generate()
-        let sut = LoopyGridController(grid: grid)
+        let grid = LoopySquareGridGen(width: 2, height: 2).generate()
+        let sut = LoopyFieldController(field: grid)
         
         sut.setEdge(state: .disabled, forFace: 0, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 1, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 2, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
         
-        let edgeStates = sut.grid.edges.map { $0.state }
+        let edgeStates = sut.field.edges.map { $0.state }
         
         XCTAssertEqual(
             edgeStates,

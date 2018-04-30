@@ -8,37 +8,37 @@ import Geometry
     import Glibc
 #endif
 
-/// Helper for printing grids to the console using ASCII text.
-public class LoopyGridPrinter: ConsolePrintBuffer {
+/// Helper for printing fieldss to the console using ASCII text.
+public class LoopyFieldPrinter: ConsolePrintBuffer {
     
-    public func printGrid(grid: LoopyGrid) {
-        printGrid(grid: grid, width: bufferWidth - 2, height: bufferHeight - 1)
+    public func printField(field: LoopyField) {
+        printField(field: field, width: bufferWidth - 2, height: bufferHeight - 1)
     }
     
-    public func printGrid(grid: LoopyGrid, width: Int, height: Int) {
+    public func printField(field: LoopyField, width: Int, height: Int) {
         resetBuffer()
         
-        if grid.vertices.count == 0 {
-            Swift.print("No vertices on grid provided.")
+        if field.vertices.count == 0 {
+            Swift.print("No vertices on field that was provided.")
             return
         }
         
-        let gridWidth = totalWidth(for: grid)
-        let gridHeight = totalHeight(for: grid)
+        let fieldWidth = totalWidth(for: field)
+        let fieldHeight = totalHeight(for: field)
         
         let availableWidth = Float(width)
         let availableHeight = Float(height)
         
-        let toScreen = { (gridX: Float, gridY: Float) -> (x: Int, y: Int) in
-            let x = gridX / gridWidth * availableWidth
-            let y = gridY / gridHeight * availableHeight
+        let toScreen = { (fieldX: Float, fieldY: Float) -> (x: Int, y: Int) in
+            let x = fieldX / fieldWidth * availableWidth
+            let y = fieldY / fieldHeight * availableHeight
             
             return (x: Int(x), y: Int(y))
         }
         
-        for edge in grid.edges {
-            let v1 = grid.vertices[edge.start]
-            let v2 = grid.vertices[edge.end]
+        for edge in field.edges {
+            let v1 = field.vertices[edge.start]
+            let v2 = field.vertices[edge.end]
             
             let (x1, y1) = toScreen(v1.x, v1.y)
             let (x2, y2) = toScreen(v2.x, v2.y)
@@ -56,21 +56,21 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             }
         }
         
-        for faceIndex in 0..<grid.faces.count {
-            let poly = grid.polygonFor(face: .init(faceIndex))
+        for faceIndex in 0..<field.faces.count {
+            let poly = field.polygonFor(face: .init(faceIndex))
             
             // Print the face's hint at its geometrical center
             let center = poly.reduce(into: Vertex(x: 0, y: 0), +=) / Float(poly.count)
             
             let (x, y) = toScreen(center.x, center.y)
             
-            if let hint = grid.faces[faceIndex].hint {
+            if let hint = field.faces[faceIndex].hint {
                 putString(hint.description, x: x, y: y)
             }
         }
         
         // Draw vertices as small dots
-        for v in grid.vertices {
+        for v in field.vertices {
             let (x, y) = toScreen(v.x, v.y)
             
             putChar("•", x: Int(x), y: Int(y))
@@ -79,29 +79,29 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         print()
     }
     
-    public static func printGrid(grid: LoopyGrid) {
-        let printer = LoopyGridPrinter(bufferWidth: 80, bufferHeight: 35)
-        printer.printGrid(grid: grid)
+    public static func printField(field: LoopyField) {
+        let printer = LoopyFieldPrinter(bufferWidth: 80, bufferHeight: 35)
+        printer.printField(field: field)
     }
     
-    internal func totalWidth(for grid: LoopyGrid) -> Float {
-        if grid.vertices.count == 0 {
+    internal func totalWidth(for field: LoopyField) -> Float {
+        if field.vertices.count == 0 {
             return 0
         }
         
-        let minX = grid.vertices.min(by: { $0.x < $1.x })!
-        let maxX = grid.vertices.max(by: { $0.x < $1.x })!
+        let minX = field.vertices.min(by: { $0.x < $1.x })!
+        let maxX = field.vertices.max(by: { $0.x < $1.x })!
         
         return maxX.x - minX.x
     }
     
-    internal func totalHeight(for grid: LoopyGrid) -> Float {
-        if grid.vertices.count == 0 {
+    internal func totalHeight(for field: LoopyField) -> Float {
+        if field.vertices.count == 0 {
             return 0
         }
         
-        let minY = grid.vertices.min(by: { $0.y < $1.y })!
-        let maxY = grid.vertices.max(by: { $0.y < $1.y })!
+        let minY = field.vertices.min(by: { $0.y < $1.y })!
+        let maxY = field.vertices.max(by: { $0.y < $1.y })!
         
         return maxY.y - minY.y
     }

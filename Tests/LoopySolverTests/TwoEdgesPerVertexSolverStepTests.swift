@@ -15,12 +15,12 @@ class TwoEdgesPerVertexSolverStepTests: XCTestCase {
         // the solution.
         // The remaining edges connected to that center vertex should both be
         // disabled.
-        let gridGen = LoopySquareGrid(width: 2, height: 2)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let gridGen = LoopySquareGridGen(width: 2, height: 2)
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 2, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.field)
         
         // Top-left
         XCTAssertEqual(result.edgeIds(forFace: 0)[0].edge(in: result).state, .normal)

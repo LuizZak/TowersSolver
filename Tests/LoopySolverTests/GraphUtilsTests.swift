@@ -9,7 +9,7 @@ class GraphUtilsTests: XCTestCase {
         //  !__!__.
         //  !
         //
-        var graph = LoopyGrid()
+        var graph = LoopyField()
         graph.addVertex(Vertex(x: 0, y: 0)) // 0
         graph.addVertex(Vertex(x: 1, y: 0)) // 1
         graph.addVertex(Vertex(x: 1, y: 1)) // 2
@@ -42,7 +42,7 @@ class GraphUtilsTests: XCTestCase {
         //  !__!__.
         //  !  ^ this vertical edge is disabled.
         //
-        var graph = LoopyGrid()
+        var graph = LoopyField()
         graph.addVertex(Vertex(x: 0, y: 0)) // 0
         graph.addVertex(Vertex(x: 1, y: 0)) // 1
         graph.addVertex(Vertex(x: 1, y: 1)) // 2
@@ -102,8 +102,8 @@ class GraphUtilsTests: XCTestCase {
         // Querying for the single path edges of the (marked) edge signaled with
         // 'XX' results in edge 'Y' (marked as well) being reported twice in the
         // results array.
-        let gridGen = LoopySquareGrid(width: 3, height: 3)
-        let controller = LoopyGridController(grid: gridGen.generate())
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        let controller = LoopyFieldController(field: gridGen.generate())
         controller.setAllEdges(state: .disabled)
         controller.setEdges(state: .marked, forFace: 0)
         controller.setEdges(state: .marked, forFace: 3)
@@ -114,7 +114,7 @@ class GraphUtilsTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 1)
         controller.setEdge(state: .disabled, forFace: 4, edgeIndex: 2)
         controller.setEdge(state: .disabled, forFace: 7, edgeIndex: 1)
-        let grid = controller.grid
+        let grid = controller.field
         
         let result = GraphUtils.singlePathEdges(in: grid, fromEdge: grid.edges[6])
         let resultIds = result.map { grid.edgeId(forEdge: $0)! }.map { $0.value }.sorted()

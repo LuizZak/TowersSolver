@@ -2,7 +2,7 @@
 /// such a way that the line has to traverse through the face, marking a minimal
 /// number of edges around the face.
 ///
-/// Ex: On the following grid, the top-right marked edge has to pass through the
+/// Ex: On the following field, the top-right marked edge has to pass through the
 /// 1-hinted face to be able to continue. Since we know that it will have to cross
 /// the edges of the face, we know the left edge of the cell cannot be marked
 /// (since it would exceed the requiremet for the cell), and the right and bottom
@@ -14,33 +14,33 @@
 ///     ! _ ! 1 !
 ///
 public class CornerEntrySolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+    public func apply(to field: LoopyField) -> LoopyField {
+        let solver = InternalSolver(field: field)
         solver.apply()
-        return solver.grid
+        return solver.field
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
+    var controller: LoopyFieldController
     
-    var grid: LoopyGrid {
-        return controller.grid
+    var field: LoopyField {
+        return controller.field
     }
     
-    init(grid: LoopyGrid) {
-        controller = LoopyGridController(grid: grid)
+    init(field: LoopyField) {
+        controller = LoopyFieldController(field: field)
     }
     
     func apply() {
-        for i in 0..<grid.vertices.count {
+        for i in 0..<field.vertices.count {
             applyToVertex(i)
         }
     }
     
     func applyToVertex(_ vertexIndex: Int) {
-        let edgeIds = grid.edgesSharing(vertexIndex: vertexIndex)
-        let edges = edgeIds.edges(in: grid)
+        let edgeIds = field.edgesSharing(vertexIndex: vertexIndex)
+        let edges = edgeIds.edges(in: field)
         
         let marked = edges.filter { $0.state == .marked }
         let normal = edges.filter { $0.state == .normal }
@@ -52,7 +52,7 @@ private class InternalSolver {
         }
         
         // Find the face that all path candidate edges share
-        let allFaces = normal.map { Set(grid.facesSharing(edge: $0)) }
+        let allFaces = normal.map { Set(field.facesSharing(edge: $0)) }
         if allFaces.count == 0 {
             return
         }
@@ -72,7 +72,7 @@ private class InternalSolver {
     }
     
     func applyToFace(_ faceId: Face.Id, vertex: Int) {
-        let face = grid.faceWithId(faceId)
+        let face = field.faceWithId(faceId)
         
         // Requires hint!
         guard let hint = face.hint else {
@@ -81,7 +81,7 @@ private class InternalSolver {
         
         let allEdges = face
             .localToGlobalEdges
-            .edges(in: grid)
+            .edges(in: field)
         
         let edges = allEdges.filter { $0.sharesVertex(vertex) }
         
@@ -96,8 +96,8 @@ private class InternalSolver {
         for edge in normalEdges {
             let edgesPath =
                 GraphUtils
-                    .singlePathEdges(in: grid, fromEdge: edge)
-                    .filter { grid.faceContainsEdge(face: face, edge: $0) }
+                    .singlePathEdges(in: field, fromEdge: edge)
+                    .filter { field.faceContainsEdge(face: face, edge: $0) }
             
             let edgeCount = edgesPath.count
             leastCount = min(edgeCount, leastCount)

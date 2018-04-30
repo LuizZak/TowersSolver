@@ -2,12 +2,12 @@
 /// all remaining edges as not part of the solution (since these would result in
 /// an intersecting loopy line at that vertex)
 public class TwoEdgesPerVertexSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
-        let controller = LoopyGridController(grid: grid)
+    public func apply(to field: LoopyField) -> LoopyField {
+        let controller = LoopyFieldController(field: field)
         
-        for vertex in 0..<grid.vertices.count {
-            let edgeIds = grid.edgesSharing(vertexIndex: vertex)
-            let edges = edgeIds.edges(in: grid)
+        for vertex in 0..<field.vertices.count {
+            let edgeIds = field.edgesSharing(vertexIndex: vertex)
+            let edges = edgeIds.edges(in: field)
             let marked = edges.filter { $0.state == .marked }
             
             if marked.count == 2 {
@@ -16,6 +16,6 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
             }
         }
         
-        return controller.grid
+        return controller.field
     }
 }

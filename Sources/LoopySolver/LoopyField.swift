@@ -1,10 +1,10 @@
 import Geometry
 
-/// A grid for a loopy game.
-/// Consists of a collection of vertices laid on a grid, connected with edges
+/// A field for a loopy game.
+/// Consists of a collection of vertices laid on a field, connected with edges
 /// forming faces.
-public struct LoopyGrid: Equatable {
-    /// The list of vertices on this grid.
+public struct LoopyField: Equatable {
+    /// The list of vertices on this field.
     /// Each vertex is always connected to two or more edges, and always belongs
     /// to one or more faces.
     public var vertices: [Vertex]
@@ -12,7 +12,7 @@ public struct LoopyGrid: Equatable {
     /// List of edges that connect vertices
     public var edges: [Edge]
     
-    /// List of edge IDs in this grid.
+    /// List of edge IDs in this field.
     ///
     /// Every edge in `edges` has a matching edge ID within this array, and vice-versa.
     public var edgeIds: [Edge.Id] {
@@ -21,12 +21,12 @@ public struct LoopyGrid: Equatable {
         }
     }
     
-    /// List of faces in this grid.
+    /// List of faces in this field.
     ///
     /// Faces are compositions of vertex indices, with an optional hint associated.
     public var faces: [Face]
     
-    /// List of face IDs in this grid.
+    /// List of face IDs in this field.
     ///
     /// Every face in `faces` has a matching face ID within this array, and vice-versa.
     public var faceIds: [Face.Id] {
@@ -70,7 +70,7 @@ public struct LoopyGrid: Equatable {
         return Edge.Id(edges.count - 1)
     }
     
-    /// Creates a face with a given set of vertex indices on this grid, with an
+    /// Creates a face with a given set of vertex indices on this field, with an
     /// optional accompanying initial hint.
     ///
     /// - precondition: `indices` features no repeated vertex indices.
@@ -115,7 +115,7 @@ public struct LoopyGrid: Equatable {
                 .map(Edge.Id.init(_:))
     }
     
-    /// Returns `true` if a given face is considered solved on this grid.
+    /// Returns `true` if a given face is considered solved on this field.
     ///
     /// Faces are solved if they are surrounded by exactly as many marked edges
     /// as their hint points.
@@ -145,7 +145,7 @@ public struct LoopyGrid: Equatable {
         }.map { Edge.Id($0.offset) }
     }
     
-    /// Returns an array of all edges within this grid sharing a given common
+    /// Returns an array of all edges within this field sharing a given common
     /// vertex index.
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
         return filterEdgeIndices { edge in
@@ -159,14 +159,14 @@ public struct LoopyGrid: Equatable {
         return face.localToGlobalEdges
     }
     
-    /// Returns an array of faces within this grid that share a given vertex index.
+    /// Returns an array of faces within this field that share a given vertex index.
     public func facesSharing(vertexIndex: Int) -> [Face.Id] {
         return filterFaceIndices { face in
             face.indices.contains(vertexIndex)
         }
     }
     
-    /// Returns an array of faces within this grid that share a common edge.
+    /// Returns an array of faces within this field that share a common edge.
     /// Either one or two faces share a common edge at all times.
     public func facesSharing(edgeId: Edge.Id) -> [Face.Id] {
         let edge = edgeWithId(edgeId)
@@ -174,7 +174,7 @@ public struct LoopyGrid: Equatable {
         return facesSharing(edge: edge)
     }
     
-    /// Returns an array of faces within this grid that share a common edge.
+    /// Returns an array of faces within this field that share a common edge.
     /// Either one or two faces share a common edge at all times.
     public func facesSharing(edge: Edge) -> [Face.Id] {
         return filterFaceIndices { face in

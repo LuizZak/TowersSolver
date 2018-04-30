@@ -17,7 +17,7 @@ class ZeroSolverStepTests: XCTestCase {
         //  |_2_|_3_|
         //
         // Result should be a grid with all surrounding edges of `0` being disabled.
-        let gridGen = LoopySquareGrid(width: 2, height: 2)
+        let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 0, y: 0, hint: 0)
         gridGen.setHint(x: 1, y: 0, hint: 1)
         gridGen.setHint(x: 0, y: 1, hint: 2)

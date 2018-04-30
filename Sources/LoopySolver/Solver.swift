@@ -1,25 +1,25 @@
 /// Solver for a Loopy match
 public class Solver {
-    public var grid: LoopyGrid
+    public var field: LoopyField
     private var steps: [SolverStep] = []
     
-    /// Returns `true` if the solution requirements are met on this solver's grid.
+    /// Returns `true` if the solution requirements are met on this solver's field.
     ///
-    /// Requirements for the grid to be considered solved:
+    /// Requirements for the field to be considered solved:
     ///
-    /// 1. A single, non-intersecting loop must be present on the grid by means
+    /// 1. A single, non-intersecting loop must be present on the field by means
     /// marked edges. All marked edges must form a continuous loop.
     ///
     /// 2. All numbered faces must have that number of their edges marked as part
     /// of the solution.
     public var isSolved: Bool {
-        for faceId in grid.faceIds {
-            let face = grid.faceWithId(faceId)
+        for faceId in field.faceIds {
+            let face = field.faceWithId(faceId)
             guard let hint = face.hint else { continue }
             
             let marked =
                 face.localToGlobalEdges
-                    .edges(in: grid)
+                    .edges(in: field)
                     .filter { $0.state == .marked }
             
             if marked.count != hint {
@@ -27,7 +27,7 @@ public class Solver {
             }
         }
         
-        let markedEdges = grid.edges.filter { $0.state == .marked }
+        let markedEdges = field.edges.filter { $0.state == .marked }
         if !markedEdges.isLoop {
             return false
         }
@@ -35,8 +35,8 @@ public class Solver {
         return true
     }
     
-    public init(grid: LoopyGrid) {
-        self.grid = grid
+    public init(field: LoopyField) {
+        self.field = field
         
         addSteps()
     }
@@ -52,15 +52,15 @@ public class Solver {
     }
     
     public func solve() -> Result {
-        // Keep applying passes until the grid no longer changes between steps
+        // Keep applying passes until the field no longer changes between steps
         while !isSolved {
-            let newGrid = applySteps(to: grid)
+            let newField = applySteps(to: field)
             
-            defer { grid = newGrid }
+            defer { field = newField }
             
             // No changes detected- stop solve attempts since no further changes
             // will be made, anyway.
-            if grid == newGrid {
+            if field == newField {
                 break
             }
         }
@@ -68,12 +68,12 @@ public class Solver {
         return isSolved ? .solved : .unsolved
     }
     
-    private func applySteps(to grid: LoopyGrid) -> LoopyGrid {
-        var grid = grid
+    private func applySteps(to field: LoopyField) -> LoopyField {
+        var field = field
         for step in steps {
-            grid = step.apply(to: grid)
+            field = step.apply(to: field)
         }
-        return grid
+        return field
     }
     
     public enum Result {
@@ -83,5 +83,5 @@ public class Solver {
 }
 
 public protocol SolverStep {
-    func apply(to grid: LoopyGrid) -> LoopyGrid
+    func apply(to field: LoopyField) -> LoopyField
 }
