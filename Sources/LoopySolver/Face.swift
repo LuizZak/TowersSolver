@@ -1,5 +1,12 @@
 import Commons
 
+/// Common protocol to abstract face references between actual face structures and
+/// face IDs.
+public protocol FaceReferenceConvertible {
+    func face(in field: LoopyField) -> Face
+    func faceIndex(in list: [Face]) -> Int?
+}
+
 /// Represents a loopy game's geometric face, which is just a list of reference
 /// to vertices on the game map, joined in a loop. The face also features an
 /// optional number specifying how many of its edges belong to the solution.
@@ -31,6 +38,15 @@ public struct Face: Equatable {
         return localToGlobalEdges.count
     }
     
+    /// Returns `true` if this face is semi-complete.
+    ///
+    /// A semi-complete face has a hint number matching the number of edges of
+    /// the face minus one, thus requiring all but one edge of the face to be
+    /// marked as part of the solution.
+    public var isSemiComplete: Bool {
+        return hint == edgesCount - 1
+    }
+    
     /// Returns `true` if this face contains a given edge id
     public func containsEdge(id: Edge.Id) -> Bool {
         return localToGlobalEdges.contains(id)
@@ -49,10 +65,34 @@ public struct Face: Equatable {
     }
 }
 
-public extension Key where T == Face, U == Int {
+extension Int: FaceReferenceConvertible {
+    public func face(in field: LoopyField) -> Face {
+        return field.faces[self]
+    }
+    
+    public func faceIndex(in list: [Face]) -> Int? {
+        return self
+    }
+}
+
+extension Face: FaceReferenceConvertible {
+    public func face(in field: LoopyField) -> Face {
+        return self
+    }
+    
+    public func faceIndex(in list: [Face]) -> Int? {
+        return list.index { indices == $0.indices }
+    }
+}
+
+extension Key: FaceReferenceConvertible where T == Face, U == Int {
     /// Returns the face represented by this face ID on a given field
     public func face(in field: LoopyField) -> Face {
-        return field.faces[value]
+        return field.faceWithId(self)
+    }
+    
+    public func faceIndex(in list: [Face]) -> Int? {
+        return value
     }
 }
 

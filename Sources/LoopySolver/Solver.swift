@@ -50,6 +50,7 @@ public class Solver {
         steps.append(SolePathEdgeExtenderSolverStep())
         steps.append(CornerEntrySolverStep())
         steps.append(SinglePathSolverStep())
+        steps.append(NeighboringSemiCompleteFacesSolverStep())
     }
     
     public func solve() -> Result {

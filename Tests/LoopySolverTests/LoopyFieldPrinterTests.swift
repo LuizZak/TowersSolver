@@ -34,7 +34,7 @@ class LoopyFieldPrinterTests: XCTestCase {
         let field = generator.generate()
         
         let controller = LoopyFieldController(field: field)
-        controller.setEdges(state: .disabled, forFace: .init(0))
+        controller.setEdges(state: .disabled, forFace: 0)
         
         let printer = LoopyFieldPrinter(bufferWidth: 120, bufferHeight: 60)
         printer.printField(field: controller.field, width: 60, height: 30)

@@ -18,7 +18,7 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyFieldPrinter(bufferWidth: 40, bufferHeight: 20)
+        let printer = LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 7)
         printer.printField(field: solver.field)
     }
     
@@ -39,7 +39,7 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyFieldPrinter(bufferWidth: 40, bufferHeight: 20)
+        let printer = LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 7)
         printer.printField(field: solver.field)
     }
     
@@ -91,7 +91,7 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyFieldPrinter(bufferWidth: 70, bufferHeight: 40)
+        let printer = LoopyFieldPrinter(bufferWidth: 58, bufferHeight: 29)
         printer.printField(field: solver.field)
     }
     
@@ -111,7 +111,7 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         
-        let printer = LoopyFieldPrinter(bufferWidth: 40, bufferHeight: 20)
+        let printer = LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 7)
         printer.printField(field: solver.field)
     }
     

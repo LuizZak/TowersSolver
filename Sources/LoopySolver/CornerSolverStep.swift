@@ -163,7 +163,7 @@ private class InternalSolver {
                     // Ignore faces that contain one of the join vertices
                     .filter({ !$0.indices.contains(where: joinVertices.contains) })
                 
-                if faces.contains(where: { $0.hint == $0.edgesCount - 1 }) {
+                if faces.contains(where: { $0.isSemiComplete }) {
                     // Hijacking!
                     // Mark outer edges as solution and quit.
                     controller.setEdges(state: .disabled, forEdges: shared)

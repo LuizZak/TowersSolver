@@ -1,5 +1,12 @@
 import Commons
 
+/// Common protocol to abstract edge references between actual edge structures and
+/// edge IDs.
+public protocol EdgeReferenceConvertible {
+    func edge(in field: LoopyField) -> Edge
+    func edgeIndex(in list: [Edge]) -> Int?
+}
+
 /// Represents an edge between two vertices.
 ///
 /// Edges are bidirectional and always start from a lower vertex index pointing
@@ -74,10 +81,34 @@ public struct Edge: Hashable {
     }
 }
 
-public extension Key where T == Edge, U == Int {
+extension Int: EdgeReferenceConvertible {
+    public func edge(in field: LoopyField) -> Edge {
+        return field.edges[self]
+    }
+    
+    public func edgeIndex(in list: [Edge]) -> Int? {
+        return self
+    }
+}
+
+extension Edge: EdgeReferenceConvertible {
+    public func edge(in field: LoopyField) -> Edge {
+        return self
+    }
+    
+    public func edgeIndex(in list: [Edge]) -> Int? {
+        return list.index(where: matchesEdgeVertices)
+    }
+}
+
+extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
     /// Returns the edge represented by this edge ID on a given field
     public func edge(in field: LoopyField) -> Edge {
-        return field.edges[value]
+        return field.edgeWithId(self)
+    }
+    
+    public func edgeIndex(in list: [Edge]) -> Int? {
+        return value
     }
 }
 

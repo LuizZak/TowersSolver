@@ -53,4 +53,32 @@ class LoopyFieldControllerTests: XCTestCase {
                 .normal
             ])
     }
+    
+    func testSemiCompleteFaces() {
+        // Create a field with a given configuration:
+        // ._________. _________.
+        // |         | \   1   /
+        // |         |   \   /
+        // |    3    | 2  >.
+        // |         |   /
+        // !_________! /
+        //
+        var field = LoopyField()
+        field.addVertex(Vertex(x: 0, y: 0))
+        field.addVertex(Vertex(x: 1, y: 0))
+        field.addVertex(Vertex(x: 1, y: 1))
+        field.addVertex(Vertex(x: 0, y: 1))
+        field.addVertex(Vertex(x: 3, y: 0))
+        field.addVertex(Vertex(x: 2, y: 0.5))
+        let f1 = field.createFace(withVertexIndices: [0, 1, 2, 3], hint: 3)
+        let f2 = field.createFace(withVertexIndices: [1, 5, 2], hint: 2)
+        field.createFace(withVertexIndices: [1, 4, 5], hint: 1)
+        let sut = LoopyFieldController(field: field)
+        
+        let faces = sut.semiCompleteFaces()
+        
+        XCTAssertEqual(faces.count, 2)
+        XCTAssert(faces.contains(f1))
+        XCTAssert(faces.contains(f2))
+    }
 }

@@ -57,7 +57,7 @@ public class LoopyFieldPrinter: ConsolePrintBuffer {
         }
         
         for faceIndex in 0..<field.faces.count {
-            let poly = field.polygonFor(face: .init(faceIndex))
+            let poly = field.polygonFor(face: Face.Id(faceIndex))
             
             // Print the face's hint at its geometrical center
             let center = poly.reduce(into: Vertex(x: 0, y: 0), +=) / Float(poly.count)
