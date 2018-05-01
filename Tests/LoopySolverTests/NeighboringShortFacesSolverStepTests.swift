@@ -116,4 +116,29 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         
         XCTAssertEqual(before, result)
     }
+    
+    func testNegativeCase2() {
+        // Test a scenario like the follow:
+        // •───•───•───•───•
+        // ║   │           │
+        // •───•   •═══•   •
+        // │ 2 │ 3 ║   │   │
+        // •───•═══•   •───•
+        // Solver should not alter the grid, since it's already valid.
+        let gridGen = LoopySquareGridGen(width: 4, height: 2)
+        gridGen.setHint(x: 0, y: 1, hint: 2)
+        gridGen.setHint(x: 1, y: 1, hint: 2)
+        let controller = LoopyFieldController(field: gridGen.generate())
+        controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
+        controller.setEdges(state: .disabled, forFace: 1, edgeIndices: [1, 2])
+        controller.setEdge(state: .marked, forFace: 2, edgeIndex: 2)
+        controller.setEdges(state: .disabled, forFace: 3, edgeIndices: [2, 3])
+        controller.setEdges(state: .marked, forFace: 5, edgeIndices: [1, 2])
+        controller.setEdge(state: .disabled, forFace: 6, edgeIndex: 2)
+        let before = controller.field
+        
+        let result = sut.apply(to: before)
+        
+        XCTAssertEqual(before, result)
+    }
 }

@@ -52,6 +52,7 @@ public class Solver {
         steps.append(SinglePathSolverStep())
         steps.append(NeighboringSemiCompleteFacesSolverStep())
         steps.append(NeighboringShortFacesSolverStep())
+        steps.append(InvalidLoopClosingDetectionSolverStep())
     }
     
     public func solve() -> Result {

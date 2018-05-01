@@ -49,6 +49,12 @@ public class LoopyFieldController {
         }
     }
     
+    public func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible, edgeIndices: [Int]) {
+        for index in edgeIndices {
+            setEdge(state: state, forFace: face, edgeIndex: index)
+        }
+    }
+    
     public func setEdge(state: Edge.State, forFace face: FaceReferenceConvertible, edgeIndex: Int) {
         let face = face.face(in: field)
         
