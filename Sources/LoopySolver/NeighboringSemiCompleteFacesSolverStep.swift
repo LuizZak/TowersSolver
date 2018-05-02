@@ -88,7 +88,7 @@ private class InternalSolver {
                     + field.edgesSharing(vertexIndex: shared.end)
             
             otherEdges = otherEdges.filter { edge in
-                !pair.face1.containsEdge(id: edge) && !pair.face2.containsEdge(id: edge)
+                !field.faceContainsEdge(face: pair.face1, edge: edge) && !field.faceContainsEdge(face: pair.face2, edge: edge)
             }
             
             controller.setEdges(state: .disabled, forEdges: otherEdges)

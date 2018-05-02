@@ -185,9 +185,9 @@ public struct LoopyField: Equatable {
     
     /// Returns an array of all edges within this field sharing a given common
     /// vertex index.
-    public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
-        return filterEdgeIndices { edge in
-            edge.start == vertexIndex || edge.end == vertexIndex
+    public func edgesSharing(vertexIndex: Int) -> [Edge] {
+        return edges.filter {
+            $0.sharesVertex(vertexIndex)
         }
     }
     
@@ -210,8 +210,8 @@ public struct LoopyField: Equatable {
     }
     
     /// Returns an array of faces within this field that share a given vertex index.
-    public func facesSharing(vertexIndex: Int) -> [Face.Id] {
-        return filterFaceIndices { face in
+    public func facesSharing(vertexIndex: Int) -> [Face] {
+        return faces.filter { face in
             face.indices.contains(vertexIndex)
         }
     }

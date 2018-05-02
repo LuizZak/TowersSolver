@@ -46,8 +46,7 @@ private class InternalSolver {
     
     func applyToVertex(_ vertexIndex: Int) {
         
-        let edgeIds = field.edgesSharing(vertexIndex: vertexIndex)
-        let edges = edgeIds.edges(in: field)
+        let edges = field.edgesSharing(vertexIndex: vertexIndex)
         
         let marked = edges.filter { $0.state == .marked }
         let normal = edges.filter { $0.state == .normal }
@@ -60,7 +59,7 @@ private class InternalSolver {
         
         // If any of the faces is semi-complete, apply a different logic here to
         // 'hijack' the line into it's own path
-        if let semiComplete = field.facesSharing(vertexIndex: vertexIndex).faces(in: field).first(where: { $0.isSemiComplete }) {
+        if let semiComplete = field.facesSharing(vertexIndex: vertexIndex).first(where: { $0.isSemiComplete }) {
             if field.isFaceSolved(semiComplete) {
                 return
             }
@@ -80,9 +79,8 @@ private class InternalSolver {
             
             // Disable edges from other faces that share that vertex to finish
             // hijacking the line path
-            let otherEdges = edgeIds
-                .filter { !semiComplete.containsEdge(id: $0) }
-                .edges(in: field)
+            let otherEdges = edges
+                .filter { !semiComplete.containsEdge(id: field.edgeId(forEdge: $0)!) }
                 .filter { marked[0] != $0 }
             
             controller.setEdges(state: .disabled, forEdges: otherEdges)

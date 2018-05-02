@@ -37,15 +37,17 @@ private class InternalSolver {
         for edge in field.edges where edge.state == .normal {
             let edgesInStart =
                 field.edgesSharing(vertexIndex: edge.start)
-                    .edges(in: field)
                     .filter { $0.state == .marked }
+            
+            guard edgesInStart.count == 1 else {
+                continue
+            }
             
             let edgesInEnd =
                 field.edgesSharing(vertexIndex: edge.end)
-                    .edges(in: field)
                     .filter { $0.state == .marked }
             
-            guard edgesInStart.count == 1 && edgesInEnd.count == 1 else {
+            guard edgesInEnd.count == 1 else {
                 continue
             }
             

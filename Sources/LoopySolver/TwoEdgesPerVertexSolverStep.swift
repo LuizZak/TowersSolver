@@ -6,8 +6,7 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
         let controller = LoopyFieldController(field: field)
         
         for vertex in 0..<field.vertices.count {
-            let edgeIds = field.edgesSharing(vertexIndex: vertex)
-            let edges = edgeIds.edges(in: field)
+            let edges = field.edgesSharing(vertexIndex: vertex)
             let marked = edges.count { $0.state == .marked }
             
             if marked == 2 {

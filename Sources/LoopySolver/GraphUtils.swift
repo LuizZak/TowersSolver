@@ -90,7 +90,6 @@ public enum GraphUtils {
                     
                     let edgesLeft =
                         graph.edgesSharing(vertexIndex: next.start)
-                            .edges(in: graph)
                             .filter(includeFilter)
                             .filter { !visited.contains($0) }
                     
@@ -116,12 +115,10 @@ public enum GraphUtils {
                 
                 let edgesLeft =
                     graph.edgesSharing(vertexIndex: next.start)
-                        .edges(in: graph)
                         .filter(includeFilter)
                 
                 let edgesRight =
                     graph.edgesSharing(vertexIndex: next.end)
-                        .edges(in: graph)
                         .filter(includeFilter)
                 
                 if edgesLeft.count == 1 {

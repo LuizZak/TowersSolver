@@ -83,8 +83,8 @@ class LoopyFieldTests: XCTestCase {
         field.addVertex(Vertex(x: 1, y: 0))
         field.addVertex(Vertex(x: 1, y: 1))
         field.addVertex(Vertex(x: 0, y: 1))
-        let face1 = field.createFace(withVertexIndices: [0, 1, 2], hint: nil)
-        let face2 = field.createFace(withVertexIndices: [2, 3, 0], hint: nil)
+        let face1 = field.createFace(withVertexIndices: [0, 1, 2], hint: nil).face(in: field)
+        let face2 = field.createFace(withVertexIndices: [2, 3, 0], hint: nil).face(in: field)
         
         XCTAssertEqual(field.facesSharing(vertexIndex: 0), [face1, face2])
         XCTAssertEqual(field.facesSharing(vertexIndex: 1), [face1])

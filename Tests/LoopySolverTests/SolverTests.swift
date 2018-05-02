@@ -84,6 +84,7 @@ class SolverTests: XCTestCase {
         gridGen.setHint(x: 1, y: 6, hint: 3)
         gridGen.setHint(x: 3, y: 6, hint: 3)
         let solver = Solver(field: gridGen.generate())
+        solver.maxNumberOfGuesses = 6
         
         let result = solver.solve()
         
@@ -92,7 +93,7 @@ class SolverTests: XCTestCase {
         printer.printField(field: solver.field)
     }
     
-    func testSolveHard() {
+    func testSolveHard3x3() {
         // .___.___.___.
         // !___!_2_!___!
         // !___!_3_!___!
@@ -108,6 +109,40 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         let printer = LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 7)
+        printer.printField(field: solver.field)
+    }
+    
+    func testSolveHard10x10() {
+        // .___.___.___.___.___.___.___.___.___.___.
+        // !_3_!_2_!_2_!_2_!_3_!_3_!___!_1_!_2_!___!
+        // !_2_!___!___!___!___!___!_0_!___!___!_2_!
+        // !_3_!___!___!___!___!___!_2_!_1_!_3_!___!
+        // !___!___!___!_2_!_3_!___!___!_1_!___!___!
+        // !_1_!_3_!_1_!_1_!___!___!_2_!_3_!___!_2_!
+        // !___!___!_2_!___!___!___!___!___!_1_!_2_!
+        // !___!_3_!_2_!___!_1_!_0_!_2_!___!___!_3_!
+        // !___!___!___!___!_1_!___!___!___!___!___!
+        // !___!___!_3_!_2_!_2_!_2_!_1_!_0_!___!_2_!
+        // !_3_!___!___!___!___!_2_!_3_!_3_!___!___!
+        //
+        let gridGen = LoopySquareGridGen(width: 10, height: 10)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [3, 2, 2, 2, 3, 3, n, 1, 2, n])
+        gridGen.setHints(atRow: 1, hints: [2, n, n, n, n, n, 0, n, n, 2])
+        gridGen.setHints(atRow: 2, hints: [3, n, n, n, n, n, 2, 1, 3, n])
+        gridGen.setHints(atRow: 3, hints: [n, n, n, 2, 3, n, n, 1, n, n])
+        gridGen.setHints(atRow: 4, hints: [1, 3, 1, 1, n, n, 2, 3, n, 2])
+        gridGen.setHints(atRow: 5, hints: [n, n, 2, n, n, n, n, n, 1, 2])
+        gridGen.setHints(atRow: 6, hints: [n, 3, 2, n, 1, 0, 2, n, n, 3])
+        gridGen.setHints(atRow: 7, hints: [n, n, n, n, 1, n, n, n, n, n])
+        gridGen.setHints(atRow: 8, hints: [n, n, 3, 2, 2, 2, 1, 0, n, 2])
+        gridGen.setHints(atRow: 9, hints: [3, n, n, n, n, 2, 3, 3, n, n])
+        let solver = Solver(field: gridGen.generate())
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        let printer = LoopyFieldPrinter(bufferWidth: 62, bufferHeight: 41)
         printer.printField(field: solver.field)
     }
     

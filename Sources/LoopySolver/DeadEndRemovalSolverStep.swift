@@ -48,8 +48,7 @@ private class InternalSolver {
     
     private func applyInternal() {
         for i in 0..<field.vertices.count {
-            let edgeIds = field.edgesSharing(vertexIndex: i)
-            let edges = edgeIds.edges(in: field)
+            let edges = field.edgesSharing(vertexIndex: i)
             
             let enabled = edges.filter({ $0.isEnabled })
             

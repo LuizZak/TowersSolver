@@ -69,7 +69,9 @@ private class InternalSolver {
         for edge in edges {
             let edges =
                 GraphUtils.singlePathEdges(in: field, fromEdge: edge)
-                    .filter { field.faceContainsEdge(face: face, edge: $0) }
+                .filter {
+                    field.faceContainsEdge(face: face, edge: $0)
+                }
             
             if edges.count > hint {
                 controller.setEdges(state: .disabled, forEdges: edges)

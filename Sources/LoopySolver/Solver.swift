@@ -7,7 +7,13 @@ public class Solver {
     /// When the solver gets stuck and requires guessing a possible next play,
     /// this counter controls how many guesses it can attempt before stopping
     /// further guessing attempts.
-    public var maxNumberOfGuesses: Int = 5
+    public var maxNumberOfGuesses: Int = 10 {
+        didSet {
+            guessesAvailable = maxNumberOfGuesses
+        }
+    }
+    
+    private var guessesAvailable: Int
     
     /// Returns `true` if the solution requirements are met on this solver's field.
     ///
@@ -61,7 +67,6 @@ public class Solver {
         for i in 0..<field.vertices.count {
             let edges = field
                 .edgesSharing(vertexIndex: i)
-                .edges(in: field)
             
             if edges.count(where: { $0.state == .marked }) > 2 {
                 return false
@@ -108,6 +113,7 @@ public class Solver {
     
     public init(field: LoopyField) {
         self.field = field
+        guessesAvailable = maxNumberOfGuesses
         
         addSteps()
     }
@@ -129,62 +135,87 @@ public class Solver {
     public func solve() -> Result {
         // Keep applying passes until the field no longer changes between steps
         while !isSolved && isConsistent {
-            let newField = applySteps(to: field)
+            var oldField = field
+            field = applySteps(to: field)
             
-            defer { field = newField }
-            
-            // No changes detected- stop solve attempts since no further changes
-            // will be made, anyway.
-            if field == newField {
-                break
+            // If no changes where made, try a speculative play here
+            if field == oldField {
+                
+                oldField = field
+                
+                // Perform a speculative step to attempt solving the grid by making
+                // guessing plays.
+                speculate()
+                
+                // No changes detected- stop solve attempts since no further changes
+                // will be made, anyway.
+                if field == oldField {
+                    break
+                }
             }
         }
         
+        /*
         // Perform a speculative step to attempt solving the grid by making
         // guessing plays.
         if !isSolved {
             speculate()
         }
+        */
         
-        return isSolved ? .solved : .unsolved
+        if isSolved {
+            // Present a clean solution by disabling remaining normal edges that
+            // not part of the solution
+            for edge in field.edgeIds {
+                field.withEdge(edge) { edge in
+                    if edge.state == .normal {
+                        edge.state = .disabled
+                    }
+                }
+            }
+            
+            return .solved
+        }
+        
+        return .unsolved
     }
     
+    /// Perform speculative plays where some edges are marked and then consistency
+    /// is checked to verify if the edge is not actually part of the solved
+    /// puzzle.
     private func speculate() {
-        var attempts = maxNumberOfGuesses
+        if guessesAvailable == 0 {
+            return
+        }
         
-        let plays = collectSpeculativeSteps()
+        let plays = collectSpeculativeSteps().prefix(guessesAvailable)
         
-        for (i, play) in plays.enumerated() {
-            if attempts == 0 {
-                return
-            }
+        for play in plays {
+            guessesAvailable -= 1
             
-            if doSpeculativePlay(play, attempt: i + 1) {
-                attempts -= 1
-            }
-            
-            if isSolved {
+            if doSpeculativePlay(play) {
                 return
             }
         }
     }
     
-    private func doSpeculativePlay(_ edge: Edge, attempt: Int) -> Bool {
-        // Create a sub-solver to perform the play
+    private func doSpeculativePlay(_ edge: Edge) -> Bool {
         let subSolver = Solver(field: field)
-        subSolver.maxNumberOfGuesses = maxNumberOfGuesses - attempt
+        subSolver.maxNumberOfGuesses = 0
         
         subSolver.field.withEdge(edge) { $0.state = .marked }
-        if !subSolver.isConsistent {
-            return false
-        }
         
-        // Attempt a full solve, now that the field is considered consistent
         if subSolver.solve() == .solved {
             field = subSolver.field
+            return true
         }
         
-        return true
+        if !subSolver.isConsistent {
+            field.withEdge(edge) { $0.state = .disabled }
+            return true
+        }
+        
+        return false
     }
     
     private func applySteps(to field: LoopyField) -> LoopyField {
@@ -202,28 +233,48 @@ public class Solver {
     private func collectSpeculativeSteps() -> [Edge] {
         var plays: [Edge] = []
         
-        // Look for faces that are one edge away to completion to guess their
-        // edge
-        for face in field.faces {
-            let edges = field.edges(forFace: face)
-
-            if edges.count(where: { $0.state == .marked }) + 1 == face.hint {
-                plays.append(contentsOf: edges.filter({ $0.state == .normal }))
-            }
+        // Search for vertices with open loop ends to fill
+        struct VertEntry {
+            var vertex: Int
+            var edges: [Edge]
+            var priority: Int
         }
         
-        // Search for vertices with open loop ends to fill
+        var vertEntries: [VertEntry] = []
+        
         for i in 0..<field.vertices.count {
             let edges = field
                 .edgesSharing(vertexIndex: i)
-                .edges(in: field)
                 .filter { $0.isEnabled }
             
             if edges.count(where: { $0.state == .marked }) == 1 {
                 let edgesToPlay = edges
                     .filter { $0.state == .normal }
                 
-                plays.append(contentsOf: edgesToPlay)
+                let hintedFaces =
+                    field.faces.count { $0.indices.contains(i) && $0.hint != nil }
+                let semicompleteFaces =
+                    field.faces.count { $0.indices.contains(i) && $0.isSemiComplete }
+                
+                let priority = hintedFaces + semicompleteFaces
+                
+                vertEntries.append(VertEntry(vertex: i, edges: edgesToPlay, priority: priority))
+            }
+        }
+        
+        // Sort entries by number of faces the play would affect to increase chances
+        // we find a definite outcome of valid/invalid from the play
+        for entry in vertEntries.sorted(by: { $0.priority > $1.priority }) {
+            plays.append(contentsOf: entry.edges)
+        }
+        
+        // Look for faces that are one edge away to completion to guess their
+        // edge
+        for face in field.faces.sorted(by: { (l, _) in l.isSemiComplete }) {
+            let edges = field.edges(forFace: face)
+            
+            if edges.count(where: { $0.state == .marked }) + 1 == face.hint {
+                plays.append(contentsOf: edges.filter({ $0.state == .normal }))
             }
         }
         

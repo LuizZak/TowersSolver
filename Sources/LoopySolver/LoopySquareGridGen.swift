@@ -13,6 +13,17 @@ public class LoopySquareGridGen: LoopyFieldGenerator {
         self.height = height
     }
     
+    /// Sets all hints at a given row to a given set of values
+    ///
+    /// - precondition: `hints.count == width`
+    public func setHints(atRow y: Int, hints: [Int?]) {
+        precondition(hints.count == width)
+        
+        for (x, hint) in hints.enumerated() {
+            setHint(x: x, y: y, hint: hint)
+        }
+    }
+    
     public func setHint(x: Int, y: Int, hint: Int?) {
         let pair = IntPoint(x: x, y: y)
         

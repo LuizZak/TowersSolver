@@ -102,6 +102,7 @@ private class InternalSolver {
         let edgesStart = field
             .edgesSharing(vertexIndex: edge.start)
             .filter { $0.edge(in: field) != edge }
+            .compactMap { field.edgeId(forEdge: $0) }
         
         if edgesStart.count == 2 {
             applyToEdges(edgesStart[0], edgesStart[1])
@@ -111,6 +112,7 @@ private class InternalSolver {
         let edgesEnd = field
             .edgesSharing(vertexIndex: edge.end)
             .filter { $0.edge(in: field) != edge }
+            .compactMap { field.edgeId(forEdge: $0) }
         
         if edgesEnd.count == 2 {
             applyToEdges(edgesEnd[0], edgesEnd[1])
