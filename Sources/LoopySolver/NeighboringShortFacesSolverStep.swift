@@ -85,13 +85,11 @@ private class InternalSolver {
             // face's hint, when considered alone
             let count1 = GraphUtils
                 .singlePathEdges(in: self.field, fromEdge: face1Edge)
-                .filter { pair.face1.containsEdge(id: self.field.edgeId(forEdge: $0)!) }
-                .count
+                .count { pair.face1.containsEdge(id: self.field.edgeId(forEdge: $0)!) }
             
             let count2 = GraphUtils
                 .singlePathEdges(in: self.field, fromEdge: face2Edge)
-                .filter { pair.face2.containsEdge(id: self.field.edgeId(forEdge: $0)!) }
-                .count
+                .count { pair.face2.containsEdge(id: self.field.edgeId(forEdge: $0)!) }
             
             if count1 >= (pair.face1.hint ?? Int.max) && count2 >= (pair.face2.hint ?? Int.max) {
                 self.controller.setEdge(state: .disabled, forEdge: edge)

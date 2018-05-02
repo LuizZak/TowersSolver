@@ -163,8 +163,8 @@ public struct LoopyField: Equatable {
             return true
         }
         
-        let edges = edgeIds(forFace: face).edges(in: self)
-        return edges.filter { $0.state == .marked }.count == hint
+        let edges = self.edges(forFace: face)
+        return edges.count { $0.state == .marked } == hint
     }
     
     /// Returns an array of vertices that make up a specified polygon face
@@ -201,6 +201,12 @@ public struct LoopyField: Equatable {
     public func edgeIds(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
         let face = face.face(in: self)
         return face.localToGlobalEdges
+    }
+    
+    /// Returns an array of all edges that enclose a face with a given id.
+    public func edges(forFace face: FaceReferenceConvertible) -> [Edge] {
+        let face = face.face(in: self)
+        return face.localToGlobalEdges.map { edges[$0.value] }
     }
     
     /// Returns an array of faces within this field that share a given vertex index.
@@ -257,18 +263,24 @@ public struct LoopyField: Equatable {
     }
     
     private func filterFaceIndices(where predicate: (Face) -> Bool) -> [Face.Id] {
-        return faces
-            .enumerated()
-            .filter { predicate($1) }
-            .map { pair in pair.offset }
-            .map { Face.Id.init($0) }
+        return withoutActuallyEscaping(predicate) { predicate in
+            return faces
+                .enumerated()
+                .lazy
+                .filter { predicate($1) }
+                .map { pair in pair.offset }
+                .map { Face.Id.init($0) }
+        }
     }
     
     private func filterEdgeIndices(where predicate: (Edge) -> Bool) -> [Edge.Id] {
-        return edges
-            .enumerated()
-            .filter { predicate($1) }
-            .map { pair in pair.offset }
-            .map { Edge.Id.init($0) }
+        return withoutActuallyEscaping(predicate) { predicate in
+            return edges
+                .enumerated()
+                .lazy
+                .filter { predicate($1) }
+                .map { pair in pair.offset }
+                .map { Edge.Id.init($0) }
+        }
     }
 }

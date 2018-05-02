@@ -223,4 +223,55 @@ class SolverTests: XCTestCase {
         
         XCTAssertFalse(sut.isSolved)
     }
+    
+    func testIsConsistent() {
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        gridGen.setHint(x: 0, y: 0, hint: 0)
+        gridGen.setHint(x: 2, y: 0, hint: 3)
+        gridGen.setHint(x: 0, y: 2, hint: 3)
+        let controller = LoopyFieldController(field: gridGen.generate())
+        controller.setEdges(state: .marked, forFace: 2, edgeIndices: [0, 1, 2])
+        let sut = Solver(field: controller.field)
+        
+        XCTAssert(sut.isConsistent)
+    }
+    
+    func testIsConsistentIsTrueWhenLoopyLineIsClosedWithAllMarkedEdgesPartOfTheLoop() {
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        let controller = LoopyFieldController(field: gridGen.generate())
+        controller.setEdges(state: .marked, forFace: 4, edgeIndices: [0, 1, 2, 3])
+        let sut = Solver(field: controller.field)
+        
+        XCTAssert(sut.isConsistent)
+    }
+    
+    func testIsConsistentIsFalseWhenLoopyLineIsClosedWhileMarkedEdgesAreNotPartOfTheLoop() {
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        let controller = LoopyFieldController(field: gridGen.generate())
+        controller.setEdges(state: .marked, forFace: 4, edgeIndices: [0, 1, 2, 3])
+        controller.setEdge(state: .marked, forEdge: 0)
+        let sut = Solver(field: controller.field)
+        
+        XCTAssertFalse(sut.isConsistent)
+    }
+    
+    func testIsConsistentIsFalseWhenFaceHasLessEnabledEdgesThanItsHintCount() {
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        gridGen.setHint(x: 1, y: 1, hint: 3)
+        let controller = LoopyFieldController(field: gridGen.generate())
+        controller.setEdges(state: .disabled, forFace: 4, edgeIndices: [0, 1])
+        let sut = Solver(field: controller.field)
+        
+        XCTAssertFalse(sut.isConsistent)
+    }
+    
+    func testIsConsistentIsFalseWhenFaceHasMoreMarkedEdgesThanItsHintCount() {
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        gridGen.setHint(x: 1, y: 1, hint: 1)
+        let controller = LoopyFieldController(field: gridGen.generate())
+        controller.setEdges(state: .marked, forFace: 4, edgeIndices: [0, 1])
+        let sut = Solver(field: controller.field)
+        
+        XCTAssertFalse(sut.isConsistent)
+    }
 }

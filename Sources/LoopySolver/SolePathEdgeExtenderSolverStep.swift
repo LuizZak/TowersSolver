@@ -52,9 +52,9 @@ private class InternalSolver {
             let edgeIds = field.edgesSharing(vertexIndex: i)
             let edges = edgeIds.edges(in: field)
             
-            let marked = edges.filter { $0.state == .marked }
+            let marked = edges.count { $0.state == .marked }
             
-            guard marked.count == 1 else {
+            guard marked == 1 else {
                 continue
             }
             
