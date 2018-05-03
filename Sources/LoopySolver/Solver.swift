@@ -68,7 +68,7 @@ public class Solver {
             let edges = field
                 .edgesSharing(vertexIndex: i)
             
-            if edges.count(where: { $0.state == .marked }) > 2 {
+            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) > 2 {
                 return false
             }
         }
@@ -79,17 +79,17 @@ public class Solver {
                 continue
             }
             
-            if edges.count(where: { $0.state == .marked }) > hint {
+            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) > hint {
                 return false
             }
-            if edges.count(where: { $0.isEnabled }) < hint {
+            if edges.count(where: { field.edgeState(forEdge: $0).isEnabled }) < hint {
                 return false
             }
         }
         
-        let marked = field.edges.filter { $0.state == .marked }
+        let marked = field.edgeIds.filter { field.edgeState(forEdge: $0) == .marked }
         
-        var runs: [[Edge]] = []
+        var runs: [[Edge.Id]] = []
         for edge in marked {
             if runs.contains(where: { $0.contains(edge) }) {
                 continue
@@ -99,12 +99,12 @@ public class Solver {
                 GraphUtils
                     .singlePathEdges(in: field,
                                      fromEdge: edge,
-                                     includeTest: { $0.state == .marked })
+                                     includeTest: { field.edgeState(forEdge: $0) == .marked })
             
             runs.append(run)
         }
         
-        if runs.count > 1 && runs.contains(where: { $0.isLoop }) {
+        if runs.count > 1 && runs.contains(where: field.isLoop) {
             return false
         }
         
@@ -155,14 +155,6 @@ public class Solver {
             }
         }
         
-        /*
-        // Perform a speculative step to attempt solving the grid by making
-        // guessing plays.
-        if !isSolved {
-            speculate()
-        }
-        */
-        
         if isSolved {
             // Present a clean solution by disabling remaining normal edges that
             // not part of the solution
@@ -199,7 +191,7 @@ public class Solver {
         }
     }
     
-    private func doSpeculativePlay(_ edge: Edge) -> Bool {
+    private func doSpeculativePlay(_ edge: Edge.Id) -> Bool {
         let subSolver = Solver(field: field)
         subSolver.maxNumberOfGuesses = 0
         
@@ -230,13 +222,13 @@ public class Solver {
         field = step.apply(to: field)
     }
     
-    private func collectSpeculativeSteps() -> [Edge] {
-        var plays: [Edge] = []
+    private func collectSpeculativeSteps() -> [Edge.Id] {
+        var plays: [Edge.Id] = []
         
         // Search for vertices with open loop ends to fill
         struct VertEntry {
             var vertex: Int
-            var edges: [Edge]
+            var edges: [Edge.Id]
             var priority: Int
         }
         
@@ -245,11 +237,11 @@ public class Solver {
         for i in 0..<field.vertices.count {
             let edges = field
                 .edgesSharing(vertexIndex: i)
-                .filter { $0.isEnabled }
+                .filter { field.edgeState(forEdge: $0).isEnabled }
             
-            if edges.count(where: { $0.state == .marked }) == 1 {
+            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) == 1 {
                 let edgesToPlay = edges
-                    .filter { $0.state == .normal }
+                    .filter { field.edgeState(forEdge: $0) == .normal }
                 
                 let hintedFaces =
                     field.faces.count { $0.indices.contains(i) && $0.hint != nil }
@@ -268,13 +260,12 @@ public class Solver {
             plays.append(contentsOf: entry.edges)
         }
         
-        // Look for faces that are one edge away to completion to guess their
-        // edge
+        // Look for semi-complete faces that are missing one edge to solve
         for face in field.faces.sorted(by: { (l, _) in l.isSemiComplete }) {
             let edges = field.edges(forFace: face)
             
-            if edges.count(where: { $0.state == .marked }) + 1 == face.hint {
-                plays.append(contentsOf: edges.filter({ $0.state == .normal }))
+            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) + 1 == face.hint {
+                plays.append(contentsOf: edges.filter({ field.edgeState(forEdge: $0) == .normal }))
             }
         }
         
@@ -284,6 +275,18 @@ public class Solver {
     public enum Result {
         case solved
         case unsolved
+    }
+    
+    /// Represents one of the possible speculative play strategies to apply.
+    ///
+    /// - testIsInvalid: Performs a play where an edge is marked and the field is
+    /// then tested for inconsistencies during normal play.
+    /// - play: An edge is marked and further plays happen on the new field until
+    /// either a solution is found or no more valid solutions can be derived from
+    /// that point.
+    public enum SpeculativePlay {
+        case testIsInvalid(Edge)
+        case play(Edge)
     }
 }
 

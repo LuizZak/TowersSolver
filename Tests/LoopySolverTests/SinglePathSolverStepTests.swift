@@ -31,12 +31,12 @@ class SinglePathSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: controller.field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
-        XCTAssertEqual(edgesForFace(4)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(4)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(4)[2].state, .marked)
-        XCTAssertEqual(edgesForFace(4)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(4)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(4)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(4)[3], .marked)
     }
 }

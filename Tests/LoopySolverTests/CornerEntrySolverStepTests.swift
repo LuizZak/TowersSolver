@@ -21,18 +21,18 @@ class CornerEntrySolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var field = gridGen.generate()
-        field.edges[5].state = .marked
+        field.withEdge(5) { $0.state = .marked }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // `1` face
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .disabled)
-        XCTAssertEqual(edgesForFace(3)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(3)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .disabled)
     }
     
     func testApplyOnFaceWithDisabledEdge() {
@@ -47,19 +47,19 @@ class CornerEntrySolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var field = gridGen.generate()
-        field.edges[5].state = .marked
-        field.edges[6].state = .disabled
+        field.withEdge(5) { $0.state = .marked }
+        field.withEdge(6) { $0.state = .disabled }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // `1` face
-        XCTAssertEqual(edgesForFace(3)[0].state, .disabled)
-        XCTAssertEqual(edgesForFace(3)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(3)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .disabled)
     }
     
     func testApplyOnFaceWithLoopback() {
@@ -74,21 +74,21 @@ class CornerEntrySolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var field = gridGen.generate()
-        field.edges[5].state = .marked
-        field.edges[8].state = .disabled
-        field.edges[11].state = .disabled
-        field.edges[13].state = .disabled
+        field.withEdge(5) { $0.state = .marked }
+        field.withEdge(8) { $0.state = .disabled }
+        field.withEdge(11) { $0.state = .disabled }
+        field.withEdge(13) { $0.state = .disabled }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // `1` face
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .disabled)
-        XCTAssertEqual(edgesForFace(3)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(3)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .disabled)
     }
     
     func testApplyOnSemiCompleteFace() {
@@ -104,29 +104,29 @@ class CornerEntrySolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 3, height: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
         var field = gridGen.generate()
-        field.edges[5].state = .marked
+        field.withEdge(5) { $0.state = .marked }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         
         // Top-center face
-        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .normal)
         // `3` face
-        XCTAssertEqual(edgesForFace(4)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(4)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(4)[2].state, .marked)
-        XCTAssertEqual(edgesForFace(4)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(4)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(4)[3], .marked)
         // Bottom-right face
-        XCTAssertEqual(edgesForFace(5)[0].state, .disabled)
-        XCTAssertEqual(edgesForFace(5)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(5)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(5)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(5)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[3], .normal)
         
         LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 5).printField(field: result)
     }

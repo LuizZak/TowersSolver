@@ -34,49 +34,49 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: gridGen.generate())
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // Top-left
-        XCTAssertEqual(edgesForFace(0)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .normal)
         // `3` (top-center-left)
-        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .marked)
         // `3` (top-center-right)
-        XCTAssertEqual(edgesForFace(2)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(2)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(2)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(2)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[3], .marked)
         // Top-right
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .marked)
         // Bottom-left
-        XCTAssertEqual(edgesForFace(4)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(4)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(4)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(4)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(4)[3], .normal)
         // Bottom-center-left
-        XCTAssertEqual(edgesForFace(5)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(5)[1].state, .disabled)
-        XCTAssertEqual(edgesForFace(5)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(5)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(5)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[3], .normal)
         // Bottom-center-right
-        XCTAssertEqual(edgesForFace(6)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(6)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(6)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(6)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(6)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(6)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(6)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(6)[3], .disabled)
         // Bottom-right
-        XCTAssertEqual(edgesForFace(7)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(7)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(7)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(7)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(7)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(7)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(7)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(7)[3], .normal)
     }
     
     func testSharingVertex() {
@@ -100,28 +100,28 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: gridGen.generate())
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // Top-left `3`
-        XCTAssertEqual(edgesForFace(0)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(0)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .marked)
         // Top-right
-        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .normal)
         // Bottom-left
-        XCTAssertEqual(edgesForFace(2)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[3], .normal)
         // Bottom-right `3`
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(3)[2].state, .marked)
-        XCTAssertEqual(edgesForFace(3)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .normal)
     }
 }

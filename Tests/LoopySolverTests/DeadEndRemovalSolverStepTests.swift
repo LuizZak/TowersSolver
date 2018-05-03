@@ -21,22 +21,22 @@ class DeadEndRemovalSolverStepTests: XCTestCase {
         //
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
         var field = gridGen.generate()
-        field.edges[0].state = .disabled
+        field.withEdge(0) { $0.state = .disabled }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // left square
-        XCTAssertEqual(edgesForFace(0)[0].state, .disabled)
-        XCTAssertEqual(edgesForFace(0)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(0)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .disabled)
         // right square
-        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .normal)
     }
 }

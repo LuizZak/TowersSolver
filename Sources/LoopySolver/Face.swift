@@ -3,8 +3,15 @@ import Commons
 /// Common protocol to abstract face references between actual face structures and
 /// face IDs.
 public protocol FaceReferenceConvertible {
+    var id: Face.Id { get }
+    
     func face(in field: LoopyField) -> Face
-    func faceIndex(in list: [Face]) -> Int?
+}
+
+public extension FaceReferenceConvertible {
+    public func face(in field: LoopyField) -> Face {
+        return field.faces[id.value]
+    }
 }
 
 /// Represents a loopy game's geometric face, which is just a list of reference
@@ -18,6 +25,8 @@ public protocol FaceReferenceConvertible {
 /// faces nor with themselves.
 public struct Face: Equatable {
     public typealias Id = Key<Face, Int>
+    
+    public var id: Face.Id
     
     /// Indices of vertices that make up this face
     public var indices: [Int]
@@ -66,26 +75,20 @@ public struct Face: Equatable {
 }
 
 extension Int: FaceReferenceConvertible {
-    public func face(in field: LoopyField) -> Face {
-        return field.faces[self]
-    }
-    
-    public func faceIndex(in list: [Face]) -> Int? {
-        return self
+    public var id: Face.Id {
+        return Face.Id(self)
     }
 }
 
 extension Face: FaceReferenceConvertible {
-    public func face(in field: LoopyField) -> Face {
-        return self
-    }
     
-    public func faceIndex(in list: [Face]) -> Int? {
-        return list.index { indices == $0.indices }
-    }
 }
 
 extension Key: FaceReferenceConvertible where T == Face, U == Int {
+    public var id: Face.Id {
+        return self
+    }
+    
     /// Returns the face represented by this face ID on a given field
     public func face(in field: LoopyField) -> Face {
         return field.faceWithId(self)

@@ -22,7 +22,7 @@ private class InternalSolver {
     
     func apply() {
         let entries = collectEdges()
-        let allMarked = field.edges.filter { $0.state == .marked }
+        let allMarked = field.edgeIds.filter { field.edgeState(forEdge: $0) == .marked }
         
         for edge in entries {
             apply(on: edge, allMarked: allMarked)
@@ -34,18 +34,18 @@ private class InternalSolver {
         
         // Search for all edges, unmarked, which connect two vertices that point
         // to two dead-end marked edges (in a 'doorway' or 'window' fashion)
-        for edge in field.edges where edge.state == .normal {
+        for edge in field.edgeIds where field.edgeState(forEdge: edge) == .normal {
             let edgesInStart =
-                field.edgesSharing(vertexIndex: edge.start)
-                    .filter { $0.state == .marked }
+                field.edgesSharing(vertexIndex: field.vertices(forEdge: edge).start)
+                    .filter { field.edgeState(forEdge: $0) == .marked }
             
             guard edgesInStart.count == 1 else {
                 continue
             }
             
             let edgesInEnd =
-                field.edgesSharing(vertexIndex: edge.end)
-                    .filter { $0.state == .marked }
+                field.edgesSharing(vertexIndex: field.vertices(forEdge: edge).end)
+                    .filter { field.edgeState(forEdge: $0) == .marked }
             
             guard edgesInEnd.count == 1 else {
                 continue
@@ -58,11 +58,11 @@ private class InternalSolver {
         return entries
     }
     
-    private func apply(on entry: Entry, allMarked: [Edge]) {
+    private func apply(on entry: Entry, allMarked: [Edge.Id]) {
         // Check if the edges from the entry link to one another
         let path =
             GraphUtils.singlePathEdges(in: field, fromEdge: entry.firstEdge) { edge in
-                edge.state == .marked
+                field.edgeState(forEdge: edge) == .marked
             }
         
         // If path doesn't include both ends, it won't form a loop
@@ -80,9 +80,9 @@ private class InternalSolver {
     }
     
     private struct Entry {
-        var edge: Edge
+        var edge: Edge.Id
         
-        var firstEdge: Edge
-        var secondEdge: Edge
+        var firstEdge: Edge.Id
+        var secondEdge: Edge.Id
     }
 }

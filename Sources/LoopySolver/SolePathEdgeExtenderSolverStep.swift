@@ -51,13 +51,13 @@ private class InternalSolver {
         for i in 0..<field.vertices.count {
             let edges = field.edgesSharing(vertexIndex: i)
             
-            let marked = edges.count { $0.state == .marked }
+            let marked = edges.count { field.edgeState(forEdge: $0) == .marked }
             
             guard marked == 1 else {
                 continue
             }
             
-            let enabled = edges.filter { $0.state == .normal }
+            let enabled = edges.filter { field.edgeState(forEdge: $0) == .normal }
             
             if enabled.count == 1 {
                 controller.setEdges(state: .marked, forEdges: enabled)

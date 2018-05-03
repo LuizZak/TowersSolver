@@ -23,7 +23,7 @@ public struct Edge: Hashable {
     
     /// Returns `true` if `state != .disabled`
     public var isEnabled: Bool {
-        return state != .disabled
+        return state.isEnabled
     }
     
     public var hashValue: Int {
@@ -78,6 +78,11 @@ public struct Edge: Hashable {
         case normal
         case marked
         case disabled
+        
+        /// Returns `true` if `self != .disabled`
+        public var isEnabled: Bool {
+            return self != .disabled
+        }
     }
 }
 

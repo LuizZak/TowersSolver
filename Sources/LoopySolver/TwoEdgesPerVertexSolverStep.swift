@@ -7,10 +7,10 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
         
         for vertex in 0..<field.vertices.count {
             let edges = field.edgesSharing(vertexIndex: vertex)
-            let marked = edges.count { $0.state == .marked }
+            let marked = edges.count { field.edgeState(forEdge: $0) == .marked }
             
             if marked == 2 {
-                let toDisable = edges.filter { $0.state != .marked }
+                let toDisable = edges.filter { field.edgeState(forEdge: $0) != .marked }
                 controller.setEdges(state: .disabled, forEdges: toDisable)
             }
         }

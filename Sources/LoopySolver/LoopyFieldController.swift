@@ -22,13 +22,15 @@ public class LoopyFieldController {
     }
     
     public func setAllEdges(state: Edge.State) {
-        for i in 0..<field.edges.count {
-            field.edges[i].state = state
+        for e in field.edges {
+            field.withEdge(e) {
+                $0.state = state
+            }
         }
     }
     
     public func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible) {
-        setEdges(state: state, forEdges: field.edgeIds(forFace: face))
+        setEdges(state: state, forEdges: field.edges(forFace: face))
     }
     
     public func setEdges(state: Edge.State, forEdges edges: [EdgeReferenceConvertible]) {
@@ -39,8 +41,9 @@ public class LoopyFieldController {
         }
     }
     
-    // FIXME: Here since conditional conformances during runtime break when using
-    // overload above with [Edge.Id] edges.
+    // FIXME: Here since missing runtime conditional conformance checks trap the
+    // program when using overload `forEdges edges: [EdgeReferenceConvertible]`
+    // with `[Edge.Id]` edges.
     public func setEdges(state: Edge.State, forEdges edges: [Edge.Id]) {
         for edge in edges {
             field.withEdge(edge) {
@@ -74,12 +77,8 @@ public class LoopyFieldController {
     /// Returns an array of all edges of a face on a field that are not shared with
     /// any other face.
     public func nonSharedEdges(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
-        guard let faceId = field.faceId(forFace: face) else {
-            return []
-        }
-        
-        return field.edgeIds(forFace: face).filter { edge in
-            field.facesSharing(edge: edge) == [faceId]
+        return field.edges(forFace: face).filter { edge in
+            field.facesSharing(edge: edge) == [face.id]
         }
     }
 }

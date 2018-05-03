@@ -50,7 +50,7 @@ private class InternalSolver {
         for i in 0..<field.vertices.count {
             let edges = field.edgesSharing(vertexIndex: i)
             
-            let enabled = edges.filter({ $0.isEnabled })
+            let enabled = edges.filter({ field.edgeState(forEdge: $0).isEnabled })
             
             if enabled.count == 1 {
                 controller.setEdges(state: .disabled, forEdges: enabled)

@@ -24,16 +24,16 @@ class GraphUtilsTests: XCTestCase {
         graph.createEdge(from: 3, to: 5)
         
         // Test the top-most horizontal edge
-        let result1 = GraphUtils.singlePathEdges(in: graph, fromEdge: Edge(start: 0, end: 1))
+        let result1 = GraphUtils.singlePathEdges(in: graph, fromEdge: graph.edgeIndex(vertex1: 0, vertex2: 1)!)
         XCTAssertEqual(result1.count, 3)
-        XCTAssert(result1.contains(Edge(start: 0, end: 1)))
-        XCTAssert(result1.contains(Edge(start: 1, end: 2)))
-        XCTAssert(result1.contains(Edge(start: 3, end: 0)))
+        XCTAssert(result1.contains(graph.edgeIndex(vertex1: 0, vertex2: 1)!))
+        XCTAssert(result1.contains(graph.edgeIndex(vertex1: 1, vertex2: 2)!))
+        XCTAssert(result1.contains(graph.edgeIndex(vertex1: 3, vertex2: 0)!))
         
         // Test the central horizontal edge
-        let result2 = GraphUtils.singlePathEdges(in: graph, fromEdge: Edge(start: 2, end: 3))
+        let result2 = GraphUtils.singlePathEdges(in: graph, fromEdge: graph.edgeIndex(vertex1: 2, vertex2: 3)!)
         XCTAssertEqual(result2.count, 1)
-        XCTAssert(result2.contains(Edge(start: 2, end: 3)))
+        XCTAssert(result2.contains(graph.edgeIndex(vertex1: 2, vertex2: 3)!))
     }
     
     func testSinglePathEdgesInGraphFromEdgeExcludingDisabledEdges() {
@@ -55,37 +55,37 @@ class GraphUtilsTests: XCTestCase {
         graph.createEdge(from: 3, to: 0)
         graph.createEdge(from: 2, to: 4)
         graph.createEdge(from: 3, to: 5)
-        graph.edges[1].state = .disabled
+        graph.withEdge(1) { $0.state = .disabled }
         
         // Test top-most vertical edge
         let result1 = GraphUtils.singlePathEdges(in: graph,
-                                                 fromEdge: Edge(start: 0, end: 1),
+                                                 fromEdge: graph.edgeIndex(vertex1: 0, vertex2: 1)!,
                                                  excludeDisabled: true)
         XCTAssertEqual(result1.count, 2)
-        XCTAssert(result1.contains(Edge(start: 0, end: 1)))
-        XCTAssert(result1.contains(Edge(start: 3, end: 0)))
+        XCTAssert(result1.contains(graph.edgeIndex(vertex1: 0, vertex2: 1)!))
+        XCTAssert(result1.contains(graph.edgeIndex(vertex1: 3, vertex2: 0)!))
         
         let result2 = GraphUtils.singlePathEdges(in: graph,
-                                                 fromEdge: Edge(start: 0, end: 1),
+                                                 fromEdge: graph.edgeIndex(vertex1: 0, vertex2: 1)!,
                                                  excludeDisabled: false)
         XCTAssertEqual(result2.count, 3)
-        XCTAssert(result2.contains(Edge(start: 0, end: 1)))
-        XCTAssert(result2.contains(Edge(start: 1, end: 2, state: .disabled)))
-        XCTAssert(result2.contains(Edge(start: 3, end: 0)))
+        XCTAssert(result2.contains(graph.edgeIndex(vertex1: 0, vertex2: 1)!))
+        XCTAssert(result2.contains(graph.edgeIndex(vertex1: 1, vertex2: 2)!))
+        XCTAssert(result2.contains(graph.edgeIndex(vertex1: 3, vertex2: 0)!))
         
         // Test right-most horizontal edge
         let result3 = GraphUtils.singlePathEdges(in: graph,
-                                                 fromEdge: Edge(start: 2, end: 4),
+                                                 fromEdge: graph.edgeIndex(vertex1: 2, vertex2: 4)!,
                                                  excludeDisabled: true)
         XCTAssertEqual(result3.count, 2)
-        XCTAssert(result3.contains(Edge(start: 2, end: 4)))
-        XCTAssert(result3.contains(Edge(start: 2, end: 3)))
+        XCTAssert(result3.contains(graph.edgeIndex(vertex1: 2, vertex2: 4)!))
+        XCTAssert(result3.contains(graph.edgeIndex(vertex1: 2, vertex2: 3)!))
         
         let result4 = GraphUtils.singlePathEdges(in: graph,
-                                                 fromEdge: Edge(start: 2, end: 4),
+                                                 fromEdge: graph.edgeIndex(vertex1: 2, vertex2: 4)!,
                                                  excludeDisabled: false)
         XCTAssertEqual(result4.count, 1)
-        XCTAssert(result3.contains(Edge(start: 2, end: 4)))
+        XCTAssert(result3.contains(graph.edgeIndex(vertex1: 2, vertex2: 4)!))
     }
     
     func testBugWithDuplicatedEdgeReporting() {
@@ -116,7 +116,7 @@ class GraphUtilsTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 7, edgeIndex: 1)
         let field = controller.field
         
-        let result = GraphUtils.singlePathEdges(in: field, fromEdge: field.edges[6])
+        let result = GraphUtils.singlePathEdges(in: field, fromEdge: field.edgeIds[6])
         let resultIds = result.map { field.edgeId(forEdge: $0)! }.map { $0.value }.sorted()
         XCTAssertEqual(resultIds, [0, 1, 3, 6, 11, 12, 13, 16, 17, 21, 22, 23])
     }

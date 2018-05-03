@@ -20,24 +20,24 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
         var field = gridGen.generate()
-        field.edges[0].state = .disabled
-        field.edges[3].state = .disabled
+        field.withEdge(0) { $0.state = .disabled }
+        field.withEdge(3) { $0.state = .disabled }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // left square
-        XCTAssertEqual(edgesForFace(0)[0].state, .disabled)
-        XCTAssertEqual(edgesForFace(0)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(0)[2].state, .marked)
-        XCTAssertEqual(edgesForFace(0)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .disabled)
         // right square
-        XCTAssertEqual(edgesForFace(1)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .marked)
     }
     
     func testApplyOnMarkedEdges() {
@@ -50,24 +50,24 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
         var field = gridGen.generate()
-        field.edges[4].state = .marked
-        field.edges[5].state = .marked
-        field.edges[6].state = .marked
+        field.withEdge(4) { $0.state = .marked }
+        field.withEdge(5) { $0.state = .marked }
+        field.withEdge(6) { $0.state = .marked }
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // left square
-        XCTAssertEqual(edgesForFace(0)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[1].state, .disabled)
-        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .normal)
         // right square
-        XCTAssertEqual(edgesForFace(1)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[2].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .disabled)
     }
 }

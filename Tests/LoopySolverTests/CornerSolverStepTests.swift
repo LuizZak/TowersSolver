@@ -29,30 +29,30 @@ class CornerSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // Check outer two edges of `3` cell where marked, while the inner edges
         // where not
-        XCTAssertEqual(edgesForFace(0)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(0)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .marked)
         // `0`
-        XCTAssertEqual(edgesForFace(2)[0].state, .disabled)
-        XCTAssertEqual(edgesForFace(2)[1].state, .disabled)
-        XCTAssertEqual(edgesForFace(2)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(2)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(2)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(2)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(2)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(2)[3], .disabled)
         // `1`
-        XCTAssertEqual(edgesForFace(6)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(6)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(6)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(6)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(6)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(6)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(6)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(6)[3], .disabled)
         // `2`
-        XCTAssertEqual(edgesForFace(8)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(8)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(8)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(8)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(8)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(8)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(8)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(8)[3], .normal)
     }
     
     func testApplyOnTwoInCorner() {
@@ -69,29 +69,29 @@ class CornerSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // `2`
-        XCTAssertEqual(edgesForFace(0)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .normal)
         // top-right
-        XCTAssertEqual(edgesForFace(1)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .normal)
         // bottom-left
-        XCTAssertEqual(edgesForFace(2)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(2)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[3], .marked)
         // bottom-right
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .normal)
     }
     
     func testApplyOnTwoInCornerWithThreeOnDiagonal() {
@@ -114,29 +114,29 @@ class CornerSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // `2`
-        XCTAssertEqual(edgesForFace(0)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(0)[1].state, .disabled)
-        XCTAssertEqual(edgesForFace(0)[2].state, .disabled)
-        XCTAssertEqual(edgesForFace(0)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .marked)
         // top-right
-        XCTAssertEqual(edgesForFace(1)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .disabled)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .disabled)
         // bottom-left
-        XCTAssertEqual(edgesForFace(2)[0].state, .disabled)
-        XCTAssertEqual(edgesForFace(2)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(2)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(2)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[3], .marked)
         // `3`
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(3)[2].state, .marked)
-        XCTAssertEqual(edgesForFace(3)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .normal)
     }
     
     func testApplyOnTwoInCornerWithThreeOnSideDoesNotTrigger() {
@@ -154,28 +154,28 @@ class CornerSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
         // `2`
-        XCTAssertEqual(edgesForFace(0)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(0)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(0)[3], .normal)
         // `3`
-        XCTAssertEqual(edgesForFace(1)[0].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[1].state, .marked)
-        XCTAssertEqual(edgesForFace(1)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(1)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[0], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(1)[3], .normal)
         // bottom-left
-        XCTAssertEqual(edgesForFace(2)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(2)[3].state, .marked)
+        XCTAssertEqual(edgeStatesForFace(2)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(2)[3], .marked)
         // bottom-right
-        XCTAssertEqual(edgesForFace(3)[0].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[1].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[2].state, .normal)
-        XCTAssertEqual(edgesForFace(3)[3].state, .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(3)[3], .normal)
     }
 }

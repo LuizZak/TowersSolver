@@ -54,8 +54,8 @@ private class InternalSolver {
     
     func applyToFace(_ faceId: Face.Id) {
         let face = field.faceWithId(faceId)
-        let edges = face.localToGlobalEdges.edges(in: field)
-        if field.isFaceSolved(face) && !edges.contains(where: { $0.state == .normal }) {
+        let edges = field.edges(forFace: face)
+        if field.isFaceSolved(face) && !edges.contains(where: { field.edgeState(forEdge: $0) == .normal }) {
             return
         }
         

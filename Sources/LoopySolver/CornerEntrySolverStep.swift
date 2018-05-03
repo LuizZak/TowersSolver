@@ -48,8 +48,8 @@ private class InternalSolver {
         
         let edges = field.edgesSharing(vertexIndex: vertexIndex)
         
-        let marked = edges.filter { $0.state == .marked }
-        let normal = edges.filter { $0.state == .normal }
+        let marked = edges.filter { field.edgeState(forEdge: $0) == .marked }
+        let normal = edges.filter { field.edgeState(forEdge: $0) == .normal }
         
         // Can only do work on loose ends of a loopy line (a vertex with a single
         // marked edge)
@@ -59,7 +59,7 @@ private class InternalSolver {
         
         // If any of the faces is semi-complete, apply a different logic here to
         // 'hijack' the line into it's own path
-        if let semiComplete = field.facesSharing(vertexIndex: vertexIndex).first(where: { $0.isSemiComplete }) {
+        if let semiComplete = field.facesSharing(vertexIndex: vertexIndex).first(where: field.isFaceSemicomplete) {
             if field.isFaceSolved(semiComplete) {
                 return
             }
@@ -70,17 +70,15 @@ private class InternalSolver {
                 return
             }
             
-            let oppositeEdges = semiComplete
-                .localToGlobalEdges
-                .edges(in: field)
-                .filter { !$0.sharesVertex(vertexIndex) }
+            let oppositeEdges = field.edges(forFace: semiComplete)
+                .filter { !field.edgeSharesVertex($0, vertex: vertexIndex) }
             
             controller.setEdges(state: .marked, forEdges: oppositeEdges)
             
             // Disable edges from other faces that share that vertex to finish
             // hijacking the line path
             let otherEdges = edges
-                .filter { !semiComplete.containsEdge(id: field.edgeId(forEdge: $0)!) }
+                .filter { !field.faceContainsEdge(face: semiComplete, edge: field.edgeId(forEdge: $0)!) }
                 .filter { marked[0] != $0 }
             
             controller.setEdges(state: .disabled, forEdges: otherEdges)
@@ -119,13 +117,11 @@ private class InternalSolver {
             return
         }
         
-        let allEdges = face
-            .localToGlobalEdges
-            .edges(in: field)
+        let allEdges = field.edges(forFace: face)
         
-        let edges = allEdges.filter { $0.sharesVertex(vertex) }
+        let edges = allEdges.filter { field.edgeSharesVertex($0, vertex: vertex) }
         
-        let normalEdges = edges.filter { $0.state == .normal }
+        let normalEdges = edges.filter { field.edgeState(forEdge: $0) == .normal }
         
         if normalEdges.isEmpty {
             return
@@ -151,7 +147,7 @@ private class InternalSolver {
         
         if leastCount >= hint {
             // Disable all edges not sharing the common vertex
-            let toDisable = allEdges.filter { !$0.sharesVertex(vertex) }
+            let toDisable = allEdges.filter { !field.edgeSharesVertex($0, vertex: vertex) }
             
             controller.setEdges(state: .disabled, forEdges: toDisable)
         }

@@ -31,11 +31,11 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: controller.field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgesForFace: (Int) -> [Edge.Id] = {
+            result.edges(forFace: $0)
         }
         let edgeStatesForFace: (Int) -> [Edge.State] = {
-            edgesForFace($0).map { $0.state }
+            edgesForFace($0).map(result.edgeState(forEdge:))
         }
         // Left `2`
         XCTAssertEqual(edgeStatesForFace(0), [.marked, .normal, .normal, .marked])
@@ -64,11 +64,11 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         
         let result = sut.apply(to: controller.field)
         
-        let edgesForFace: (Int) -> [Edge] = {
-            result.edgeIds(forFace: $0).edges(in: result)
+        let edgesForFace: (Int) -> [Edge.Id] = {
+            result.edges(forFace: $0)
         }
         let edgeStatesForFace: (Int) -> [Edge.State] = {
-            edgesForFace($0).map { $0.state }
+            edgesForFace($0).map(result.edgeState(forEdge:))
         }
         // Left
         XCTAssertEqual(edgeStatesForFace(0), [.normal, .normal, .normal, .normal])
