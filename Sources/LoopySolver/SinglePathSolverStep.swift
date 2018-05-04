@@ -40,20 +40,19 @@ private class InternalSolver {
         }
     }
     
-    func applyToFace(_ faceId: Face.Id) {
-        let face = field.faceWithId(faceId)
+    func applyToFace(_ face: Face.Id) {
         if field.isFaceSolved(face) {
             return
         }
         
-        guard let hint = face.hint else {
+        guard let hint = field.hintForFace(face) else {
             return
         }
         
         // Collect edges
         var edgeRuns: [[Edge.Id]] = []
         
-        for edge in face.localToGlobalEdges {
+        for edge in field.edges(forFace: face) {
             if edgeRuns.contains(where: { $0.contains(edge) }) {
                 continue
             }
@@ -68,7 +67,7 @@ private class InternalSolver {
         
         edgeRuns.sort(by: { $0.count > $1.count })
         
-        if edgeRuns[0].count == hint && face.edgesCount - edgeRuns[0].count < hint {
+        if edgeRuns[0].count == hint && field.edges(forFace: face).count - edgeRuns[0].count < hint {
             controller.setEdges(state: .marked, forEdges: edgeRuns[0])
         }
     }

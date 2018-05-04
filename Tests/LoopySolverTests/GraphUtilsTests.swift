@@ -85,7 +85,7 @@ class GraphUtilsTests: XCTestCase {
                                                  fromEdge: graph.edgeIndex(vertex1: 2, vertex2: 4)!,
                                                  excludeDisabled: false)
         XCTAssertEqual(result4.count, 1)
-        XCTAssert(result3.contains(graph.edgeIndex(vertex1: 2, vertex2: 4)!))
+        XCTAssert(result4.contains(graph.edgeIndex(vertex1: 2, vertex2: 4)!))
     }
     
     func testBugWithDuplicatedEdgeReporting() {

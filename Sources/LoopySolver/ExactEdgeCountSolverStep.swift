@@ -6,25 +6,24 @@ public class ExactEdgeCountSolverStep: SolverStep {
     public func apply(to field: LoopyField) -> LoopyField {
         let controller = LoopyFieldController(field: field)
         
-        for faceId in field.faceIds {
-            let face = field.faceWithId(faceId)
-            let edges = face.localToGlobalEdges.edges(in: field)
+        for face in field.faceIds {
+            let edges = field.edges(forFace: face)
             
-            if field.isFaceSolved(face) && !edges.contains(where: { $0.state == .normal }) {
+            if field.isFaceSolved(face) && !edges.contains(where: { field.edgeState(forEdge: $0) == .normal }) {
                 continue
             }
             
-            let enabledEdges = edges.filter { $0.isEnabled }
+            let enabledEdges = edges.filter { field.edgeState(forEdge: $0).isEnabled }
             
-            if enabledEdges.count == face.hint {
+            if enabledEdges.count == field.hintForFace(face) {
                 controller.setEdges(state: .marked, forEdges: enabledEdges)
                 continue
             }
             
-            let markedEdges = edges.filter { $0.state == .marked }
-            let normalEdges = edges.filter { $0.state == .normal }
+            let markedEdges = edges.filter { field.edgeState(forEdge: $0) == .marked }
+            let normalEdges = edges.filter { field.edgeState(forEdge: $0) == .normal }
             
-            if markedEdges.count == face.hint {
+            if markedEdges.count == field.hintForFace(face) {
                 controller.setEdges(state: .disabled, forEdges: normalEdges)
             }
         }

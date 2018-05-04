@@ -35,7 +35,7 @@ class LoopyFieldTests: XCTestCase {
         
         XCTAssertEqual(faceId.value, 0)
         XCTAssertEqual(field.faces.count, 1)
-        XCTAssertEqual(field.faceWithId(faceId).hint, 1)
+        XCTAssertEqual(field.hintForFace(faceId), 1)
         XCTAssertEqual(field.faces[0].localToGlobalEdges.map { $0.value }, [0, 1, 2, 3])
     }
     
@@ -104,5 +104,21 @@ class LoopyFieldTests: XCTestCase {
         XCTAssertFalse(field.isFaceSolved(1))
         XCTAssert(field.isFaceSolved(2))
         XCTAssert(field.isFaceSolved(3))
+    }
+    
+    func testEdgesConnectedTo() {
+        // Create two triangle faces forming a box
+        field.addVertex(Vertex(x: 0, y: 0))
+        field.addVertex(Vertex(x: 1, y: 0))
+        field.addVertex(Vertex(x: 1, y: 1))
+        field.addVertex(Vertex(x: 0, y: 1))
+        field.createFace(withVertexIndices: [0, 1, 2], hint: nil)
+        field.createFace(withVertexIndices: [2, 3, 0], hint: nil)
+        
+        XCTAssertEqual(field.edgesConnected(to: 0), [1, 2, 4])
+        XCTAssertEqual(field.edgesConnected(to: 1), [0, 2, 3])
+        XCTAssertEqual(field.edgesConnected(to: 2), [1, 0, 3, 4])
+        XCTAssertEqual(field.edgesConnected(to: 3), [1, 2, 4])
+        XCTAssertEqual(field.edgesConnected(to: 4), [3, 0, 2])
     }
 }

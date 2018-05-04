@@ -1,3 +1,4 @@
+
 /// General utility functions to use with a Loopy field
 public enum GraphUtils {
     
@@ -49,6 +50,7 @@ public enum GraphUtils {
                                        includeTest: (Edge.Id) -> Bool) -> [Edge.Id] {
         return withoutActuallyEscaping(includeTest) { includeTest in
             var result: [Edge.Id] = []
+            var added: Set<Int> = []
             
             // Only include edges not already accounted for in the result array
             let includeFilter: (Edge.Id) -> Bool = { edge in
@@ -56,55 +58,27 @@ public enum GraphUtils {
                     return false
                 }
                 
-                return !result.contains { graph.edgesMatchVertices(edge, $0) }
+                return !added.contains(edge.edgeIndex(in: graph.edges))
             }
             
-            // First, find the logical start of the traversal by traversing through
-            // the left of the edges until the beginning of the straight edges chain
-            let edgeStart: Edge.Id = { () -> Edge.Id in
-                var next = edge
-                var visited: [Edge.Id] = []
-                
-                while true {
-                    visited.append(next)
-                    
-                    let edgesLeft =
-                        graph.edgesSharing(vertexIndex: graph.vertices(forEdge: next).start)
-                            .filter(includeFilter)
-                            .filter { !visited.contains($0) }
-                    
-                    if edgesLeft.count == 1 {
-                        next = edgesLeft[0]
-                    } else {
-                        break
-                    }
-                }
-                
-                return next
-            }()
-            
-            var stack = [edgeStart]
+            var stack = [edge]
             
             while let next = stack.popLast() {
-                // Already visited
-                if result.contains(where: { graph.edgesMatchVertices(next, $0) }) {
-                    continue
-                }
-                
                 result.append(next)
+                added.insert(next.edgeIndex(in: graph.edges))
                 
                 let edgesLeft =
                     graph.edgesSharing(vertexIndex: graph.vertices(forEdge: next).start)
                         .filter(includeFilter)
-                
+
                 let edgesRight =
                     graph.edgesSharing(vertexIndex: graph.vertices(forEdge: next).end)
                         .filter(includeFilter)
-                
-                if edgesLeft.count == 1 {
+
+                if edgesLeft.count == 1 && !stack.contains(edgesLeft[0]) {
                     stack.append(edgesLeft[0])
                 }
-                if edgesRight.count == 1 {
+                if edgesRight.count == 1 && !stack.contains(edgesRight[0]) {
                     stack.append(edgesRight[0])
                 }
             }

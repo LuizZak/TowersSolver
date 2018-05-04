@@ -106,14 +106,13 @@ private class InternalSolver {
         applyToFace(faceId, vertex: vertexIndex)
     }
     
-    func applyToFace(_ faceId: Face.Id, vertex: Int) {
-        let face = field.faceWithId(faceId)
+    func applyToFace(_ face: Face.Id, vertex: Int) {
         if field.isFaceSolved(face) {
             return
         }
         
         // Requires hint!
-        guard let hint = face.hint else {
+        guard let hint = field.hintForFace(face) else {
             return
         }
         

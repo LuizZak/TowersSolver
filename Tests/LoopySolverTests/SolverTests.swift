@@ -138,6 +138,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 8, hints: [n, n, 3, 2, 2, 2, 1, 0, n, 2])
         gridGen.setHints(atRow: 9, hints: [3, n, n, n, n, 2, 3, 3, n, n])
         let solver = Solver(field: gridGen.generate())
+        solver.maxNumberOfGuesses = 12
         
         let result = solver.solve()
         

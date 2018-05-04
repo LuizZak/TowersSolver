@@ -25,22 +25,20 @@ public class Solver {
     /// 2. All numbered faces must have that number of their edges marked as part
     /// of the solution.
     public var isSolved: Bool {
-        for faceId in field.faceIds {
-            let face = field.faceWithId(faceId)
-            guard let hint = face.hint else { continue }
+        for face in field.faceIds {
+            guard let hint = field.hintForFace(face) else { continue }
             
             let marked =
-                face.localToGlobalEdges
-                    .edges(in: field)
-                    .count { $0.state == .marked }
+                field.edges(forFace: face)
+                    .count { field.edgeState(forEdge: $0) == .marked }
             
             if marked != hint {
                 return false
             }
         }
         
-        let markedEdges = field.edges.filter { $0.state == .marked }
-        if !markedEdges.isLoop {
+        let markedEdges = field.edgeIds.filter { field.edgeState(forEdge: $0) == .marked }
+        if !field.isLoop(markedEdges) {
             return false
         }
         
@@ -73,9 +71,9 @@ public class Solver {
             }
         }
         
-        for face in field.faces {
+        for face in field.faceIds {
             let edges = field.edges(forFace: face)
-            guard let hint = face.hint else {
+            guard let hint = field.hintForFace(face) else {
                 continue
             }
             
@@ -182,18 +180,21 @@ public class Solver {
         
         let plays = collectSpeculativeSteps().prefix(guessesAvailable)
         
-        for play in plays {
+        for play in plays where guessesAvailable > 0 {
             guessesAvailable -= 1
             
-            if doSpeculativePlay(play) {
+            if doSpeculativePlay(play, &guessesAvailable) {
                 return
             }
         }
     }
     
-    private func doSpeculativePlay(_ edge: Edge.Id) -> Bool {
+    private func doSpeculativePlay(_ edge: Edge.Id, _ guessesAvailable: inout Int) -> Bool {
         let subSolver = Solver(field: field)
-        subSolver.maxNumberOfGuesses = 0
+        subSolver.maxNumberOfGuesses = guessesAvailable
+        defer {
+            guessesAvailable -= subSolver.maxNumberOfGuesses - subSolver.guessesAvailable
+        }
         
         subSolver.field.withEdge(edge) { $0.state = .marked }
         
@@ -244,9 +245,9 @@ public class Solver {
                     .filter { field.edgeState(forEdge: $0) == .normal }
                 
                 let hintedFaces =
-                    field.faces.count { $0.indices.contains(i) && $0.hint != nil }
+                    field.faceIds.count { field.vertices(forFace: $0).contains(i) && field.hintForFace($0) != nil }
                 let semicompleteFaces =
-                    field.faces.count { $0.indices.contains(i) && $0.isSemiComplete }
+                    field.faceIds.count { field.vertices(forFace: $0).contains(i) && field.isFaceSemicomplete($0) }
                 
                 let priority = hintedFaces + semicompleteFaces
                 
@@ -261,10 +262,10 @@ public class Solver {
         }
         
         // Look for semi-complete faces that are missing one edge to solve
-        for face in field.faces.sorted(by: { (l, _) in l.isSemiComplete }) {
+        for face in field.faceIds.sorted(by: { (l, _) in field.isFaceSemicomplete(l) }) {
             let edges = field.edges(forFace: face)
             
-            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) + 1 == face.hint {
+            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) + 1 == field.hintForFace(face) {
                 plays.append(contentsOf: edges.filter({ field.edgeState(forEdge: $0) == .normal }))
             }
         }

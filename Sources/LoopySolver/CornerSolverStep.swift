@@ -52,15 +52,14 @@ private class InternalSolver {
         }
     }
     
-    func applyToFace(_ faceId: Face.Id) {
-        let face = field.faceWithId(faceId)
+    func applyToFace(_ face: Face.Id) {
         let edges = field.edges(forFace: face)
         if field.isFaceSolved(face) && !edges.contains(where: { field.edgeState(forEdge: $0) == .normal }) {
             return
         }
         
         // Requires hint!
-        guard let hint = face.hint else {
+        guard let hint = field.hintForFace(face) else {
             return
         }
         
@@ -78,7 +77,7 @@ private class InternalSolver {
             }
         }
         
-        let nonShared = controller.nonSharedEdges(forFace: faceId)
+        let nonShared = controller.nonSharedEdges(forFace: face)
         if nonShared.isEmpty {
             return
         }
@@ -95,7 +94,7 @@ private class InternalSolver {
         // solution, since at least one of the outer edges will have to be marked
         // to be part of the solution, and if a single outer edge is marked, all
         // outer edges must be marked due to them forming a single continuous line.
-        if face.edgesCount - nonShared.count < hint {
+        if field.edges(forFace: face).count - nonShared.count < hint {
             controller.setEdges(state: .marked, forEdges: nonShared)
             return
         }
@@ -126,15 +125,15 @@ private class InternalSolver {
         // | 2 |
         // └---┴══
         //
-        if face.edgesCount == nonShared.count * 2 && nonShared.count == hint {
+        if field.edges(forFace: face).count == nonShared.count * 2 && nonShared.count == hint {
             // Find the out-going edges from the join vertices
             let start = field
                 .edgesConnected(to: nonShared.first!)
-                .filter { !field.faceContainsEdge(face: face, edge: $0.edge(in: field)) }
+                .filter { !field.faceContainsEdge(face: face, edge: $0) }
             
             let end = field
                 .edgesConnected(to: nonShared.last!)
-                .filter { !field.faceContainsEdge(face: face, edge: $0.edge(in: field)) }
+                .filter { !field.faceContainsEdge(face: face, edge: $0) }
             
             if start.count == 1 {
                 controller.setEdges(state: .marked, forEdges: start)
@@ -146,8 +145,7 @@ private class InternalSolver {
             // 3.1
             // Test if the outer path is not 'hijacked' by an `edge_count - 1`-hinted
             // face.
-            let shared = face
-                .localToGlobalEdges
+            let shared = field.edges(forFace: face)
                 .filter { !nonShared.contains($0) }
             
             // Find vertices where inner and outer paths join (we'll use that to
@@ -160,16 +158,15 @@ private class InternalSolver {
             // Find vertices for inner edges (excluding vertices from join above)
             // These are the query vertices we'll use to test for the hijacking
             // faces
-            let testVertices = Set(face.indices).subtracting(joinVertices)
+            let testVertices = Set(field.vertices(forFace: face)).subtracting(joinVertices)
             
             for vertex in testVertices {
                 let faces = field
                     .facesSharing(vertexIndex: vertex)
-                    .map { $0.face(in: field) }
                     // Ignore faces that contain one of the join vertices
-                    .filter({ !$0.indices.contains(where: joinVertices.contains) })
+                    .filter({ !field.vertices(forFace: $0).contains(where: joinVertices.contains) })
                 
-                if faces.contains(where: { $0.isSemiComplete }) {
+                if faces.contains(where: field.isFaceSemicomplete) {
                     // Hijacking!
                     // Mark outer edges as solution and quit.
                     controller.setEdges(state: .disabled, forEdges: shared)

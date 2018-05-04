@@ -16,13 +16,11 @@ public class LoopyFieldController {
     /// This would be a `2`-hint on a triangle, `3` on a square face, `4` on a
     /// pentagon, etc.
     public func semiCompleteFaces() -> [Face.Id] {
-        return field.faceIds.filter { id in
-            field.faceWithId(id).isSemiComplete
-        }
+        return field.faceIds.filter(field.isFaceSemicomplete)
     }
     
     public func setAllEdges(state: Edge.State) {
-        for e in field.edges {
+        for e in field.edgeIds {
             field.withEdge(e) {
                 $0.state = state
             }
@@ -59,9 +57,7 @@ public class LoopyFieldController {
     }
     
     public func setEdge(state: Edge.State, forFace face: FaceReferenceConvertible, edgeIndex: Int) {
-        let face = face.face(in: field)
-        
-        let edgeId = face.localToGlobalEdges[edgeIndex]
+        let edgeId = field.edges(forFace: face)[edgeIndex]
         
         field.withEdge(edgeId) {
             $0.state = state

@@ -3,8 +3,7 @@ import Commons
 /// Common protocol to abstract edge references between actual edge structures and
 /// edge IDs.
 public protocol EdgeReferenceConvertible {
-    func edge(in field: LoopyField) -> Edge
-    func edgeIndex(in list: [Edge]) -> Int?
+    func edgeIndex(in list: [Edge]) -> Int
 }
 
 /// Represents an edge between two vertices.
@@ -87,40 +86,26 @@ public struct Edge: Hashable {
 }
 
 extension Int: EdgeReferenceConvertible {
-    public func edge(in field: LoopyField) -> Edge {
-        return field.edges[self]
-    }
-    
-    public func edgeIndex(in list: [Edge]) -> Int? {
+    public func edgeIndex(in list: [Edge]) -> Int {
         return self
-    }
-}
-
-extension Edge: EdgeReferenceConvertible {
-    public func edge(in field: LoopyField) -> Edge {
-        return self
-    }
-    
-    public func edgeIndex(in list: [Edge]) -> Int? {
-        return list.index(where: matchesEdgeVertices)
     }
 }
 
 extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
     /// Returns the edge represented by this edge ID on a given field
-    public func edge(in field: LoopyField) -> Edge {
-        return field.edgeWithId(self)
+    func edge(in field: LoopyField) -> Edge {
+        return field.edges[self.value]
     }
     
-    public func edgeIndex(in list: [Edge]) -> Int? {
+    public func edgeIndex(in list: [Edge]) -> Int {
         return value
     }
 }
 
-public extension Sequence where Element == Edge.Id {
+extension Sequence where Element == Edge.Id {
     /// Returns the actual edges represented by this list of edge IDs on a given
     /// field.
-    public func edges(in field: LoopyField) -> [Edge] {
+    func edges(in field: LoopyField) -> [Edge] {
         return map { $0.edge(in: field) }
     }
 }

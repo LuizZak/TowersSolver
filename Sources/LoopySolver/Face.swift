@@ -4,14 +4,6 @@ import Commons
 /// face IDs.
 public protocol FaceReferenceConvertible {
     var id: Face.Id { get }
-    
-    func face(in field: LoopyField) -> Face
-}
-
-public extension FaceReferenceConvertible {
-    public func face(in field: LoopyField) -> Face {
-        return field.faces[id.value]
-    }
 }
 
 /// Represents a loopy game's geometric face, which is just a list of reference
@@ -89,28 +81,7 @@ extension Key: FaceReferenceConvertible where T == Face, U == Int {
         return self
     }
     
-    /// Returns the face represented by this face ID on a given field
-    public func face(in field: LoopyField) -> Face {
-        return field.faceWithId(self)
-    }
-    
     public func faceIndex(in list: [Face]) -> Int? {
         return value
-    }
-}
-
-public extension Sequence where Element == Face.Id {
-    /// Returns the actual faces represented by this list of face IDs on a given
-    /// field.
-    public func faces(in field: LoopyField) -> [Face] {
-        return map { $0.face(in: field) }
-    }
-}
-
-public extension Sequence where Element == Edge.Id {
-    /// Returns an array of local edge indices for a given face based on this
-    /// sequence of global edge indices.
-    public func toLocalEdges(inFace face: Face) -> [Int] {
-        return face.toLocalEdges(self.map { $0 })
     }
 }

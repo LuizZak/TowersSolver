@@ -45,16 +45,16 @@ private class InternalSolver {
         var pairs: [FacePair] = []
         
         // Examine only faces with hints
-        let faces = field.faces.filter { $0.hint != nil }
+        let faces = field.faceIds.filter { field.hintForFace($0) != nil }
         
         for i in 0..<faces.count - 1 {
-            let semi1 = faces[i].face(in: field)
+            let semi1 = faces[i]
             if field.isFaceSolved(semi1) {
                 continue
             }
             
             for j in i + 1..<faces.count {
-                let semi2 = faces[j].face(in: field)
+                let semi2 = faces[j]
                 if field.isFaceSolved(semi2) {
                     continue
                 }
@@ -70,38 +70,43 @@ private class InternalSolver {
     }
     
     private func apply(to pair: FacePair) {
-        let edge = field.edgeWithId(pair.edge)
+        let edge = pair.edge
+        
+        let field = self.field
         
         let applyToEdges: (Edge.Id, Edge.Id) -> Void = {
+            
             // Detect both edges belong to the pair we're looking at
-            guard (pair.face1.containsEdge(id: $0) || pair.face1.containsEdge(id: $1)) && (pair.face2.containsEdge(id: $0) || pair.face2.containsEdge(id: $1)) else {
+            guard (field.faceContainsEdge(face: pair.face1, edge: $0) || field.faceContainsEdge(face: pair.face1, edge: $1)) && (field.faceContainsEdge(face: pair.face2, edge: $0) || field.faceContainsEdge(face: pair.face2, edge: $1)) else {
                 return
             }
             
-            let face1Edge = pair.face1.containsEdge(id: $0) ? $0 : $1
-            let face2Edge = pair.face2.containsEdge(id: $0) ? $0 : $1
+            let face1Edge = field.faceContainsEdge(face: pair.face1, edge: $0) ? $0 : $1
+            let face2Edge = field.faceContainsEdge(face: pair.face2, edge: $0) ? $0 : $1
             
             // Check if the paths taken by the line exeed the requirement of the
             // face's hint, when considered alone
             let count1 = GraphUtils
-                .singlePathEdges(in: self.field, fromEdge: face1Edge)
-                .count { pair.face1.containsEdge(id: self.field.edgeId(forEdge: $0)!) }
+                .singlePathEdges(in: field, fromEdge: face1Edge)
+                .count { field.faceContainsEdge(face: pair.face1, edge: $0) }
             
             let count2 = GraphUtils
-                .singlePathEdges(in: self.field, fromEdge: face2Edge)
-                .count { pair.face2.containsEdge(id: self.field.edgeId(forEdge: $0)!) }
+                .singlePathEdges(in: field, fromEdge: face2Edge)
+                .count { field.faceContainsEdge(face: pair.face2, edge: $0) }
             
-            if count1 >= (pair.face1.hint ?? Int.max) && count2 >= (pair.face2.hint ?? Int.max) {
+            if count1 >= (field.hintForFace(pair.face1) ?? Int.max) && count2 >= (field.hintForFace(pair.face2) ?? Int.max) {
                 self.controller.setEdge(state: .disabled, forEdge: edge)
             }
         }
+        
+        let (vStart, vEnd) = field.vertices(forEdge: edge)
         
         // Pick connected edges (in both ends of the shared edge) and check if
         // they all belong to the two paired faces
         // Examine each end separately
         let edgesStart = field
-            .edgesSharing(vertexIndex: edge.start)
-            .filter { $0.edge(in: field) != edge }
+            .edgesSharing(vertexIndex: vStart)
+            .filter { $0 != edge }
             .compactMap { field.edgeId(forEdge: $0) }
         
         if edgesStart.count == 2 {
@@ -110,8 +115,8 @@ private class InternalSolver {
         }
         
         let edgesEnd = field
-            .edgesSharing(vertexIndex: edge.end)
-            .filter { $0.edge(in: field) != edge }
+            .edgesSharing(vertexIndex: vEnd)
+            .filter { $0 != edge }
             .compactMap { field.edgeId(forEdge: $0) }
         
         if edgesEnd.count == 2 {
@@ -121,8 +126,8 @@ private class InternalSolver {
     }
     
     private struct FacePair {
-        var face1: Face
-        var face2: Face
+        var face1: Face.Id
+        var face2: Face.Id
         
         var edge: Edge.Id
     }

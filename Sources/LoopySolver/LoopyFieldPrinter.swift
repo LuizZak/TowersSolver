@@ -36,9 +36,9 @@ public class LoopyFieldPrinter: ConsolePrintBuffer {
             return (x: Int(x), y: Int(y))
         }
         
-        for edge in field.edges {
-            let v1 = field.vertices[edge.start]
-            let v2 = field.vertices[edge.end]
+        for edge in field.edgeIds {
+            let (v1Index, v2Index) = field.vertices(forEdge: edge)
+            let (v1, v2) = (field.vertices[v1Index], field.vertices[v2Index])
             
             let (x1, y1) = toScreen(v1.x, v1.y)
             let (x2, y2) = toScreen(v2.x, v2.y)
@@ -47,7 +47,7 @@ public class LoopyFieldPrinter: ConsolePrintBuffer {
                 continue
             }
             
-            let scalars = lineScalars(forState: edge.state)
+            let scalars = lineScalars(forState: field.edgeState(forEdge: edge))
             
             bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
                 let scalar = normalLineScalar(forAngle: angle, angleScalars: scalars)
@@ -56,15 +56,15 @@ public class LoopyFieldPrinter: ConsolePrintBuffer {
             }
         }
         
-        for faceIndex in 0..<field.faces.count {
-            let poly = field.polygonFor(face: Face.Id(faceIndex))
+        for faceIndex in 0..<field.faceIds.count {
+            let poly = field.polygonFor(face: faceIndex)
             
             // Print the face's hint at its geometrical center
             let center = poly.reduce(into: Vertex(x: 0, y: 0), +=) / Float(poly.count)
             
             let (x, y) = toScreen(center.x, center.y)
             
-            if let hint = field.faces[faceIndex].hint {
+            if let hint = field.hintForFace(Face.Id(faceIndex)) {
                 putString(hint.description, x: x, y: y)
             }
         }
