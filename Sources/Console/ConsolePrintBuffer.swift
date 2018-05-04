@@ -44,7 +44,7 @@ open class ConsolePrintBuffer {
             return
         }
         
-        // Wrap-around (- 2 to not eat the line-ending character at bufferWidth - 1)
+        // Wrap-around (-2 to not eat the line-ending character at bufferWidth - 1)
         if offset % bufferWidth == (bufferWidth - 1) {
             offset += 1
             

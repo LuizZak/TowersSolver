@@ -10,6 +10,8 @@ import Geometry
 
 /// Helper for printing grids to the console using ASCII text.
 public class LoopyGridPrinter: ConsolePrintBuffer {
+    /// Whether to print the faces' indices alongside their hint value
+    public var printFaceIndices: Bool = false
     
     public func printGrid(grid: LoopyGrid) {
         printGrid(grid: grid, width: bufferWidth - 2, height: bufferHeight - 1)
@@ -23,6 +25,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             return
         }
         
+        let minX = grid.vertices.map({ $0.x }).min()!
+        let minY = grid.vertices.map({ $0.y }).min()!
+        
         let gridWidth = totalWidth(for: grid)
         let gridHeight = totalHeight(for: grid)
         
@@ -30,8 +35,8 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         let availableHeight = Float(height)
         
         let toScreen = { (gridX: Float, gridY: Float) -> (x: Int, y: Int) in
-            let x = gridX / gridWidth * availableWidth
-            let y = gridY / gridHeight * availableHeight
+            let x = (-minX + gridX) / gridWidth * availableWidth
+            let y = (-minY + gridY) / gridHeight * availableHeight
             
             return (x: Int(x), y: Int(y))
         }
@@ -64,9 +69,20 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             
             let (x, y) = toScreen(center.x, center.y)
             
-            if let hint = grid.hintForFace(Face.Id(faceIndex)) {
-                putString(hint.description, x: x, y: y)
+            var label: String = ""
+            if printFaceIndices {
+                label = faceIndex.description
             }
+            
+            if let hint = grid.hintForFace(Face.Id(faceIndex)) {
+                if printFaceIndices {
+                    label += " [\(hint.description)]"
+                } else {
+                    label = hint.description
+                }
+            }
+            
+            putString(label, x: x, y: y)
         }
         
         // Draw vertices as small dots
@@ -109,9 +125,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     internal func lineScalars(forState state: Edge.State) -> [UnicodeScalar] {
         switch state {
         case .normal:
-            return ["│", "/", "╱", "─", "╲", "\\", "│"]
+            return ["│", "/", "/", "─", "╲", "\\", "│"]
         case .marked:
-            return ["║", "/", "╱", "═", "╲", "\\", "║"]
+            return ["║", "⤢", "═", "⤡", "║"]
         case .disabled:
             return [" "]
         }

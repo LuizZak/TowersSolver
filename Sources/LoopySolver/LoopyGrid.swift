@@ -68,6 +68,23 @@ public struct LoopyGrid: Equatable {
         vertices.append(vertex)
     }
     
+    public mutating func addOrGetVertex(x: Int, y: Int) -> Int {
+        return addOrGetVertex(Vertex(x: x, y: y))
+    }
+    
+    public mutating func addOrGetVertex(x: Float, y: Float) -> Int {
+        return addOrGetVertex(Vertex(x: x, y: y))
+    }
+    
+    public mutating func addOrGetVertex(_ vertex: Vertex) -> Int {
+        if let index = vertices.index(of: vertex) {
+            return index
+        }
+        
+        addVertex(vertex)
+        return vertices.count - 1
+    }
+    
     /// Creates an edge between the given two vertices.
     ///
     /// Returns the identifier for the edge.
@@ -109,7 +126,7 @@ public struct LoopyGrid: Equatable {
     ///
     /// - precondition: `indices` features no repeated vertex indices.
     @discardableResult
-    public mutating func createFace(withVertexIndices indices: [Int], hint: Int?) -> Face.Id {
+    public mutating func createFace(withVertexIndices indices: [Int], hint: Int? = nil) -> Face.Id {
         precondition(Set(indices).sorted() == indices.sorted(),
                      "indices list contains repeated vertex indices! \(indices)")
         

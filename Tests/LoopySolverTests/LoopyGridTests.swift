@@ -2,7 +2,7 @@ import XCTest
 @testable import LoopySolver
 import Geometry
 
-class LoopyFieldTests: XCTestCase {
+class LoopyGridTests: XCTestCase {
     
     static var allTests: [(String, () -> Void)] = [
         
@@ -23,6 +23,30 @@ class LoopyFieldTests: XCTestCase {
         
         XCTAssertEqual(grid.vertices.count, 1)
         XCTAssertEqual(grid.vertices.first, Vertex(x: 0, y: 1))
+    }
+    
+    func testAddOrGetVertexAtXYFloat() {
+        XCTAssertEqual(grid.addOrGetVertex(x: 0.0, y: 0.0), 0)
+        XCTAssertEqual(grid.addOrGetVertex(x: 1.0, y: 0.0), 1)
+        XCTAssertEqual(grid.addOrGetVertex(x: 0.0, y: 0.0), 0)
+        
+        XCTAssertEqual(grid.vertices.count, 2)
+    }
+    
+    func testAddOrGetVertexAtXYInt() {
+        XCTAssertEqual(grid.addOrGetVertex(x: 0, y: 0), 0)
+        XCTAssertEqual(grid.addOrGetVertex(x: 1, y: 0), 1)
+        XCTAssertEqual(grid.addOrGetVertex(x: 0, y: 0), 0)
+        
+        XCTAssertEqual(grid.vertices.count, 2)
+    }
+    
+    func testAddOrGetVertex() {
+        XCTAssertEqual(grid.addOrGetVertex(Vertex(x: 0, y: 0)), 0)
+        XCTAssertEqual(grid.addOrGetVertex(Vertex(x: 1, y: 0)), 1)
+        XCTAssertEqual(grid.addOrGetVertex(Vertex(x: 0, y: 0)), 0)
+        
+        XCTAssertEqual(grid.vertices.count, 2)
     }
     
     func testVertexIndex() {
