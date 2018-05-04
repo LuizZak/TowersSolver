@@ -22,9 +22,9 @@ class ZeroSolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 0, hint: 1)
         gridGen.setHint(x: 0, y: 1, hint: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
-        let field = gridGen.generate()
+        let grid = gridGen.generate()
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

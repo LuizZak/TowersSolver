@@ -20,10 +20,10 @@ class CornerEntrySolverStepTests: XCTestCase {
         // `1` face all disabled.
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 1, y: 1, hint: 1)
-        var field = gridGen.generate()
-        field.withEdge(5) { $0.state = .marked }
+        var grid = gridGen.generate()
+        grid.withEdge(5) { $0.state = .marked }
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -46,11 +46,11 @@ class CornerEntrySolverStepTests: XCTestCase {
         // disabled.
         let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
-        var field = gridGen.generate()
-        field.withEdge(5) { $0.state = .marked }
-        field.withEdge(6) { $0.state = .disabled }
+        var grid = gridGen.generate()
+        grid.withEdge(5) { $0.state = .marked }
+        grid.withEdge(6) { $0.state = .disabled }
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -73,13 +73,13 @@ class CornerEntrySolverStepTests: XCTestCase {
         // `1` face disabled.
         let gridGen = LoopySquareGridGen(width: 2, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 1)
-        var field = gridGen.generate()
-        field.withEdge(5) { $0.state = .marked }
-        field.withEdge(8) { $0.state = .disabled }
-        field.withEdge(11) { $0.state = .disabled }
-        field.withEdge(13) { $0.state = .disabled }
+        var grid = gridGen.generate()
+        grid.withEdge(5) { $0.state = .marked }
+        grid.withEdge(8) { $0.state = .disabled }
+        grid.withEdge(11) { $0.state = .disabled }
+        grid.withEdge(13) { $0.state = .disabled }
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -103,10 +103,10 @@ class CornerEntrySolverStepTests: XCTestCase {
         // highjacked the line path.
         let gridGen = LoopySquareGridGen(width: 3, height: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
-        var field = gridGen.generate()
-        field.withEdge(5) { $0.state = .marked }
+        var grid = gridGen.generate()
+        grid.withEdge(5) { $0.state = .marked }
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -128,6 +128,6 @@ class CornerEntrySolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(5)[2], .normal)
         XCTAssertEqual(edgeStatesForFace(5)[3], .normal)
         
-        LoopyFieldPrinter(bufferWidth: 14, bufferHeight: 5).printField(field: result)
+        LoopyGridPrinter(bufferWidth: 14, bufferHeight: 5).printGrid(grid: result)
     }
 }

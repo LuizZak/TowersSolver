@@ -1,15 +1,15 @@
 @_exported import Geometry
 
-/// A field for a loopy game.
-/// Consists of a collection of vertices laid on a field, connected with edges
+/// A grid for a loopy game.
+/// Consists of a collection of vertices laid on a grid, connected with edges
 /// forming faces.
-public struct LoopyField: Equatable {
+public struct LoopyGrid: Equatable {
     private var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
     private var _edgesPerVertex: [Int: [Edge.Id]] = [:]
     private var _facesPerVertex: [Int: [Face.Id]] = [:]
     private var _facesPerEdge: [Int: [Face.Id]] = [:]
     
-    /// The list of vertices on this field.
+    /// The list of vertices on this grid.
     /// Each vertex is always connected to two or more edges, and always belongs
     /// to one or more faces.
     private(set) public var vertices: [Vertex]
@@ -17,17 +17,17 @@ public struct LoopyField: Equatable {
     /// List of edges that connect vertices
     internal var edges: [Edge]
     
-    /// List of edge IDs in this field.
+    /// List of edge IDs in this grid.
     ///
     /// Every edge in `edges` has a matching edge ID within this array, and vice-versa.
     private(set) public var edgeIds: [Edge.Id]
     
-    /// List of faces in this field.
+    /// List of faces in this grid.
     ///
     /// Faces are compositions of vertex indices, with an optional hint associated.
     internal var faces: [Face]
     
-    /// List of face IDs in this field.
+    /// List of face IDs in this grid.
     ///
     /// Every face in `faces` has a matching face ID within this array, and vice-versa.
     private(set) public var faceIds: [Face.Id]
@@ -53,13 +53,13 @@ public struct LoopyField: Equatable {
     }
     
     /// With a given face reference, apply a set of changes to the matching face.
-    /// Changes block is not called, in case face is not found within this field.
+    /// Changes block is not called, in case face is not found within this grid.
     public mutating func withFace(_ face: FaceReferenceConvertible, changes: (inout Face) -> Void) {
         changes(&faces[face.id.value])
     }
     
     /// With a given edge reference, apply a set of changes to the matching edge.
-    /// Changes block is not called, in case edge is not found within this field.
+    /// Changes block is not called, in case edge is not found within this grid.
     public mutating func withEdge(_ edge: EdgeReferenceConvertible, changes: (inout Edge) -> Void) {
         changes(&edges[edge.edgeIndex(in: edges)])
     }
@@ -104,7 +104,7 @@ public struct LoopyField: Equatable {
         return edgeId
     }
     
-    /// Creates a face with a given set of vertex indices on this field, with an
+    /// Creates a face with a given set of vertex indices on this grid, with an
     /// optional accompanying initial hint.
     ///
     /// - precondition: `indices` features no repeated vertex indices.
@@ -153,39 +153,25 @@ public struct LoopyField: Equatable {
     public func faceId(forFace face: FaceReferenceConvertible) -> Face.Id {
         return face.id
     }
-    
-    private func filterFaceIndices(where predicate: (Face) -> Bool) -> [Face.Id] {
-        return withoutActuallyEscaping(predicate) { predicate in
-            return faces
-                .enumerated()
-                .lazy
-                .filter { predicate($1) }
-                .map { pair in pair.offset }
-                .map { Face.Id.init($0) }
-        }
-    }
-    
-    private func filterEdgeIndices(where predicate: (Edge) -> Bool) -> [Edge.Id] {
-        return withoutActuallyEscaping(predicate) { predicate in
-            return edges
-                .enumerated()
-                .lazy
-                .filter { predicate($1) }
-                .map { pair in pair.offset }
-                .map { Edge.Id.init($0) }
-        }
-    }
 }
 
 // MARK: - Vertex querying methods
-public extension LoopyField {
+public extension LoopyGrid {
+    /// Returns the index of the vertex with the given coordinates.
+    ///
+    /// Returns nil, in case the coordinate does not match any vertex.
+    public func vertexIndex(x: Float, y: Float) -> Int? {
+        return vertices.index(of: Vertex(x: x, y: y))
+    }
+    
     /// Returns a list of vertex indices that make up a face.
     public func vertices(forFace face: FaceReferenceConvertible) -> [Int] {
         return faces[face.id.value].indices
     }
     
     /// Returns the shared vertices between two faces.
-    public func sharedVertices(between first: FaceReferenceConvertible, _ second: FaceReferenceConvertible) -> [Int] {
+    public func sharedVertices(between first: FaceReferenceConvertible,
+                               _ second: FaceReferenceConvertible) -> [Int] {
         let first = faces[first.id.value]
         let second = faces[second.id.value]
         
@@ -194,7 +180,7 @@ public extension LoopyField {
 }
 
 // MARK: - Edge querying methods
-public extension LoopyField {
+public extension LoopyGrid {
     /// Returns the state of a given edge reference
     public func edgeState(forEdge edge: EdgeReferenceConvertible) -> Edge.State {
         return edges[edge.edgeIndex(in: edges)].state
@@ -207,7 +193,8 @@ public extension LoopyField {
     
     /// Returns `true` if two edges match vertices-wise (ignoring edge state).
     /// Comparison ignores order of vertices between edges.
-    public func edgesMatchVertices(_ first: EdgeReferenceConvertible, _ second: EdgeReferenceConvertible) -> Bool {
+    public func edgesMatchVertices(_ first: EdgeReferenceConvertible,
+                                   _ second: EdgeReferenceConvertible) -> Bool {
         let first = first.edgeIndex(in: edges)
         let second = second.edgeIndex(in: edges)
         
@@ -238,7 +225,7 @@ public extension LoopyField {
             }.map { Edge.Id($0.offset) }
     }
     
-    /// Returns an array of all edges within this field sharing a given common
+    /// Returns an array of all edges within this grid sharing a given common
     /// vertex index.
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
         return _edgesPerVertex[vertexIndex, default: []]
@@ -260,7 +247,9 @@ public extension LoopyField {
     
     /// Returns the edge ID of the shared edge between two faces.
     /// If the two faces do not share an edge, nil is returned, instead.
-    public func sharedEdge(between first: FaceReferenceConvertible, _ second: FaceReferenceConvertible) -> Edge.Id? {
+    public func sharedEdge(between first: FaceReferenceConvertible,
+                           _ second: FaceReferenceConvertible) -> Edge.Id? {
+        
         let face1 = faces[first.id.value]
         let face2 = faces[second.id.value]
         
@@ -269,16 +258,16 @@ public extension LoopyField {
 }
 
 // MARK: - Face querying methods
-public extension LoopyField {
-    /// Gets the hint for a particular face in this loopy field
+public extension LoopyGrid {
+    /// Gets the hint for a particular face in this loopy grid
     public func hintForFace(_ face: FaceReferenceConvertible) -> Int? {
         return faces[face.id.value].hint
     }
     
     /// Returns a value specifying whether a given face is semi-complete within
-    /// the field.
+    /// the grid.
     ///
-    /// Semi complete fields have a required edge count equal to their total edge
+    /// Semi complete grids have a required edge count equal to their total edge
     /// count - 1, i.e. all but one of its edges are part of the solution.
     public func isFaceSemicomplete(_ face: FaceReferenceConvertible) -> Bool {
         return faces[face.id.value].isSemiComplete
@@ -289,7 +278,7 @@ public extension LoopyField {
         return faces[face.id.value].edgesCount
     }
     
-    /// Returns `true` if a given face is considered solved on this field.
+    /// Returns `true` if a given face is considered solved on this grid.
     ///
     /// Faces are solved if they are surrounded by exactly as many marked edges
     /// as their hint points.
@@ -312,19 +301,21 @@ public extension LoopyField {
         return face.indices.map { vertices[$0] }
     }
     
-    /// Returns an array of faces within this field that share a given vertex index.
+    /// Returns an array of faces within this grid that share a given vertex index.
     public func facesSharing(vertexIndex: Int) -> [Face.Id] {
         return _facesPerVertex[vertexIndex, default: []]
     }
     
-    /// Returns an array of faces within this field that share a common edge.
+    /// Returns an array of faces within this grid that share a common edge.
     /// Either one or two faces share a common edge at all times.
     public func facesSharing(edge: EdgeReferenceConvertible) -> [Face.Id] {
         return _facesPerEdge[edge.edgeIndex(in: edges), default: []]
     }
     
     /// Returns `true` if a given edge forms the side of a given face.
-    public func faceContainsEdge(face: FaceReferenceConvertible, edge: EdgeReferenceConvertible) -> Bool {
+    public func faceContainsEdge(face: FaceReferenceConvertible,
+                                 edge: EdgeReferenceConvertible) -> Bool {
+        
         let face = faces[face.id.value]
         let edgeId = edgeIds[edge.edgeIndex(in: edges)]
         
@@ -332,7 +323,9 @@ public extension LoopyField {
     }
     
     /// Returns `true` if two given faces share a common edge.
-    public func facesShareEdge(_ face1: FaceReferenceConvertible, _ face2: FaceReferenceConvertible) -> Bool {
+    public func facesShareEdge(_ face1: FaceReferenceConvertible,
+                               _ face2: FaceReferenceConvertible) -> Bool {
+        
         let face1 = faces[face1.id.value]
         let face2 = faces[face2.id.value]
         
@@ -341,7 +334,7 @@ public extension LoopyField {
 }
 
 // MARK: - Edge segment querying
-public extension LoopyField {
+public extension LoopyGrid {
     /// Returns `true` iff each edge on a given list is directly connected to the
     /// next, forming a singular chain.
     public func isUniqueSegment(_ edges: [Edge.Id]) -> Bool {

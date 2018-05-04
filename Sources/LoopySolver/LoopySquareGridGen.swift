@@ -1,7 +1,7 @@
 import Geometry
 
-/// Field generator that generates loopy field with regular square grid patterns.
-public class LoopySquareGridGen: LoopyFieldGenerator {
+/// Grid generator that generates loopy grid with regular square grid patterns.
+public class LoopySquareGridGen: LoopyGridGenerator {
     public let width: Int
     public let height: Int
     
@@ -39,12 +39,12 @@ public class LoopySquareGridGen: LoopyFieldGenerator {
         return hints[pair]
     }
     
-    public func generate() -> LoopyField {
-        var field = LoopyField()
+    public func generate() -> LoopyGrid {
+        var grid = LoopyGrid()
         
         for y in 0...height {
             for x in 0...width {
-                field.addVertex(Vertex(x: x, y: y))
+                grid.addVertex(Vertex(x: x, y: y))
             }
         }
         
@@ -59,10 +59,10 @@ public class LoopySquareGridGen: LoopyFieldGenerator {
                 
                 let hint = hintForFace(atX: x, y: y)
                 
-                field.createFace(withVertexIndices: [v1, v2, v3, v4], hint: hint)
+                grid.createFace(withVertexIndices: [v1, v2, v3, v4], hint: hint)
             }
         }
         
-        return field
+        return grid
     }
 }

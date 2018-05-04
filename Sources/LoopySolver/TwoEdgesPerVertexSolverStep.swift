@@ -2,19 +2,19 @@
 /// all remaining edges as not part of the solution (since these would result in
 /// an intersecting loopy line at that vertex)
 public class TwoEdgesPerVertexSolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let controller = LoopyFieldController(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let controller = LoopyGridController(grid: grid)
         
-        for vertex in 0..<field.vertices.count {
-            let edges = field.edgesSharing(vertexIndex: vertex)
-            let marked = edges.count { field.edgeState(forEdge: $0) == .marked }
+        for vertex in 0..<grid.vertices.count {
+            let edges = grid.edgesSharing(vertexIndex: vertex)
+            let marked = edges.count { grid.edgeState(forEdge: $0) == .marked }
             
             if marked == 2 {
-                let toDisable = edges.filter { field.edgeState(forEdge: $0) != .marked }
+                let toDisable = edges.filter { grid.edgeState(forEdge: $0) != .marked }
                 controller.setEdges(state: .disabled, forEdges: toDisable)
             }
         }
         
-        return controller.field
+        return controller.grid
     }
 }

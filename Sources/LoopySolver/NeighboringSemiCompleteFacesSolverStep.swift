@@ -1,23 +1,23 @@
 /// Solver step that deals with cases of semi-complete (`hint == edge_count - 1`)
 /// faces that touch either edge-wise or across corners via a common vertex.
 public class NeighboringSemiCompleteFacesSolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let solver = InternalSolver(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let solver = InternalSolver(grid: grid)
         solver.apply()
         
-        return solver.field
+        return solver.grid
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyFieldController
+    var controller: LoopyGridController
     
-    var field: LoopyField {
-        return controller.field
+    var grid: LoopyGrid {
+        return controller.grid
     }
     
-    init(field: LoopyField) {
-        controller = LoopyFieldController(field: field)
+    init(grid: LoopyGrid) {
+        controller = LoopyGridController(grid: grid)
     }
     
     func apply() {
@@ -36,24 +36,24 @@ private class InternalSolver {
         
         for i in 0..<semifaces.count - 1 {
             let semi1 = semifaces[i]
-            if field.isFaceSolved(semi1) {
+            if grid.isFaceSolved(semi1) {
                 continue
             }
             
             for j in i + 1..<semifaces.count {
                 let semi2 = semifaces[j]
-                if field.isFaceSolved(semi2) {
+                if grid.isFaceSolved(semi2) {
                     continue
                 }
                 
                 // Test for a shared edge
-                if let edge = field.sharedEdge(between: semi1, semi2) {
+                if let edge = grid.sharedEdge(between: semi1, semi2) {
                     pairs.append(FacePair(face1: semi1, face2: semi2, sharing: .edge(edge)))
                     continue
                 }
                 
                 // Test for a shared vertex
-                let vertices = field.sharedVertices(between: semi1, semi2)
+                let vertices = grid.sharedVertices(between: semi1, semi2)
                 if vertices.count == 1 {
                     pairs.append(FacePair(face1: semi1, face2: semi2, sharing: .vertex(vertices[0])))
                 }
@@ -70,27 +70,27 @@ private class InternalSolver {
             controller.setEdge(state: .marked, forEdge: shared)
             
             // Mark all opposing edges from the shared edge on both faces
-            for edge in field.edges(forFace: pair.face1) {
-                if !field.edgesShareVertex(edge, shared) {
+            for edge in grid.edges(forFace: pair.face1) {
+                if !grid.edgesShareVertex(edge, shared) {
                     controller.setEdge(state: .marked, forEdge: edge)
                 }
             }
-            for edge in field.edges(forFace: pair.face2) {
-                if !field.edgesShareVertex(edge, shared) {
+            for edge in grid.edges(forFace: pair.face2) {
+                if !grid.edgesShareVertex(edge, shared) {
                     controller.setEdge(state: .marked, forEdge: edge)
                 }
             }
             
-            let (sharedStart, sharedEnd) = field.vertices(forEdge: shared)
+            let (sharedStart, sharedEnd) = grid.vertices(forEdge: shared)
             
             // Now take the shared edge's vertices and disable any other edge that
             // shares those vertices, and is not part of either of the paired faces
             var otherEdges =
-                field.edgesSharing(vertexIndex: sharedStart)
-                    + field.edgesSharing(vertexIndex: sharedEnd)
+                grid.edgesSharing(vertexIndex: sharedStart)
+                    + grid.edgesSharing(vertexIndex: sharedEnd)
             
             otherEdges = otherEdges.filter { edge in
-                !field.faceContainsEdge(face: pair.face1, edge: edge) && !field.faceContainsEdge(face: pair.face2, edge: edge)
+                !grid.faceContainsEdge(face: pair.face1, edge: edge) && !grid.faceContainsEdge(face: pair.face2, edge: edge)
             }
             
             controller.setEdges(state: .disabled, forEdges: otherEdges)
@@ -98,12 +98,12 @@ private class InternalSolver {
         case .vertex(let vertex):
             // Set all oposed edges to the vertex on the two faces as marked
             let edges1 =
-                field.edges(forFace: pair.face1)
-                    .filter { !field.edgeSharesVertex($0, vertex: vertex) }
+                grid.edges(forFace: pair.face1)
+                    .filter { !grid.edgeSharesVertex($0, vertex: vertex) }
             
             let edges2 =
-                field.edges(forFace: pair.face2)
-                    .filter { !field.edgeSharesVertex($0, vertex: vertex) }
+                grid.edges(forFace: pair.face2)
+                    .filter { !grid.edgeSharesVertex($0, vertex: vertex) }
             
             controller.setEdges(state: .marked, forEdges: edges1)
             controller.setEdges(state: .marked, forEdges: edges2)

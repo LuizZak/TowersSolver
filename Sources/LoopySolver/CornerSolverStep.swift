@@ -1,4 +1,4 @@
-/// Solves field cells that are on a corner in some scenarios:
+/// Solves grid cells that are on a corner in some scenarios:
 ///
 /// 1. When the number of required edges exceeds edges not shared with another
 /// face.
@@ -27,39 +27,39 @@
 ///          This rule does not apply if the face in question shares one of the
 ///          two vertices where the inner and outer path for the corner face join.
 public class CornerSolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let solver = InternalSolver(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let solver = InternalSolver(grid: grid)
         solver.apply()
         
-        return solver.field
+        return solver.grid
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyFieldController
+    var controller: LoopyGridController
     
-    var field: LoopyField {
-        return controller.field
+    var grid: LoopyGrid {
+        return controller.grid
     }
     
-    init(field: LoopyField) {
-        controller = LoopyFieldController(field: field)
+    init(grid: LoopyGrid) {
+        controller = LoopyGridController(grid: grid)
     }
     
     func apply() {
-        for id in field.faceIds {
+        for id in grid.faceIds {
             applyToFace(id)
         }
     }
     
     func applyToFace(_ face: Face.Id) {
-        let edges = field.edges(forFace: face)
-        if field.isFaceSolved(face) && !edges.contains(where: { field.edgeState(forEdge: $0) == .normal }) {
+        let edges = grid.edges(forFace: face)
+        if grid.isFaceSolved(face) && !edges.contains(where: { grid.edgeState(forEdge: $0) == .normal }) {
             return
         }
         
         // Requires hint!
-        guard let hint = field.hintForFace(face) else {
+        guard let hint = grid.hintForFace(face) else {
             return
         }
         
@@ -67,9 +67,9 @@ private class InternalSolver {
         // Detect sequential edges that exceed the required number for the face
         for edge in edges {
             let edges =
-                GraphUtils.singlePathEdges(in: field, fromEdge: edge)
+                GraphUtils.singlePathEdges(in: grid, fromEdge: edge)
                 .filter {
-                    field.faceContainsEdge(face: face, edge: $0)
+                    grid.faceContainsEdge(face: face, edge: $0)
                 }
             
             if edges.count > hint {
@@ -84,7 +84,7 @@ private class InternalSolver {
         
         // Can only apply next solving logics when the non-shared edges form a
         // single sequential line across the outer side of the face
-        if !nonShared.edges(in: field).isUniqueSegment {
+        if !nonShared.edges(in: grid).isUniqueSegment {
             return
         }
         
@@ -94,7 +94,7 @@ private class InternalSolver {
         // solution, since at least one of the outer edges will have to be marked
         // to be part of the solution, and if a single outer edge is marked, all
         // outer edges must be marked due to them forming a single continuous line.
-        if field.edges(forFace: face).count - nonShared.count < hint {
+        if grid.edges(forFace: face).count - nonShared.count < hint {
             controller.setEdges(state: .marked, forEdges: nonShared)
             return
         }
@@ -110,7 +110,7 @@ private class InternalSolver {
         // are mandatorily part of the solution, since they are common in the two
         // solution scenarios.
         //
-        // For example, in the field bellow, the `2` cell at the corner can be
+        // For example, in the grid bellow, the `2` cell at the corner can be
         // solved by either passing the loopy line inside or outside its edges,
         // and in both situations the only escape path for the line is through
         // the top-left and bottom-right edges:
@@ -125,15 +125,15 @@ private class InternalSolver {
         // | 2 |
         // └---┴══
         //
-        if field.edges(forFace: face).count == nonShared.count * 2 && nonShared.count == hint {
+        if grid.edges(forFace: face).count == nonShared.count * 2 && nonShared.count == hint {
             // Find the out-going edges from the join vertices
-            let start = field
+            let start = grid
                 .edgesConnected(to: nonShared.first!)
-                .filter { !field.faceContainsEdge(face: face, edge: $0) }
+                .filter { !grid.faceContainsEdge(face: face, edge: $0) }
             
-            let end = field
+            let end = grid
                 .edgesConnected(to: nonShared.last!)
-                .filter { !field.faceContainsEdge(face: face, edge: $0) }
+                .filter { !grid.faceContainsEdge(face: face, edge: $0) }
             
             if start.count == 1 {
                 controller.setEdges(state: .marked, forEdges: start)
@@ -145,28 +145,28 @@ private class InternalSolver {
             // 3.1
             // Test if the outer path is not 'hijacked' by an `edge_count - 1`-hinted
             // face.
-            let shared = field.edges(forFace: face)
+            let shared = grid.edges(forFace: face)
                 .filter { !nonShared.contains($0) }
             
             // Find vertices where inner and outer paths join (we'll use that to
             // filter the 'hijacking' faces and only apply to those that don't
             // share that vertex).
             let joinVertices =
-                Set(shared.edges(in: field).flatMap { [$0.start, $0.end] })
-                    .intersection(nonShared.edges(in: field).flatMap { [$0.start, $0.end] })
+                Set(shared.edges(in: grid).flatMap { [$0.start, $0.end] })
+                    .intersection(nonShared.edges(in: grid).flatMap { [$0.start, $0.end] })
             
             // Find vertices for inner edges (excluding vertices from join above)
             // These are the query vertices we'll use to test for the hijacking
             // faces
-            let testVertices = Set(field.vertices(forFace: face)).subtracting(joinVertices)
+            let testVertices = Set(grid.vertices(forFace: face)).subtracting(joinVertices)
             
             for vertex in testVertices {
-                let faces = field
+                let faces = grid
                     .facesSharing(vertexIndex: vertex)
                     // Ignore faces that contain one of the join vertices
-                    .filter({ !field.vertices(forFace: $0).contains(where: joinVertices.contains) })
+                    .filter({ !grid.vertices(forFace: $0).contains(where: joinVertices.contains) })
                 
-                if faces.contains(where: field.isFaceSemicomplete) {
+                if faces.contains(where: grid.isFaceSemicomplete) {
                     // Hijacking!
                     // Mark outer edges as solution and quit.
                     controller.setEdges(state: .disabled, forEdges: shared)

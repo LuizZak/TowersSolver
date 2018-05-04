@@ -23,13 +23,13 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 4, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 3, y: 0, hint: 3)
-        let controller = LoopyFieldController(field: gridGen.generate())
+        let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdges(state: .marked, forFace: 0, edgeIndices: [0, 3])
         controller.setEdges(state: .marked, forFace: 2, edgeIndices: [0, 2])
         controller.setEdges(state: .marked, forFace: 3, edgeIndices: [0, 1, 2])
         controller.setEdge(state: .disabled, forFace: 2, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.field)
+        let result = sut.apply(to: controller.grid)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
@@ -57,12 +57,12 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         // •───•═══•═══•
         let gridGen = LoopySquareGridGen(width: 3, height: 1)
         gridGen.setHint(x: 2, y: 0, hint: 3)
-        let controller = LoopyFieldController(field: gridGen.generate())
+        let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdges(state: .marked, forFace: 1, edgeIndices: [0, 2])
         controller.setEdges(state: .marked, forFace: 2, edgeIndices: [0, 1, 2])
         controller.setEdge(state: .disabled, forFace: 2, edgeIndex: 3)
         
-        let result = sut.apply(to: controller.field)
+        let result = sut.apply(to: controller.grid)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)

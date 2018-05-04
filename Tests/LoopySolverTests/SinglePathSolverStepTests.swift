@@ -23,13 +23,13 @@ class SinglePathSolverStepTests: XCTestCase {
         // •───•───•───•
         let gridGen = LoopySquareGridGen(width: 3, height: 3)
         gridGen.setHint(x: 1, y: 1, hint: 3)
-        let controller = LoopyFieldController(field: gridGen.generate())
+        let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 2)
         controller.setEdge(state: .disabled, forFace: 5, edgeIndex: 2)
         controller.setEdge(state: .disabled, forFace: 6, edgeIndex: 1)
         controller.setEdge(state: .disabled, forFace: 7, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.field)
+        let result = sut.apply(to: controller.grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

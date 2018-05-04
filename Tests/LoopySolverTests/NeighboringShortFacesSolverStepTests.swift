@@ -69,11 +69,11 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 4, height: 2)
         gridGen.setHint(x: 1, y: 0, hint: 1)
         gridGen.setHint(x: 2, y: 0, hint: 2)
-        let controller = LoopyFieldController(field: gridGen.generate())
+        let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.field)
+        let result = sut.apply(to: controller.grid)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
@@ -128,14 +128,14 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 4, height: 2)
         gridGen.setHint(x: 0, y: 1, hint: 2)
         gridGen.setHint(x: 1, y: 1, hint: 2)
-        let controller = LoopyFieldController(field: gridGen.generate())
+        let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
         controller.setEdges(state: .disabled, forFace: 1, edgeIndices: [1, 2])
         controller.setEdge(state: .marked, forFace: 2, edgeIndex: 2)
         controller.setEdges(state: .disabled, forFace: 3, edgeIndices: [2, 3])
         controller.setEdges(state: .marked, forFace: 5, edgeIndices: [1, 2])
         controller.setEdge(state: .disabled, forFace: 6, edgeIndex: 2)
-        let before = controller.field
+        let before = controller.grid
         
         let result = sut.apply(to: before)
         

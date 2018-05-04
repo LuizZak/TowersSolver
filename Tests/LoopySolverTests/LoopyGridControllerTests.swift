@@ -1,10 +1,10 @@
 import XCTest
 import LoopySolver
 
-class LoopyFieldControllerTests: XCTestCase {
+class LoopyGridControllerTests: XCTestCase {
     func testNonSharedEdges() {
-        let field = LoopySquareGridGen(width: 3, height: 3).generate()
-        let sut = LoopyFieldController(field: field)
+        let grid = LoopySquareGridGen(width: 3, height: 3).generate()
+        let sut = LoopyGridController(grid: grid)
         
         // Center face shares all edges with all connecting faces
         XCTAssert(sut.nonSharedEdges(forFace: 4).isEmpty)
@@ -22,15 +22,15 @@ class LoopyFieldControllerTests: XCTestCase {
         //  !   !   !
         //  !___!___!
         //
-        let field = LoopySquareGridGen(width: 2, height: 2).generate()
-        let sut = LoopyFieldController(field: field)
+        let grid = LoopySquareGridGen(width: 2, height: 2).generate()
+        let sut = LoopyGridController(grid: grid)
         
         sut.setEdge(state: .disabled, forFace: 0, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 1, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 2, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
         
-        let edgeStates = sut.field.edgeIds.map(sut.field.edgeState(forEdge:))
+        let edgeStates = sut.grid.edgeIds.map(sut.grid.edgeState(forEdge:))
         XCTAssertEqual(
             edgeStates,
             [
@@ -54,7 +54,7 @@ class LoopyFieldControllerTests: XCTestCase {
     }
     
     func testSemiCompleteFaces() {
-        // Create a field with a given configuration:
+        // Create a grid with a given configuration:
         // ._________. _________.
         // |         | \   1   /
         // |         |   \   /
@@ -62,17 +62,17 @@ class LoopyFieldControllerTests: XCTestCase {
         // |         |   /
         // !_________! /
         //
-        var field = LoopyField()
-        field.addVertex(Vertex(x: 0, y: 0))
-        field.addVertex(Vertex(x: 1, y: 0))
-        field.addVertex(Vertex(x: 1, y: 1))
-        field.addVertex(Vertex(x: 0, y: 1))
-        field.addVertex(Vertex(x: 3, y: 0))
-        field.addVertex(Vertex(x: 2, y: 0.5))
-        let f1 = field.createFace(withVertexIndices: [0, 1, 2, 3], hint: 3)
-        let f2 = field.createFace(withVertexIndices: [1, 5, 2], hint: 2)
-        field.createFace(withVertexIndices: [1, 4, 5], hint: 1)
-        let sut = LoopyFieldController(field: field)
+        var grid = LoopyGrid()
+        grid.addVertex(Vertex(x: 0, y: 0))
+        grid.addVertex(Vertex(x: 1, y: 0))
+        grid.addVertex(Vertex(x: 1, y: 1))
+        grid.addVertex(Vertex(x: 0, y: 1))
+        grid.addVertex(Vertex(x: 3, y: 0))
+        grid.addVertex(Vertex(x: 2, y: 0.5))
+        let f1 = grid.createFace(withVertexIndices: [0, 1, 2, 3], hint: 3)
+        let f2 = grid.createFace(withVertexIndices: [1, 5, 2], hint: 2)
+        grid.createFace(withVertexIndices: [1, 4, 5], hint: 1)
+        let sut = LoopyGridController(grid: grid)
         
         let faces = sut.semiCompleteFaces()
         

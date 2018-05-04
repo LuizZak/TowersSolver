@@ -2,7 +2,7 @@
 /// such a way that the line has to traverse through the face, marking a minimal
 /// number of edges around the face.
 ///
-/// Ex: On the following field, the top-right marked edge has to pass through the
+/// Ex: On the following grid, the top-right marked edge has to pass through the
 /// 1-hinted face to be able to continue. Since we know that it will have to cross
 /// the edges of the face, we know the left edge of the cell cannot be marked
 /// (since it would exceed the requiremet for the cell), and the right and bottom
@@ -20,36 +20,36 @@
 ///     ! _ ! 3 !
 ///
 public class CornerEntrySolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let solver = InternalSolver(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let solver = InternalSolver(grid: grid)
         solver.apply()
-        return solver.field
+        return solver.grid
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyFieldController
+    var controller: LoopyGridController
     
-    var field: LoopyField {
-        return controller.field
+    var grid: LoopyGrid {
+        return controller.grid
     }
     
-    init(field: LoopyField) {
-        controller = LoopyFieldController(field: field)
+    init(grid: LoopyGrid) {
+        controller = LoopyGridController(grid: grid)
     }
     
     func apply() {
-        for i in 0..<field.vertices.count {
+        for i in 0..<grid.vertices.count {
             applyToVertex(i)
         }
     }
     
     func applyToVertex(_ vertexIndex: Int) {
         
-        let edges = field.edgesSharing(vertexIndex: vertexIndex)
+        let edges = grid.edgesSharing(vertexIndex: vertexIndex)
         
-        let marked = edges.filter { field.edgeState(forEdge: $0) == .marked }
-        let normal = edges.filter { field.edgeState(forEdge: $0) == .normal }
+        let marked = edges.filter { grid.edgeState(forEdge: $0) == .marked }
+        let normal = edges.filter { grid.edgeState(forEdge: $0) == .normal }
         
         // Can only do work on loose ends of a loopy line (a vertex with a single
         // marked edge)
@@ -59,26 +59,26 @@ private class InternalSolver {
         
         // If any of the faces is semi-complete, apply a different logic here to
         // 'hijack' the line into it's own path
-        if let semiComplete = field.facesSharing(vertexIndex: vertexIndex).first(where: field.isFaceSemicomplete) {
-            if field.isFaceSolved(semiComplete) {
+        if let semiComplete = grid.facesSharing(vertexIndex: vertexIndex).first(where: grid.isFaceSemicomplete) {
+            if grid.isFaceSolved(semiComplete) {
                 return
             }
             
             // Can only account for edges coming into the face from an outside
             // edge
-            if field.faceContainsEdge(face: semiComplete, edge: marked[0]) {
+            if grid.faceContainsEdge(face: semiComplete, edge: marked[0]) {
                 return
             }
             
-            let oppositeEdges = field.edges(forFace: semiComplete)
-                .filter { !field.edgeSharesVertex($0, vertex: vertexIndex) }
+            let oppositeEdges = grid.edges(forFace: semiComplete)
+                .filter { !grid.edgeSharesVertex($0, vertex: vertexIndex) }
             
             controller.setEdges(state: .marked, forEdges: oppositeEdges)
             
             // Disable edges from other faces that share that vertex to finish
             // hijacking the line path
             let otherEdges = edges
-                .filter { !field.faceContainsEdge(face: semiComplete, edge: field.edgeId(forEdge: $0)!) }
+                .filter { !grid.faceContainsEdge(face: semiComplete, edge: grid.edgeId(forEdge: $0)!) }
                 .filter { marked[0] != $0 }
             
             controller.setEdges(state: .disabled, forEdges: otherEdges)
@@ -87,7 +87,7 @@ private class InternalSolver {
         }
         
         // Find the face that all path candidate edges share
-        let allFaces = normal.map { Set(field.facesSharing(edge: $0)) }
+        let allFaces = normal.map { Set(grid.facesSharing(edge: $0)) }
         if allFaces.count == 0 {
             return
         }
@@ -107,20 +107,20 @@ private class InternalSolver {
     }
     
     func applyToFace(_ face: Face.Id, vertex: Int) {
-        if field.isFaceSolved(face) {
+        if grid.isFaceSolved(face) {
             return
         }
         
         // Requires hint!
-        guard let hint = field.hintForFace(face) else {
+        guard let hint = grid.hintForFace(face) else {
             return
         }
         
-        let allEdges = field.edges(forFace: face)
+        let allEdges = grid.edges(forFace: face)
         
-        let edges = allEdges.filter { field.edgeSharesVertex($0, vertex: vertex) }
+        let edges = allEdges.filter { grid.edgeSharesVertex($0, vertex: vertex) }
         
-        let normalEdges = edges.filter { field.edgeState(forEdge: $0) == .normal }
+        let normalEdges = edges.filter { grid.edgeState(forEdge: $0) == .normal }
         
         if normalEdges.isEmpty {
             return
@@ -131,8 +131,8 @@ private class InternalSolver {
         for edge in normalEdges {
             let edgesPath =
                 GraphUtils
-                    .singlePathEdges(in: field, fromEdge: edge)
-                    .filter { field.faceContainsEdge(face: face, edge: $0) }
+                    .singlePathEdges(in: grid, fromEdge: edge)
+                    .filter { grid.faceContainsEdge(face: face, edge: $0) }
             
             let edgeCount = edgesPath.count
             leastCount = min(edgeCount, leastCount)
@@ -146,7 +146,7 @@ private class InternalSolver {
         
         if leastCount >= hint {
             // Disable all edges not sharing the common vertex
-            let toDisable = allEdges.filter { !field.edgeSharesVertex($0, vertex: vertex) }
+            let toDisable = allEdges.filter { !grid.edgeSharesVertex($0, vertex: vertex) }
             
             controller.setEdges(state: .disabled, forEdges: toDisable)
         }

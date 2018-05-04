@@ -92,9 +92,9 @@ extension Int: EdgeReferenceConvertible {
 }
 
 extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
-    /// Returns the edge represented by this edge ID on a given field
-    func edge(in field: LoopyField) -> Edge {
-        return field.edges[self.value]
+    /// Returns the edge represented by this edge ID on a given grid
+    func edge(in grid: LoopyGrid) -> Edge {
+        return grid.edges[self.value]
     }
     
     public func edgeIndex(in list: [Edge]) -> Int {
@@ -104,9 +104,9 @@ extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
 
 extension Sequence where Element == Edge.Id {
     /// Returns the actual edges represented by this list of edge IDs on a given
-    /// field.
-    func edges(in field: LoopyField) -> [Edge] {
-        return map { $0.edge(in: field) }
+    /// grid.
+    func edges(in grid: LoopyGrid) -> [Edge] {
+        return map { $0.edge(in: grid) }
     }
 }
 

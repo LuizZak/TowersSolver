@@ -16,48 +16,48 @@
 ///        '
 ///
 public class SolePathEdgeExtenderSolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let solver = InternalSolver(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let solver = InternalSolver(grid: grid)
         solver.apply()
         
-        return solver.field
+        return solver.grid
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyFieldController
+    var controller: LoopyGridController
     
-    var field: LoopyField {
-        return controller.field
+    var grid: LoopyGrid {
+        return controller.grid
     }
     
-    init(field: LoopyField) {
-        controller = LoopyFieldController(field: field)
+    init(grid: LoopyGrid) {
+        controller = LoopyGridController(grid: grid)
     }
     
     func apply() {
         while true {
-            let before = field
+            let before = grid
             
             applyInternal()
             
-            if before == field {
+            if before == grid {
                 return
             }
         }
     }
     
     private func applyInternal() {
-        for i in 0..<field.vertices.count {
-            let edges = field.edgesSharing(vertexIndex: i)
+        for i in 0..<grid.vertices.count {
+            let edges = grid.edgesSharing(vertexIndex: i)
             
-            let marked = edges.count { field.edgeState(forEdge: $0) == .marked }
+            let marked = edges.count { grid.edgeState(forEdge: $0) == .marked }
             
             guard marked == 1 else {
                 continue
             }
             
-            let enabled = edges.filter { field.edgeState(forEdge: $0) == .normal }
+            let enabled = edges.filter { grid.edgeState(forEdge: $0) == .normal }
             
             if enabled.count == 1 {
                 controller.setEdges(state: .marked, forEdges: enabled)

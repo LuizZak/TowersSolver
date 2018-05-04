@@ -19,11 +19,11 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
-        var field = gridGen.generate()
-        field.withEdge(0) { $0.state = .disabled }
-        field.withEdge(3) { $0.state = .disabled }
+        var grid = gridGen.generate()
+        grid.withEdge(0) { $0.state = .disabled }
+        grid.withEdge(3) { $0.state = .disabled }
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -49,12 +49,12 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
-        var field = gridGen.generate()
-        field.withEdge(4) { $0.state = .marked }
-        field.withEdge(5) { $0.state = .marked }
-        field.withEdge(6) { $0.state = .marked }
+        var grid = gridGen.generate()
+        grid.withEdge(4) { $0.state = .marked }
+        grid.withEdge(5) { $0.state = .marked }
+        grid.withEdge(6) { $0.state = .marked }
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

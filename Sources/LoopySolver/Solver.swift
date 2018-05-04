@@ -2,7 +2,7 @@
 public class Solver {
     private var steps: [SolverStep] = []
     
-    public var field: LoopyField
+    public var grid: LoopyGrid
     
     /// When the solver gets stuck and requires guessing a possible next play,
     /// this counter controls how many guesses it can attempt before stopping
@@ -15,77 +15,77 @@ public class Solver {
     
     private var guessesAvailable: Int
     
-    /// Returns `true` if the solution requirements are met on this solver's field.
+    /// Returns `true` if the solution requirements are met on this solver's grid.
     ///
-    /// Requirements for the field to be considered solved:
+    /// Requirements for the grid to be considered solved:
     ///
-    /// 1. A single, non-intersecting loop must be present on the field by means
+    /// 1. A single, non-intersecting loop must be present on the grid by means
     /// marked edges. All marked edges must form a continuous loop.
     ///
     /// 2. All numbered faces must have that number of their edges marked as part
     /// of the solution.
     public var isSolved: Bool {
-        for face in field.faceIds {
-            guard let hint = field.hintForFace(face) else { continue }
+        for face in grid.faceIds {
+            guard let hint = grid.hintForFace(face) else { continue }
             
             let marked =
-                field.edges(forFace: face)
-                    .count { field.edgeState(forEdge: $0) == .marked }
+                grid.edges(forFace: face)
+                    .count { grid.edgeState(forEdge: $0) == .marked }
             
             if marked != hint {
                 return false
             }
         }
         
-        let markedEdges = field.edgeIds.filter { field.edgeState(forEdge: $0) == .marked }
-        if !field.isLoop(markedEdges) {
+        let markedEdges = grid.edgeIds.filter { grid.edgeState(forEdge: $0) == .marked }
+        if !grid.isLoop(markedEdges) {
             return false
         }
         
         return true
     }
     
-    /// Returns a value specifying whether the field in this solver is consistent.
+    /// Returns a value specifying whether the grid in this solver is consistent.
     /// Consistency is based upon a partial or full solution attempt, be that the
     /// target solution to the playfield or not.
     ///
     /// As soon as a undoubtedly invalid state is reached, which cannot be undone
     /// by marking or disabling edges, a board is considered inconsistent.
     ///
-    /// A field is consistent when all of the following assertions hold:
+    /// A grid is consistent when all of the following assertions hold:
     ///
     /// 1. A vertex has either zero, one, or two marked edges associated with it.
     /// 2. A face with a hint has less or exactly as many marked edges around it
     /// as its hint indicates.
     /// 3. A face with a hint has more or exactly as many non-disabled edges
     /// around it as its hint indicates.
-    /// 4. If a set of edges form a closed loop, all marked edges in the field
+    /// 4. If a set of edges form a closed loop, all marked edges in the grid
     /// must be part of the loop.
     public var isConsistent: Bool {
-        for i in 0..<field.vertices.count {
-            let edges = field
+        for i in 0..<grid.vertices.count {
+            let edges = grid
                 .edgesSharing(vertexIndex: i)
             
-            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) > 2 {
+            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) > 2 {
                 return false
             }
         }
         
-        for face in field.faceIds {
-            let edges = field.edges(forFace: face)
-            guard let hint = field.hintForFace(face) else {
+        for face in grid.faceIds {
+            let edges = grid.edges(forFace: face)
+            guard let hint = grid.hintForFace(face) else {
                 continue
             }
             
-            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) > hint {
+            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) > hint {
                 return false
             }
-            if edges.count(where: { field.edgeState(forEdge: $0).isEnabled }) < hint {
+            if edges.count(where: { grid.edgeState(forEdge: $0).isEnabled }) < hint {
                 return false
             }
         }
         
-        let marked = field.edgeIds.filter { field.edgeState(forEdge: $0) == .marked }
+        let marked = grid.edgeIds.filter { grid.edgeState(forEdge: $0) == .marked }
         
         var runs: [[Edge.Id]] = []
         for edge in marked {
@@ -95,22 +95,22 @@ public class Solver {
             
             let run =
                 GraphUtils
-                    .singlePathEdges(in: field,
+                    .singlePathEdges(in: grid,
                                      fromEdge: edge,
-                                     includeTest: { field.edgeState(forEdge: $0) == .marked })
+                                     includeTest: { grid.edgeState(forEdge: $0) == .marked })
             
             runs.append(run)
         }
         
-        if runs.count > 1 && runs.contains(where: field.isLoop) {
+        if runs.count > 1 && runs.contains(where: grid.isLoop) {
             return false
         }
         
         return true
     }
     
-    public init(field: LoopyField) {
-        self.field = field
+    public init(grid: LoopyGrid) {
+        self.grid = grid
         guessesAvailable = maxNumberOfGuesses
         
         addSteps()
@@ -131,15 +131,15 @@ public class Solver {
     }
     
     public func solve() -> Result {
-        // Keep applying passes until the field no longer changes between steps
+        // Keep applying passes until the grid no longer changes between steps
         while !isSolved && isConsistent {
-            var oldField = field
-            field = applySteps(to: field)
+            var oldGrid = grid
+            grid = applySteps(to: grid)
             
             // If no changes where made, try a speculative play here
-            if field == oldField {
+            if grid == oldGrid {
                 
-                oldField = field
+                oldGrid = grid
                 
                 // Perform a speculative step to attempt solving the grid by making
                 // guessing plays.
@@ -147,7 +147,7 @@ public class Solver {
                 
                 // No changes detected- stop solve attempts since no further changes
                 // will be made, anyway.
-                if field == oldField {
+                if grid == oldGrid {
                     break
                 }
             }
@@ -156,8 +156,8 @@ public class Solver {
         if isSolved {
             // Present a clean solution by disabling remaining normal edges that
             // not part of the solution
-            for edge in field.edgeIds {
-                field.withEdge(edge) { edge in
+            for edge in grid.edgeIds {
+                grid.withEdge(edge) { edge in
                     if edge.state == .normal {
                         edge.state = .disabled
                     }
@@ -190,37 +190,37 @@ public class Solver {
     }
     
     private func doSpeculativePlay(_ edge: Edge.Id, _ guessesAvailable: inout Int) -> Bool {
-        let subSolver = Solver(field: field)
+        let subSolver = Solver(grid: grid)
         subSolver.maxNumberOfGuesses = guessesAvailable
         defer {
             guessesAvailable -= subSolver.maxNumberOfGuesses - subSolver.guessesAvailable
         }
         
-        subSolver.field.withEdge(edge) { $0.state = .marked }
+        subSolver.grid.withEdge(edge) { $0.state = .marked }
         
         if subSolver.solve() == .solved {
-            field = subSolver.field
+            grid = subSolver.grid
             return true
         }
         
         if !subSolver.isConsistent {
-            field.withEdge(edge) { $0.state = .disabled }
+            grid.withEdge(edge) { $0.state = .disabled }
             return true
         }
         
         return false
     }
     
-    private func applySteps(to field: LoopyField) -> LoopyField {
-        var field = field
+    private func applySteps(to grid: LoopyGrid) -> LoopyGrid {
+        var grid = grid
         for step in steps {
-            field = step.apply(to: field)
+            grid = step.apply(to: grid)
         }
-        return field
+        return grid
     }
     
     private func applyStep(_ step: SolverStep) {
-        field = step.apply(to: field)
+        grid = step.apply(to: grid)
     }
     
     private func collectSpeculativeSteps() -> [Edge.Id] {
@@ -235,19 +235,19 @@ public class Solver {
         
         var vertEntries: [VertEntry] = []
         
-        for i in 0..<field.vertices.count {
-            let edges = field
+        for i in 0..<grid.vertices.count {
+            let edges = grid
                 .edgesSharing(vertexIndex: i)
-                .filter { field.edgeState(forEdge: $0).isEnabled }
+                .filter { grid.edgeState(forEdge: $0).isEnabled }
             
-            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) == 1 {
+            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) == 1 {
                 let edgesToPlay = edges
-                    .filter { field.edgeState(forEdge: $0) == .normal }
+                    .filter { grid.edgeState(forEdge: $0) == .normal }
                 
                 let hintedFaces =
-                    field.faceIds.count { field.vertices(forFace: $0).contains(i) && field.hintForFace($0) != nil }
+                    grid.faceIds.count { grid.vertices(forFace: $0).contains(i) && grid.hintForFace($0) != nil }
                 let semicompleteFaces =
-                    field.faceIds.count { field.vertices(forFace: $0).contains(i) && field.isFaceSemicomplete($0) }
+                    grid.faceIds.count { grid.vertices(forFace: $0).contains(i) && grid.isFaceSemicomplete($0) }
                 
                 let priority = hintedFaces + semicompleteFaces
                 
@@ -262,11 +262,11 @@ public class Solver {
         }
         
         // Look for semi-complete faces that are missing one edge to solve
-        for face in field.faceIds.sorted(by: { (l, _) in field.isFaceSemicomplete(l) }) {
-            let edges = field.edges(forFace: face)
+        for face in grid.faceIds.sorted(by: { (l, _) in grid.isFaceSemicomplete(l) }) {
+            let edges = grid.edges(forFace: face)
             
-            if edges.count(where: { field.edgeState(forEdge: $0) == .marked }) + 1 == field.hintForFace(face) {
-                plays.append(contentsOf: edges.filter({ field.edgeState(forEdge: $0) == .normal }))
+            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) + 1 == grid.hintForFace(face) {
+                plays.append(contentsOf: edges.filter({ grid.edgeState(forEdge: $0) == .normal }))
             }
         }
         
@@ -280,9 +280,9 @@ public class Solver {
     
     /// Represents one of the possible speculative play strategies to apply.
     ///
-    /// - testIsInvalid: Performs a play where an edge is marked and the field is
+    /// - testIsInvalid: Performs a play where an edge is marked and the grid is
     /// then tested for inconsistencies during normal play.
-    /// - play: An edge is marked and further plays happen on the new field until
+    /// - play: An edge is marked and further plays happen on the new grid until
     /// either a solution is found or no more valid solutions can be derived from
     /// that point.
     public enum SpeculativePlay {
@@ -292,5 +292,5 @@ public class Solver {
 }
 
 public protocol SolverStep {
-    func apply(to field: LoopyField) -> LoopyField
+    func apply(to grid: LoopyGrid) -> LoopyGrid
 }

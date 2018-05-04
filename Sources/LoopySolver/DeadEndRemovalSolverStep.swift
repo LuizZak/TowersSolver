@@ -1,7 +1,7 @@
 /// Detects and removes deadends of edges that connect to vertices that don't have
 /// another valid edge to connect to.
 ///
-/// For example, on the following field, the top-left edge was marked as disabled
+/// For example, on the following grid, the top-left edge was marked as disabled
 /// and not part of the solution, and the left-most edge is now a dead end edge
 /// (the line ends abruptly at the corner):
 ///
@@ -15,42 +15,42 @@
 ///     .  !__!
 ///
 public class DeadEndRemovalSolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let solver = InternalSolver(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let solver = InternalSolver(grid: grid)
         solver.apply()
         
-        return solver.field
+        return solver.grid
     }
 }
 
 private class InternalSolver {
-    var controller: LoopyFieldController
+    var controller: LoopyGridController
     
-    var field: LoopyField {
-        return controller.field
+    var grid: LoopyGrid {
+        return controller.grid
     }
     
-    init(field: LoopyField) {
-        controller = LoopyFieldController(field: field)
+    init(grid: LoopyGrid) {
+        controller = LoopyGridController(grid: grid)
     }
     
     func apply() {
         while true {
-            let before = field
+            let before = grid
             
             applyInternal()
             
-            if before == field {
+            if before == grid {
                 return
             }
         }
     }
     
     private func applyInternal() {
-        for i in 0..<field.vertices.count {
-            let edges = field.edgesSharing(vertexIndex: i)
+        for i in 0..<grid.vertices.count {
+            let edges = grid.edgesSharing(vertexIndex: i)
             
-            let enabled = edges.filter({ field.edgeState(forEdge: $0).isEnabled })
+            let enabled = edges.filter({ grid.edgeState(forEdge: $0).isEnabled })
             
             if enabled.count == 1 {
                 controller.setEdges(state: .disabled, forEdges: enabled)

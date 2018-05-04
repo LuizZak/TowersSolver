@@ -1,5 +1,5 @@
 
-/// General utility functions to use with a Loopy field
+/// General utility functions to use with a Loopy grid
 public enum GraphUtils {
     
     /// From a starting edge in a graph, extract all connected edges that share
@@ -18,7 +18,7 @@ public enum GraphUtils {
     /// including the starting edge itself.
     /// If the starting edge is not connected to any edges uniquely, an array with
     /// just the starting edge is returned.
-    public static func singlePathEdges(in graph: LoopyField, fromEdge edge: Edge.Id,
+    public static func singlePathEdges(in graph: LoopyGrid, fromEdge edge: Edge.Id,
                                        excludeDisabled: Bool = true) -> [Edge.Id] {
         
         return singlePathEdges(in: graph, fromEdge: edge) { edge in
@@ -46,7 +46,7 @@ public enum GraphUtils {
     /// including the starting edge itself.
     /// If the starting edge is not connected to any edges uniquely, an array with
     /// just the starting edge is returned.
-    public static func singlePathEdges(in graph: LoopyField, fromEdge edge: Edge.Id,
+    public static func singlePathEdges(in graph: LoopyGrid, fromEdge edge: Edge.Id,
                                        includeTest: (Edge.Id) -> Bool) -> [Edge.Id] {
         return withoutActuallyEscaping(includeTest) { includeTest in
             var result: [Edge.Id] = []

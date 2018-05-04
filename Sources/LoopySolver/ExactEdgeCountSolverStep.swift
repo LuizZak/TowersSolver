@@ -3,31 +3,31 @@
 ///
 /// This step also marks remaining edges of faces that are already solved as disabled.
 public class ExactEdgeCountSolverStep: SolverStep {
-    public func apply(to field: LoopyField) -> LoopyField {
-        let controller = LoopyFieldController(field: field)
+    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+        let controller = LoopyGridController(grid: grid)
         
-        for face in field.faceIds {
-            let edges = field.edges(forFace: face)
+        for face in grid.faceIds {
+            let edges = grid.edges(forFace: face)
             
-            if field.isFaceSolved(face) && !edges.contains(where: { field.edgeState(forEdge: $0) == .normal }) {
+            if grid.isFaceSolved(face) && !edges.contains(where: { grid.edgeState(forEdge: $0) == .normal }) {
                 continue
             }
             
-            let enabledEdges = edges.filter { field.edgeState(forEdge: $0).isEnabled }
+            let enabledEdges = edges.filter { grid.edgeState(forEdge: $0).isEnabled }
             
-            if enabledEdges.count == field.hintForFace(face) {
+            if enabledEdges.count == grid.hintForFace(face) {
                 controller.setEdges(state: .marked, forEdges: enabledEdges)
                 continue
             }
             
-            let markedEdges = edges.filter { field.edgeState(forEdge: $0) == .marked }
-            let normalEdges = edges.filter { field.edgeState(forEdge: $0) == .normal }
+            let markedEdges = edges.filter { grid.edgeState(forEdge: $0) == .marked }
+            let normalEdges = edges.filter { grid.edgeState(forEdge: $0) == .normal }
             
-            if markedEdges.count == field.hintForFace(face) {
+            if markedEdges.count == grid.hintForFace(face) {
                 controller.setEdges(state: .disabled, forEdges: normalEdges)
             }
         }
         
-        return controller.field
+        return controller.grid
     }
 }

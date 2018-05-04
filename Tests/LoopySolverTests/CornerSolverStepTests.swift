@@ -25,9 +25,9 @@ class CornerSolverStepTests: XCTestCase {
         gridGen.setHint(x: 2, y: 0, hint: 0)
         gridGen.setHint(x: 0, y: 2, hint: 1)
         gridGen.setHint(x: 2, y: 2, hint: 2)
-        let field = gridGen.generate()
+        let grid = gridGen.generate()
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -65,9 +65,9 @@ class CornerSolverStepTests: XCTestCase {
         // marking of the top-right vertical and bottom-left horizontal edges.
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 0, y: 0, hint: 2)
-        let field = gridGen.generate()
+        let grid = gridGen.generate()
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -110,9 +110,9 @@ class CornerSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
-        let field = gridGen.generate()
+        let grid = gridGen.generate()
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -150,9 +150,9 @@ class CornerSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 0, y: 0, hint: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
-        let field = gridGen.generate()
+        let grid = gridGen.generate()
         
-        let result = sut.apply(to: field)
+        let result = sut.apply(to: grid)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

@@ -1,11 +1,11 @@
 import Geometry
 
-/// Provides support for higher-level operations on a loopy field
-public class LoopyFieldController {
-    public var field: LoopyField
+/// Provides support for higher-level operations on a loopy grid
+public class LoopyGridController {
+    public var grid: LoopyGrid
     
-    public init(field: LoopyField) {
-        self.field = field
+    public init(grid: LoopyGrid) {
+        self.grid = grid
     }
     
     /// Gets a list of all semi-complete faces on the playfield.
@@ -16,24 +16,24 @@ public class LoopyFieldController {
     /// This would be a `2`-hint on a triangle, `3` on a square face, `4` on a
     /// pentagon, etc.
     public func semiCompleteFaces() -> [Face.Id] {
-        return field.faceIds.filter(field.isFaceSemicomplete)
+        return grid.faceIds.filter(grid.isFaceSemicomplete)
     }
     
     public func setAllEdges(state: Edge.State) {
-        for e in field.edgeIds {
-            field.withEdge(e) {
+        for e in grid.edgeIds {
+            grid.withEdge(e) {
                 $0.state = state
             }
         }
     }
     
     public func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible) {
-        setEdges(state: state, forEdges: field.edges(forFace: face))
+        setEdges(state: state, forEdges: grid.edges(forFace: face))
     }
     
     public func setEdges(state: Edge.State, forEdges edges: [EdgeReferenceConvertible]) {
         for edge in edges {
-            field.withEdge(edge) {
+            grid.withEdge(edge) {
                 $0.state = state
             }
         }
@@ -44,7 +44,7 @@ public class LoopyFieldController {
     // with `[Edge.Id]` edges.
     public func setEdges(state: Edge.State, forEdges edges: [Edge.Id]) {
         for edge in edges {
-            field.withEdge(edge) {
+            grid.withEdge(edge) {
                 $0.state = state
             }
         }
@@ -57,24 +57,24 @@ public class LoopyFieldController {
     }
     
     public func setEdge(state: Edge.State, forFace face: FaceReferenceConvertible, edgeIndex: Int) {
-        let edgeId = field.edges(forFace: face)[edgeIndex]
+        let edgeId = grid.edges(forFace: face)[edgeIndex]
         
-        field.withEdge(edgeId) {
+        grid.withEdge(edgeId) {
             $0.state = state
         }
     }
     
     public func setEdge(state: Edge.State, forEdge edge: EdgeReferenceConvertible) {
-        field.withEdge(edge) {
+        grid.withEdge(edge) {
             $0.state = state
         }
     }
     
-    /// Returns an array of all edges of a face on a field that are not shared with
+    /// Returns an array of all edges of a face on a grid that are not shared with
     /// any other face.
     public func nonSharedEdges(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
-        return field.edges(forFace: face).filter { edge in
-            field.facesSharing(edge: edge) == [face.id]
+        return grid.edges(forFace: face).filter { edge in
+            grid.facesSharing(edge: edge) == [face.id]
         }
     }
 }
