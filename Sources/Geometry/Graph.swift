@@ -63,6 +63,9 @@ public protocol Graph {
     ///
     /// The array of edges returned link edges that are connected by degree 2
     /// vertices (vertices that connect only two edges).
+    ///
+    /// This may span across other faces, as linear paths traverse through the
+    /// grid.
     func linearPathGraphEdges(around face: FaceId) -> [[EdgeId]]
     
     /// Returns `true` iff each edge on a given list is directly connected to the

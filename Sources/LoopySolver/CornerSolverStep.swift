@@ -63,24 +63,30 @@ private class InternalSolver {
             return
         }
         
+        let linearPaths = grid
+            .ignoringDisabledEdges()
+            .linearPathGraphEdges(around: face.id)
+            .map {
+                $0.filter { grid.faceContainsEdge(face: face, edge: $0) }
+            }
+        
         // 1.
         // Detect sequential edges that exceed the required number for the face
-        for edge in edges {
-            let edges =
-                grid.singlePathEdges(fromEdge: edge)
-                .filter {
-                    grid.faceContainsEdge(face: face, edge: $0)
-                }
-            
-            if edges.count > hint {
-                controller.setEdges(state: .disabled, forEdges: edges)
+        for path in linearPaths {
+            if path.count > hint {
+                controller.setEdges(state: .disabled, forEdges: path)
             }
         }
         
-        let nonShared = controller.nonSharedEdges(forFace: face)
-        if nonShared.isEmpty {
+        // Grab all connected edges that form a linear path of length longer than
+        // one.
+        // These will be our edges for testing with.
+        let longLinearPaths = linearPaths.filter { $0.count > 1 }
+        if longLinearPaths.count != 1 {
             return
         }
+        
+        let nonShared = longLinearPaths[0]
         
         // Can only apply next solving logics when the non-shared edges form a
         // single sequential line across the outer side of the face
@@ -128,10 +134,12 @@ private class InternalSolver {
         if grid.edges(forFace: face).count == nonShared.count * 2 && nonShared.count == hint {
             // Find the out-going edges from the join vertices
             let start = grid
+                .ignoringDisabledEdges()
                 .edgesConnected(to: nonShared.first!)
                 .filter { !grid.faceContainsEdge(face: face, edge: $0) }
             
             let end = grid
+                .ignoringDisabledEdges()
                 .edgesConnected(to: nonShared.last!)
                 .filter { !grid.faceContainsEdge(face: face, edge: $0) }
             
