@@ -48,16 +48,14 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             let (x1, y1) = toScreen(v1.x, v1.y)
             let (x2, y2) = toScreen(v2.x, v2.y)
             
-            if (x1, y1) == (x2, y2) {
-                continue
-            }
-            
-            let scalars = lineScalars(forState: grid.edgeState(forEdge: edge))
-            
-            bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
-                let scalar = normalLineScalar(forAngle: angle, angleScalars: scalars)
+            if (x1, y1) != (x2, y2) {
+                let scalars = lineScalars(forState: grid.edgeState(forEdge: edge))
                 
-                put(scalar, x: plotX, y: plotY)
+                bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
+                    let scalar = normalLineScalar(forAngle: angle, angleScalars: scalars)
+                    
+                    put(scalar, x: plotX, y: plotY)
+                }
             }
         }
         
@@ -120,7 +118,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     internal func lineScalars(forState state: Edge.State) -> [UnicodeScalar] {
         switch state {
         case .normal:
-            return ["│", "/", "/", "─", "╲", "\\", "│"]
+            return ["│", "/", "╱", "─", "╲", "\\", "│"]
         case .marked:
             return ["║", "⤢", "═", "⤡", "║"]
         case .disabled:

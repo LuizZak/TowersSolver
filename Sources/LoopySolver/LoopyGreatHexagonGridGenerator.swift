@@ -1,13 +1,6 @@
 // Sourcing information: Based on Puzzle Games' 'grid.c' implementation by Simon
 // Tatham et al.
 
-/*
-#define GREATHEX_TILESIZE 18
-/* Vector for side of triangle - ratio is close to sqrt(3) */
-#define GREATHEX_A 15
-#define GREATHEX_B 26
-*/
-
 /// Generates a Great Hexagonal-shaped lattice with hexagons interleaved with
 /// squares and triangles.
 public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
@@ -50,19 +43,19 @@ public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
                 grid.createFace(withVertexIndices: [
                     grid.addOrGetVertex(x: px - a, y: py - b),
                     grid.addOrGetVertex(x: px + a, y: py - b),
-                    grid.addOrGetVertex(x: px + 2*a, y: py),
+                    grid.addOrGetVertex(x: px + 2 * a, y: py),
                     grid.addOrGetVertex(x: px + a, y: py + b),
                     grid.addOrGetVertex(x: px - a, y: py + b),
-                    grid.addOrGetVertex(x: px - 2*a, y: py),
+                    grid.addOrGetVertex(x: px - 2 * a, y: py),
                 ])
                 
                 /* square below left */
                 if ((x > 0) && (((x % 2) == 0) || (y < height - 1))) {
                     grid.createFace(withVertexIndices: [
-                        grid.addOrGetVertex(x: px - 2*a, y: py),
+                        grid.addOrGetVertex(x: px - 2 * a, y: py),
                         grid.addOrGetVertex(x: px - a, y: py + b),
                         grid.addOrGetVertex(x: px - a - b, y: py + a + b),
-                        grid.addOrGetVertex(x: px - 2*a - b, y: py + a)
+                        grid.addOrGetVertex(x: px - 2 * a - b, y: py + a)
                     ])
                 }
                 
@@ -70,7 +63,7 @@ public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
                 if ((x > 0) && (y < height - 1)) {
                     grid.createFace(withVertexIndices: [
                         grid.addOrGetVertex(x: px - a, y: py + b),
-                        grid.addOrGetVertex(x: px - a, y: py + 2*a + b),
+                        grid.addOrGetVertex(x: px - a, y: py + 2 * a + b),
                         grid.addOrGetVertex(x: px - a - b, y: py + a + b)
                     ])
                 }
@@ -80,8 +73,8 @@ public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
                     grid.createFace(withVertexIndices: [
                         grid.addOrGetVertex(x: px - a, y: py + b),
                         grid.addOrGetVertex(x: px + a, y: py + b),
-                        grid.addOrGetVertex(x: px + a, y: py + 2*a + b),
-                        grid.addOrGetVertex(x: px - a, y: py + 2*a + b),
+                        grid.addOrGetVertex(x: px + a, y: py + 2 * a + b),
+                        grid.addOrGetVertex(x: px - a, y: py + 2 * a + b),
                     ])
                 }
                 
@@ -90,15 +83,15 @@ public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
                     grid.createFace(withVertexIndices: [
                         grid.addOrGetVertex(x: px + a, y: py + b),
                         grid.addOrGetVertex(x: px + a + b, y: py + a + b),
-                        grid.addOrGetVertex(x: px + a, y: py + 2*a + b)
+                        grid.addOrGetVertex(x: px + a, y: py + 2 * a + b)
                     ])
                 }
                 
                 /* square below right */
                 if ((x < width - 1) && (((x % 2) == 0) || (y < height - 1))) {
                     grid.createFace(withVertexIndices: [
-                        grid.addOrGetVertex(x: px + 2*a, y: py),
-                        grid.addOrGetVertex(x: px + 2*a + b, y: py + a),
+                        grid.addOrGetVertex(x: px + 2 * a, y: py),
+                        grid.addOrGetVertex(x: px + 2 * a + b, y: py + a),
                         grid.addOrGetVertex(x: px + a + b, y: py + a + b),
                         grid.addOrGetVertex(x: px + a, y: py + b)
                     ])

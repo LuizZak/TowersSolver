@@ -11,10 +11,10 @@ class SolverTests: XCTestCase {
         // !___!_2_!_3_!
         //
         let gridGen = LoopySquareGridGen(width: 3, height: 3)
-        gridGen.setHint(x: 1, y: 0, hint: 2)
-        gridGen.setHint(x: 2, y: 0, hint: 0)
-        gridGen.setHint(x: 1, y: 2, hint: 2)
-        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [n, 2, 0])
+        gridGen.setHints(atRow: 1, hints: [n, n, n])
+        gridGen.setHints(atRow: 2, hints: [n, 2, 3])
         let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 0)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
@@ -42,10 +42,10 @@ class SolverTests: XCTestCase {
         // !___!_2_!_3_!
         //
         let gridGen = LoopySquareGridGen(width: 3, height: 3)
-        gridGen.setHint(x: 1, y: 0, hint: 2)
-        gridGen.setHint(x: 2, y: 0, hint: 0)
-        gridGen.setHint(x: 1, y: 2, hint: 2)
-        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [n, 2, 0])
+        gridGen.setHints(atRow: 1, hints: [n, n, n])
+        gridGen.setHints(atRow: 2, hints: [n, 2, 3])
         let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 0)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
@@ -66,16 +66,19 @@ class SolverTests: XCTestCase {
     func testIsSolvedFalseWhenHintsAreNotSatisfied() {
         // Grid looks like this:
         //
+        //      This hint ends up being violated and two edges are marked!
+        //       |
+        //       v
         // .___.___.___.
         // !___!_1_!_0_!
         // !___!___!___!
         // !___!_2_!_3_!
         //
         let gridGen = LoopySquareGridGen(width: 3, height: 3)
-        gridGen.setHint(x: 1, y: 0, hint: 1) // This hint ends up being violated and two edges are marked!
-        gridGen.setHint(x: 2, y: 0, hint: 0)
-        gridGen.setHint(x: 1, y: 2, hint: 2)
-        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [n, 1, 0])
+        gridGen.setHints(atRow: 1, hints: [n, n, n])
+        gridGen.setHints(atRow: 2, hints: [n, 2, 3])
         let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 0)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
@@ -172,10 +175,10 @@ class SolverTests: XCTestCase {
         // !___!___!___!
         // !___!_2_!_3_!
         let gridGen = LoopySquareGridGen(width: 3, height: 3)
-        gridGen.setHint(x: 1, y: 0, hint: 2)
-        gridGen.setHint(x: 2, y: 0, hint: 0)
-        gridGen.setHint(x: 1, y: 2, hint: 2)
-        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [n, 2, 0])
+        gridGen.setHints(atRow: 1, hints: [n, n, n])
+        gridGen.setHints(atRow: 2, hints: [n, 2, 3])
         let solver = Solver(grid: gridGen.generate())
         
         let result = solver.solve()
@@ -191,11 +194,10 @@ class SolverTests: XCTestCase {
         // !_1_!___!_1_!
         // !___!_3_!_3_!
         let gridGen = LoopySquareGridGen(width: 3, height: 3)
-        gridGen.setHint(x: 2, y: 0, hint: 3)
-        gridGen.setHint(x: 0, y: 1, hint: 1)
-        gridGen.setHint(x: 2, y: 1, hint: 1)
-        gridGen.setHint(x: 1, y: 2, hint: 3)
-        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [n, n, 3])
+        gridGen.setHints(atRow: 1, hints: [1, n, 1])
+        gridGen.setHints(atRow: 2, hints: [n, 3, 3])
         let solver = Solver(grid: gridGen.generate())
         
         let result = solver.solve()
@@ -216,37 +218,14 @@ class SolverTests: XCTestCase {
         // !_2_!_3_!___!_3_!___!___!___!
         //
         let gridGen = LoopySquareGridGen(width: 7, height: 7)
-        gridGen.setHint(x: 0, y: 0, hint: 3)
-        gridGen.setHint(x: 2, y: 0, hint: 3)
-        gridGen.setHint(x: 3, y: 0, hint: 3)
-        gridGen.setHint(x: 4, y: 0, hint: 2)
-        gridGen.setHint(x: 5, y: 0, hint: 2)
-        //
-        gridGen.setHint(x: 2, y: 1, hint: 1)
-        gridGen.setHint(x: 4, y: 1, hint: 2)
-        gridGen.setHint(x: 5, y: 1, hint: 2)
-        //
-        gridGen.setHint(x: 1, y: 2, hint: 1)
-        gridGen.setHint(x: 5, y: 2, hint: 2)
-        //
-        gridGen.setHint(x: 0, y: 3, hint: 2)
-        gridGen.setHint(x: 1, y: 3, hint: 2)
-        gridGen.setHint(x: 2, y: 3, hint: 1)
-        gridGen.setHint(x: 3, y: 3, hint: 2)
-        gridGen.setHint(x: 5, y: 3, hint: 0)
-        //
-        gridGen.setHint(x: 1, y: 4, hint: 3)
-        gridGen.setHint(x: 4, y: 4, hint: 2)
-        gridGen.setHint(x: 5, y: 4, hint: 1)
-        gridGen.setHint(x: 6, y: 4, hint: 1)
-        //
-        gridGen.setHint(x: 4, y: 5, hint: 2)
-        gridGen.setHint(x: 5, y: 5, hint: 2)
-        gridGen.setHint(x: 6, y: 5, hint: 1)
-        //
-        gridGen.setHint(x: 0, y: 6, hint: 2)
-        gridGen.setHint(x: 1, y: 6, hint: 3)
-        gridGen.setHint(x: 3, y: 6, hint: 3)
+        let n: Int? = nil
+        gridGen.setHints(atRow: 0, hints: [3, n, 3, 3, 2, 2, n])
+        gridGen.setHints(atRow: 1, hints: [n, n, 1, n, 2, 2, n])
+        gridGen.setHints(atRow: 2, hints: [n, 1, n, n, n, 2, n])
+        gridGen.setHints(atRow: 3, hints: [2, 2, 1, 2, n, 0, n])
+        gridGen.setHints(atRow: 4, hints: [n, 3, n, n, 2, 1, 1])
+        gridGen.setHints(atRow: 5, hints: [n, n, n, n, 2, 2, 1])
+        gridGen.setHints(atRow: 6, hints: [2, 3, n, 3, n, n, n])
         let solver = Solver(grid: gridGen.generate())
         solver.maxNumberOfGuesses = 6
         
@@ -268,6 +247,7 @@ class SolverTests: XCTestCase {
         gridGen.setHint(x: 0, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 2)
         let solver = Solver(grid: gridGen.generate())
+        solver.maxNumberOfGuesses = 1
         
         let result = solver.solve()
         
