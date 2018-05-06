@@ -27,7 +27,7 @@
 ///          This rule does not apply if the face in question shares one of the
 ///          two vertices where the inner and outer path for the corner face join.
 public class CornerSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
         
@@ -67,7 +67,7 @@ private class InternalSolver {
         // Detect sequential edges that exceed the required number for the face
         for edge in edges {
             let edges =
-                GraphUtils.singlePathEdges(in: grid, fromEdge: edge)
+                grid.singlePathEdges(fromEdge: edge)
                 .filter {
                     grid.faceContainsEdge(face: face, edge: $0)
                 }

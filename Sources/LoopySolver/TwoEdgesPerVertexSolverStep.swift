@@ -2,7 +2,7 @@
 /// all remaining edges as not part of the solution (since these would result in
 /// an intersecting loopy line at that vertex)
 public class TwoEdgesPerVertexSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let controller = LoopyGridController(grid: grid)
         
         for vertex in 0..<grid.vertices.count {

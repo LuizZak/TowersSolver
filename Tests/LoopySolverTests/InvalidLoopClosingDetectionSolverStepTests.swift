@@ -3,11 +3,13 @@ import XCTest
 
 class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
     var sut: InvalidLoopClosingDetectionSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = InvalidLoopClosingDetectionSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testIncompleteLoop() {
@@ -29,7 +31,7 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 3, edgeIndices: [0, 1, 2])
         controller.setEdge(state: .disabled, forFace: 2, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.grid, delegate)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
@@ -62,7 +64,7 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 2, edgeIndices: [0, 1, 2])
         controller.setEdge(state: .disabled, forFace: 2, edgeIndex: 3)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.grid, delegate)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)

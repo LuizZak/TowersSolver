@@ -3,11 +3,13 @@ import XCTest
 
 class DeadEndRemovalSolverStepTests: XCTestCase {
     var sut: DeadEndRemovalSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = DeadEndRemovalSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testApplyOnTrivial() {
@@ -23,7 +25,7 @@ class DeadEndRemovalSolverStepTests: XCTestCase {
         var grid = gridGen.generate()
         grid.withEdge(0) { $0.state = .disabled }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

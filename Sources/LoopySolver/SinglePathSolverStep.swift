@@ -15,7 +15,7 @@
 /// The center cell which requires three edges must have its left, bottom and
 /// right edges marked as part of the solution.
 public class SinglePathSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
         
@@ -50,16 +50,9 @@ private class InternalSolver {
         }
         
         // Collect edges
-        var edgeRuns: [[Edge.Id]] = []
-        
-        for edge in grid.edges(forFace: face) {
-            if edgeRuns.contains(where: { $0.contains(edge) }) {
-                continue
-            }
-            
-            let path = GraphUtils.singlePathEdges(in: grid, fromEdge: edge)
-            edgeRuns.append(path.compactMap(grid.edgeId(forEdge:)))
-        }
+        var edgeRuns: [[Edge.Id]] = grid
+            .ignoringDisabledEdges()
+            .linearPathGraphEdges(around: face)
         
         guard !edgeRuns.isEmpty else {
             return

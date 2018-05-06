@@ -4,8 +4,16 @@ public typealias Vertex = Vector2<Float>
 /// An integer 2D vector
 public typealias IntPoint = Vector2<Int>
 
+/// A protocol for vector types
+public protocol VectorType {
+    associatedtype Coordinate: Numeric & Hashable
+    
+    var x: Coordinate { get }
+    var y: Coordinate { get }
+}
+
 /// Represents a vertex that has up to 4 cardinal connections to other vertices.
-public struct Vector2<T: Numeric & Hashable>: Hashable {
+public struct Vector2<T: Numeric & Hashable>: Hashable, VectorType {
     public var x: T
     public var y: T
     

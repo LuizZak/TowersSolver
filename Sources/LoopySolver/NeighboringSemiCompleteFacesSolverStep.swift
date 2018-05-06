@@ -1,7 +1,7 @@
 /// Solver step that deals with cases of semi-complete (`hint == edge_count - 1`)
 /// faces that touch either edge-wise or across corners via a common vertex.
 public class NeighboringSemiCompleteFacesSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
         
@@ -96,7 +96,8 @@ private class InternalSolver {
             controller.setEdges(state: .disabled, forEdges: otherEdges)
             
         case .vertex(let vertex):
-            // Set all oposed edges to the vertex on the two faces as marked
+            // Set all edges not connected to the target vector on both faces as
+            // marked
             let edges1 =
                 grid.edges(forFace: pair.face1)
                     .filter { !grid.edgeSharesVertex($0, vertex: vertex) }

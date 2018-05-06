@@ -3,7 +3,7 @@
 ///
 /// This step also marks remaining edges of faces that are already solved as disabled.
 public class ExactEdgeCountSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let controller = LoopyGridController(grid: grid)
         
         for face in grid.faceIds {

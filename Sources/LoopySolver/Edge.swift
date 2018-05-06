@@ -1,3 +1,4 @@
+import Geometry
 import Commons
 
 /// Common protocol to abstract edge references between actual edge structures and
@@ -10,7 +11,7 @@ public protocol EdgeReferenceConvertible {
 ///
 /// Edges are bidirectional and always start from a lower vertex index pointing
 /// to a higher vertex index.
-public struct Edge: Equatable {
+public struct Edge: Equatable, EdgeProtocol {
     public typealias Id = Key<Edge, Int>
     
     /// Starting vertex index for this edge

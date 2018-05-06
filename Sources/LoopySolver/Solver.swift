@@ -1,5 +1,8 @@
 /// Solver for a Loopy match
 public class Solver {
+    /// Set to `true` when a solver step reports an invalid state before it can
+    /// be detected by the solver via `isConsistent`
+    private var _diagnosedInconsistentState: Bool = false
     private var steps: [SolverStep] = []
     
     private(set) public var grid: LoopyGrid
@@ -49,8 +52,9 @@ public class Solver {
     /// Consistency is based upon a partial or full solution attempt, be that the
     /// target solution to the playfield or not.
     ///
-    /// As soon as a undoubtedly invalid state is reached, which cannot be undone
-    /// by marking or disabling edges, a board is considered inconsistent.
+    /// As soon as a undoubtedly invalid state is reached- either by analyzing the
+    /// grid or as reported by a SolverStep, which cannot be undone by marking
+    /// or disabling edges, a board is considered inconsistent.
     ///
     /// A grid is consistent when all of the following assertions hold:
     ///
@@ -62,6 +66,10 @@ public class Solver {
     /// 4. If a set of edges form a closed loop, all marked edges in the grid
     /// must be part of the loop.
     public var isConsistent: Bool {
+        if _diagnosedInconsistentState {
+            return true
+        }
+        
         for i in 0..<grid.vertices.count {
             let edges = grid
                 .edgesSharing(vertexIndex: i)
@@ -94,9 +102,7 @@ public class Solver {
             }
             
             let run =
-                GraphUtils
-                    .singlePathEdges(in: grid,
-                                     fromEdge: edge,
+                grid.singlePathEdges(fromEdge: edge,
                                      includeTest: { grid.edgeState(forEdge: $0) == .marked })
             
             runs.append(run)
@@ -170,6 +176,15 @@ public class Solver {
         return .unsolved
     }
     
+    private func applySteps(to grid: LoopyGrid) -> LoopyGrid {
+        let delegate = SolverDelegate()
+        var grid = grid
+        for step in steps where !delegate.isInconsistent {
+            grid = step.apply(to: grid, delegate)
+        }
+        return grid
+    }
+    
     /// Perform speculative plays where some edges are marked and then consistency
     /// is checked to verify if the edge is not actually part of the solved
     /// puzzle.
@@ -209,14 +224,6 @@ public class Solver {
         }
         
         return false
-    }
-    
-    private func applySteps(to grid: LoopyGrid) -> LoopyGrid {
-        var grid = grid
-        for step in steps {
-            grid = step.apply(to: grid)
-        }
-        return grid
     }
     
     private func collectSpeculativeSteps() -> [Edge.Id] {
@@ -287,6 +294,10 @@ public class Solver {
     }
 }
 
-public protocol SolverStep {
-    func apply(to grid: LoopyGrid) -> LoopyGrid
+class SolverDelegate: SolverStepDelegate {
+    var isInconsistent = false
+    
+    func solverStepDidReportInconsistentState(_ step: SolverStep) {
+        isInconsistent = true
+    }
 }

@@ -16,7 +16,7 @@
 ///        '
 ///
 public class SolePathEdgeExtenderSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
         

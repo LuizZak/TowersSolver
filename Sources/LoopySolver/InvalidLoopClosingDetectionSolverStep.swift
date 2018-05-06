@@ -1,7 +1,7 @@
 /// Detects patterns where a single selected edge between two edges would form a
 /// loop, but such loop would be invalid due to it not including other edges.
 public class InvalidLoopClosingDetectionSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
         
@@ -61,7 +61,7 @@ private class InternalSolver {
     private func apply(on entry: Entry, allMarked: [Edge.Id]) {
         // Check if the edges from the entry link to one another
         let path =
-            GraphUtils.singlePathEdges(in: grid, fromEdge: entry.firstEdge) { edge in
+            grid.singlePathEdges(fromEdge: entry.firstEdge) { edge in
                 grid.edgeState(forEdge: edge) == .marked
             }
         

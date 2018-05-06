@@ -3,11 +3,13 @@ import XCTest
 
 class ExactEdgeCountSolverStepTests: XCTestCase {
     var sut: ExactEdgeCountSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = ExactEdgeCountSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testApplyOnTrivial() {
@@ -23,7 +25,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         grid.withEdge(0) { $0.state = .disabled }
         grid.withEdge(3) { $0.state = .disabled }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -54,7 +56,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         grid.withEdge(5) { $0.state = .marked }
         grid.withEdge(6) { $0.state = .marked }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -84,7 +86,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         grid.withEdge(1) { $0.state = .disabled }
         grid.withEdge(5) { $0.state = .marked }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

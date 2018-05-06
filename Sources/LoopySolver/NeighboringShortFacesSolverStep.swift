@@ -14,7 +14,7 @@
 /// since it would require detouring around one of the two `1` faces to continue,
 /// resulting in a guaranteed larger-than-one marked edges count for either face.
 public class NeighboringShortFacesSolverStep: SolverStep {
-    public func apply(to grid: LoopyGrid) -> LoopyGrid {
+    public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
         
@@ -86,12 +86,12 @@ private class InternalSolver {
             
             // Check if the paths taken by the line exeed the requirement of the
             // face's hint, when considered alone
-            let count1 = GraphUtils
-                .singlePathEdges(in: grid, fromEdge: face1Edge)
+            let count1 = grid
+                .singlePathEdges(fromEdge: face1Edge)
                 .count { grid.faceContainsEdge(face: pair.face1, edge: $0) }
             
-            let count2 = GraphUtils
-                .singlePathEdges(in: grid, fromEdge: face2Edge)
+            let count2 = grid
+                .singlePathEdges(fromEdge: face2Edge)
                 .count { grid.faceContainsEdge(face: pair.face2, edge: $0) }
             
             if count1 >= (grid.hintForFace(pair.face1) ?? Int.max) && count2 >= (grid.hintForFace(pair.face2) ?? Int.max) {

@@ -3,11 +3,13 @@ import XCTest
 
 class NeighboringShortFacesSolverStepTests: XCTestCase {
     var sut: NeighboringShortFacesSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = NeighboringShortFacesSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testOneFacesOnEdges() {
@@ -27,7 +29,7 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 0, hint: 1)
         gridGen.setHint(x: 2, y: 0, hint: 1)
         
-        let result = sut.apply(to: gridGen.generate())
+        let result = sut.apply(to: gridGen.generate(), delegate)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
@@ -73,7 +75,7 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.grid, delegate)
         
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
@@ -112,7 +114,7 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         gridGen.setHint(x: 2, y: 0, hint: 2)
         let before = gridGen.generate()
         
-        let result = sut.apply(to: before)
+        let result = sut.apply(to: before, delegate)
         
         XCTAssertEqual(before, result)
     }
@@ -137,7 +139,7 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 6, edgeIndex: 2)
         let before = controller.grid
         
-        let result = sut.apply(to: before)
+        let result = sut.apply(to: before, delegate)
         
         XCTAssertEqual(before, result)
     }

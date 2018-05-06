@@ -3,11 +3,13 @@ import XCTest
 
 class CornerEntrySolverStepTests: XCTestCase {
     var sut: CornerEntrySolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = CornerEntrySolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testApplyOnTrivial() {
@@ -23,7 +25,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         var grid = gridGen.generate()
         grid.withEdge(5) { $0.state = .marked }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -50,7 +52,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         grid.withEdge(5) { $0.state = .marked }
         grid.withEdge(6) { $0.state = .disabled }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -79,7 +81,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         grid.withEdge(11) { $0.state = .disabled }
         grid.withEdge(13) { $0.state = .disabled }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -106,7 +108,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         var grid = gridGen.generate()
         grid.withEdge(5) { $0.state = .marked }
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

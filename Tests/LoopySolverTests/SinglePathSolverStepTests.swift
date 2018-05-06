@@ -3,11 +3,13 @@ import XCTest
 
 class SinglePathSolverStepTests: XCTestCase {
     var sut: SinglePathSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = SinglePathSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testApplyOnTrivial() {
@@ -29,7 +31,7 @@ class SinglePathSolverStepTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 6, edgeIndex: 1)
         controller.setEdge(state: .disabled, forFace: 7, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

@@ -3,11 +3,13 @@ import XCTest
 
 class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
     var sut: NeighboringSemiCompleteFacesSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = NeighboringSemiCompleteFacesSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testTouchingEdgeWise() {
@@ -32,7 +34,7 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 0, hint: 3)
         gridGen.setHint(x: 2, y: 0, hint: 3)
         
-        let result = sut.apply(to: gridGen.generate())
+        let result = sut.apply(to: gridGen.generate(), delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
@@ -98,7 +100,7 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         gridGen.setHint(x: 0, y: 0, hint: 3)
         gridGen.setHint(x: 1, y: 1, hint: 3)
         
-        let result = sut.apply(to: gridGen.generate())
+        let result = sut.apply(to: gridGen.generate(), delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

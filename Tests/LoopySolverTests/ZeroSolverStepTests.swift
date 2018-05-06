@@ -3,11 +3,13 @@ import XCTest
 
 class ZeroSolverStepTests: XCTestCase {
     var sut: ZeroSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = ZeroSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testApplyOnTrivial() {
@@ -24,7 +26,7 @@ class ZeroSolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 1, hint: 3)
         let grid = gridGen.generate()
         
-        let result = sut.apply(to: grid)
+        let result = sut.apply(to: grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

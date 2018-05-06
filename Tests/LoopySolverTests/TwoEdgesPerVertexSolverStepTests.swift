@@ -3,11 +3,13 @@ import XCTest
 
 class TwoEdgesPerVertexSolverStepTests: XCTestCase {
     var sut: TwoEdgesPerVertexSolverStep!
+    var delegate: SolverStepDelegate!
     
     override func setUp() {
         super.setUp()
         
         sut = TwoEdgesPerVertexSolverStep()
+        delegate = TestSolverStepDelegate()
     }
     
     func testApplyOnTrivial() {
@@ -20,7 +22,7 @@ class TwoEdgesPerVertexSolverStepTests: XCTestCase {
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 2, edgeIndex: 1)
         
-        let result = sut.apply(to: controller.grid)
+        let result = sut.apply(to: controller.grid, delegate)
         
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))

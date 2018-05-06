@@ -28,7 +28,7 @@ public class LoopyGridController {
     }
     
     public func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible) {
-        setEdges(state: state, forEdges: grid.edges(forFace: face))
+        setEdges(state: state, forEdges: grid.edges(forFace: face.id))
     }
     
     public func setEdges(state: Edge.State, forEdges edges: [Edge.Id]) {
@@ -41,12 +41,12 @@ public class LoopyGridController {
     
     public func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible, edgeIndices: [Int]) {
         for index in edgeIndices {
-            setEdge(state: state, forFace: face, edgeIndex: index)
+            setEdge(state: state, forFace: face.id, edgeIndex: index)
         }
     }
     
     public func setEdge(state: Edge.State, forFace face: FaceReferenceConvertible, edgeIndex: Int) {
-        let edgeId = grid.edges(forFace: face)[edgeIndex]
+        let edgeId = grid.edges(forFace: face.id)[edgeIndex]
         
         grid.withEdge(edgeId) {
             $0.state = state
@@ -62,7 +62,7 @@ public class LoopyGridController {
     /// Returns an array of all edges of a face on a grid that are not shared with
     /// any other face.
     public func nonSharedEdges(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
-        return grid.edges(forFace: face).filter { edge in
+        return grid.edges(forFace: face.id).filter { edge in
             grid.facesSharing(edge: edge) == [face.id]
         }
     }

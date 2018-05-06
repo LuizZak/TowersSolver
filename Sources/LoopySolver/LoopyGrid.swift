@@ -3,29 +3,36 @@
 /// A grid for a loopy game.
 /// Consists of a collection of vertices laid on a grid, connected with edges
 /// forming faces.
-public struct LoopyGrid: Equatable {
+public struct LoopyGrid: Equatable, Graph {
+    public typealias VertexType = Vertex
+    public typealias EdgeType = Edge
+    public typealias FaceId = Face.Id
+    public typealias EdgeId = Edge.Id
+    
     private var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
     private var _edgesPerVertex: [Int: [Edge.Id]] = [:]
     private var _facesPerVertex: [Int: [Face.Id]] = [:]
     private var _facesPerEdge: [Int: [Face.Id]] = [:]
+    
+    private var _ingoringDisabledEdges: Bool = false
+    
+    /// List of edges that connect vertices
+    internal var edges: [Edge]
+    
+    /// List of faces in this grid.
+    ///
+    /// Faces are compositions of vertex indices, with an optional hint associated.
+    internal var faces: [Face]
     
     /// The list of vertices on this grid.
     /// Each vertex is always connected to two or more edges, and always belongs
     /// to one or more faces.
     private(set) public var vertices: [Vertex]
     
-    /// List of edges that connect vertices
-    internal var edges: [Edge]
-    
     /// List of edge IDs in this grid.
     ///
     /// Every edge in `edges` has a matching edge ID within this array, and vice-versa.
     private(set) public var edgeIds: [Edge.Id]
-    
-    /// List of faces in this grid.
-    ///
-    /// Faces are compositions of vertex indices, with an optional hint associated.
-    internal var faces: [Face]
     
     /// List of face IDs in this grid.
     ///
@@ -38,6 +45,17 @@ public struct LoopyGrid: Equatable {
         edgeIds = []
         faces = []
         faceIds = []
+    }
+    
+    /// Returns a copy of this grid with disabled edges ignored when queried over
+    /// with `edge-` methods.
+    ///
+    /// Edge references across both grid are compatible as long as they are not
+    /// structurally modified.
+    public func ignoringDisabledEdges() -> LoopyGrid {
+        var copy = self
+        copy._ingoringDisabledEdges = true
+        return copy
     }
     
     /// With a given face reference, apply a set of changes to the matching face.
@@ -81,7 +99,7 @@ public struct LoopyGrid: Equatable {
     /// identifier is returned, instead.
     @discardableResult
     public mutating func createEdge(from start: Int, to end: Int) -> Edge.Id {
-        if let id = edgeIndex(vertex1: start, vertex2: end) {
+        if let id = edgeBetween(vertex1: start, vertex2: end) {
             return id
         }
         
@@ -186,14 +204,24 @@ public extension LoopyGrid {
 
 // MARK: - Edge querying methods
 public extension LoopyGrid {
+    private func edgeReferenceFrom(_ edge: EdgeReferenceConvertible) -> Edge {
+        return edges[edge.edgeIndex(in: edges)]
+    }
+    
+    private func shouldIgnore(_ edge: Edge) -> Bool {
+        return _ingoringDisabledEdges ? !edge.state.isEnabled : false
+    }
+    
     /// Returns the state of a given edge reference
     public func edgeState(forEdge edge: EdgeReferenceConvertible) -> Edge.State {
-        return edges[edge.edgeIndex(in: edges)].state
+        let edge = edgeReferenceFrom(edge)
+        return edge.state
     }
     
     /// Returns `true` if a given edge starts or ends at a given vertex.
     public func edgeSharesVertex(_ edge: EdgeReferenceConvertible, vertex: Int) -> Bool {
-        return edges[edge.edgeIndex(in: edges)].sharesVertex(vertex)
+        let edge = edgeReferenceFrom(edge)
+        return edge.sharesVertex(vertex)
     }
     
     /// Returns `true` if two edges match vertices-wise (ignoring edge state).
@@ -214,8 +242,8 @@ public extension LoopyGrid {
     }
     
     /// Returns the two vertex indices for the start/end of a given edge.
-    public func vertices(forEdge edge: EdgeReferenceConvertible) -> (start: Int, end: Int) {
-        let edge = edges[edge.edgeIndex(in: edges)]
+    public func vertices(forEdge edge: Edge.Id) -> (start: Int, end: Int) {
+        let edge = edgeReferenceFrom(edge)
         
         return (edge.start, edge.end)
     }
@@ -223,8 +251,8 @@ public extension LoopyGrid {
     /// Returns the index for the edge of the given vertices.
     /// Detects both direction of edges.
     /// Returns `nil`, if no edge is present between the two edges.
-    public func edgeIndex(vertex1: Int, vertex2: Int) -> Edge.Id? {
-        return edges.enumerated().first { (i, edge) in
+    public func edgeBetween(vertex1: Int, vertex2: Int) -> Edge.Id? {
+        return edges.enumerated().filter { !shouldIgnore($0.element) }.first { (i, edge) in
             (edge.start == vertex1 && edge.end == vertex2)
                 || (edge.start == vertex2 && edge.end == vertex1)
             }.map { Edge.Id($0.offset) }
@@ -233,6 +261,9 @@ public extension LoopyGrid {
     /// Returns an array of all edges within this grid sharing a given common
     /// vertex index.
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
+        if _ingoringDisabledEdges {
+            return _edgesPerVertex[vertexIndex, default: []].filter { !shouldIgnore(edgeReferenceFrom($0)) }
+        }
         return _edgesPerVertex[vertexIndex, default: []]
     }
     
@@ -241,11 +272,15 @@ public extension LoopyGrid {
         let index = edge.edgeIndex(in: edges)
         let id = Edge.Id(index)
         
+        if _ingoringDisabledEdges {
+            return _edgesConnectedToEdge[id, default: []].filter { !shouldIgnore(edgeReferenceFrom($0)) }
+        }
+        
         return _edgesConnectedToEdge[id, default: []]
     }
     
     /// Returns an array of all edges that enclose a face with a given id.
-    public func edges(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
+    public func edges(forFace face: Face.Id) -> [Edge.Id] {
         let face = faces[face.id.value]
         return face.localToGlobalEdges
     }
@@ -296,7 +331,7 @@ public extension LoopyGrid {
             return true
         }
         
-        let edges = self.edges(forFace: faceId)
+        let edges = self.edges(forFace: faceId.id)
         return edges.count { edgeState(forEdge: $0) == .marked } == hint
     }
     
@@ -335,78 +370,5 @@ public extension LoopyGrid {
         let face2 = faces[face2.id.value]
         
         return !Set(face1.localToGlobalEdges).isDisjoint(with: face2.localToGlobalEdges)
-    }
-}
-
-// MARK: - Edge segment querying
-public extension LoopyGrid {
-    /// Returns `true` iff each edge on a given list is directly connected to the
-    /// next, forming a singular chain.
-    public func isUniqueSegment(_ edges: [Edge.Id]) -> Bool {
-        let array = edges
-        if array.count == 0 {
-            return false
-        }
-        if array.count == 1 {
-            return true
-        }
-        
-        // Take a list of all edges, pop the first edge, and check the remaining
-        // list to see if an edge from the sequence is connected to it: if it is,
-        // push that edge to the sequence edges and repeat for all edges until
-        // either the list is empty or none of the remaining items are connected
-        // to any of the edges in the sequence
-        var rem = Array(array.dropFirst())
-        var seq = [array[0]]
-        
-        while rem.count > 0 {
-            for i in 0..<rem.count {
-                let next = rem[i]
-                
-                if seq.contains(where: { edgesShareVertex($0, next) }) {
-                    seq.append(next)
-                    rem.remove(at: i)
-                    break
-                } else if i == rem.count - 1 {
-                    return false
-                }
-            }
-        }
-        
-        return true
-    }
-    
-    /// Returns `true` iff all edges in a given list are connected, and they form
-    /// a loop (i.e. all edges connected start-to-end).
-    public func isLoop(_ edges: [Edge.Id]) -> Bool {
-        let array = edges
-        
-        // Minimal number of edges connected to form a loop must be 3.
-        if array.count < 3 {
-            return false
-        }
-        
-        // Take the list of edges, pick a single vertex, and traverse the edges
-        // using a vertex hopper which hops across from edge to edge using the
-        // vertices as pivots.
-        // At the end, the first edge picked must be the edge the vertex hopper
-        // returns to.
-        var remaining = Array(array.dropFirst())
-        var collected = [array[0]]
-        var current: Edge.Id { return collected[collected.count - 1] }
-        
-        while remaining.count > 0 {
-            for (i, edge) in remaining.enumerated() {
-                if edgesShareVertex(current, edge) {
-                    collected.append(edge)
-                    remaining.remove(at: i)
-                    break
-                } else if i == remaining.count - 1 {
-                    return false
-                }
-            }
-        }
-        
-        return edgesShareVertex(collected[0], collected.last!)
     }
 }
