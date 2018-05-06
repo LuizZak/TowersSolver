@@ -95,11 +95,6 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         print()
     }
     
-    public static func printGrid(grid: LoopyGrid) {
-        let printer = LoopyGridPrinter(bufferWidth: 80, bufferHeight: 35)
-        printer.printGrid(grid: grid)
-    }
-    
     internal func totalWidth(for grid: LoopyGrid) -> Float {
         if grid.vertices.count == 0 {
             return 0

@@ -84,7 +84,7 @@ private class InternalSolver {
         
         // Can only apply next solving logics when the non-shared edges form a
         // single sequential line across the outer side of the face
-        if !nonShared.edges(in: grid).isUniqueSegment {
+        if !grid.isUniqueSegment(nonShared) {
             return
         }
         
@@ -152,8 +152,8 @@ private class InternalSolver {
             // filter the 'hijacking' faces and only apply to those that don't
             // share that vertex).
             let joinVertices =
-                Set(shared.edges(in: grid).flatMap { [$0.start, $0.end] })
-                    .intersection(nonShared.edges(in: grid).flatMap { [$0.start, $0.end] })
+                Set(shared.map(grid.vertices).flatMap { [$0.start, $0.end] })
+                    .intersection(nonShared.map(grid.vertices(forEdge:)).flatMap { [$0.start, $0.end] })
             
             // Find vertices for inner edges (excluding vertices from join above)
             // These are the query vertices we'll use to test for the hijacking

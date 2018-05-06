@@ -40,18 +40,6 @@ public struct LoopyGrid: Equatable {
         faceIds = []
     }
     
-    public mutating func clear() {
-        vertices = []
-        edges = []
-        edgeIds = []
-        faces = []
-        faceIds = []
-    }
-    
-    private func edgeWithId(_ id: Edge.Id) -> Edge {
-        return edges[id.value]
-    }
-    
     /// With a given face reference, apply a set of changes to the matching face.
     /// Changes block is not called, in case face is not found within this grid.
     public mutating func withFace(_ face: FaceReferenceConvertible, changes: (inout Face) -> Void) {
@@ -301,14 +289,14 @@ public extension LoopyGrid {
     /// as their hint points.
     ///
     /// Non-hinted faces are always considered to be 'solved'.
-    public func isFaceSolved(_ face: FaceReferenceConvertible) -> Bool {
-        let face = faces[face.id.value]
+    public func isFaceSolved(_ faceId: FaceReferenceConvertible) -> Bool {
+        let face = faces[faceId.id.value]
         
         guard let hint = face.hint else {
             return true
         }
         
-        let edges = self.edges(forFace: face)
+        let edges = self.edges(forFace: faceId)
         return edges.count { edgeState(forEdge: $0) == .marked } == hint
     }
     

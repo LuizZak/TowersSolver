@@ -52,18 +52,6 @@ public struct Face: Equatable {
     public func containsEdge(id: Edge.Id) -> Bool {
         return localToGlobalEdges.contains(id)
     }
-    
-    /// Returns an array of local edge indices for this face based on a given list
-    /// of global edge indices.
-    public func toLocalEdges(_ edges: [Edge.Id]) -> [Int] {
-        return edges.compactMap { edge in
-            localToGlobalEdges.enumerated().first {
-                $0.element == edge
-            }.map {
-                $0.offset
-            }
-        }
-    }
 }
 
 extension Int: FaceReferenceConvertible {
@@ -72,16 +60,8 @@ extension Int: FaceReferenceConvertible {
     }
 }
 
-extension Face: FaceReferenceConvertible {
-    
-}
-
 extension Key: FaceReferenceConvertible where T == Face, U == Int {
     public var id: Face.Id {
         return self
-    }
-    
-    public func faceIndex(in list: [Face]) -> Int? {
-        return value
     }
 }

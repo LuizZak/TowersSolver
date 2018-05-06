@@ -2,7 +2,7 @@
 public class Solver {
     private var steps: [SolverStep] = []
     
-    public var grid: LoopyGrid
+    private(set) public var grid: LoopyGrid
     
     /// When the solver gets stuck and requires guessing a possible next play,
     /// this counter controls how many guesses it can attempt before stopping
@@ -217,10 +217,6 @@ public class Solver {
             grid = step.apply(to: grid)
         }
         return grid
-    }
-    
-    private func applyStep(_ step: SolverStep) {
-        grid = step.apply(to: grid)
     }
     
     private func collectSpeculativeSteps() -> [Edge.Id] {

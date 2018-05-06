@@ -31,17 +31,6 @@ public class LoopyGridController {
         setEdges(state: state, forEdges: grid.edges(forFace: face))
     }
     
-    public func setEdges(state: Edge.State, forEdges edges: [EdgeReferenceConvertible]) {
-        for edge in edges {
-            grid.withEdge(edge) {
-                $0.state = state
-            }
-        }
-    }
-    
-    // FIXME: Here since missing runtime conditional conformance checks trap the
-    // program when using overload `forEdges edges: [EdgeReferenceConvertible]`
-    // with `[Edge.Id]` edges.
     public func setEdges(state: Edge.State, forEdges edges: [Edge.Id]) {
         for edge in edges {
             grid.withEdge(edge) {
