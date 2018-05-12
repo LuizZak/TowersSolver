@@ -36,31 +36,52 @@ private class InternalSolver {
     }
     
     func apply() {
-        while true {
-            let before = grid
-            
-            applyInternal()
-            
-            if before == grid {
-                return
-            }
-        }
+        applyInternal()
     }
     
     private func applyInternal() {
+        var stack: [Int] = []
+        var visited: Set<Int> = []
+        
         for i in 0..<grid.vertices.count {
-            let edges = grid.edgesSharing(vertexIndex: i)
-            
-            let marked = edges.count { grid.edgeState(forEdge: $0) == .marked }
-            
+            let marked = grid.markedEdges(forVertex: i)
             guard marked == 1 else {
                 continue
             }
             
+            let edges = grid.edgesSharing(vertexIndex: i)
+            let enabled = edges.count { grid.edgeState(forEdge: $0) == .normal }
+            guard enabled == 1 else {
+                continue
+            }
+            
+            stack.append(i)
+        }
+        
+        while !stack.isEmpty {
+            let next = stack.removeLast()
+            if visited.contains(next) {
+                continue
+            }
+
+            visited.insert(next)
+            
+            let edges = grid.edgesSharing(vertexIndex: next)
             let enabled = edges.filter { grid.edgeState(forEdge: $0) == .normal }
             
             if enabled.count == 1 {
                 controller.setEdges(state: .marked, forEdges: enabled)
+                
+                for edge in edges {
+                    let vertices = grid.vertices(forEdge: edge)
+                    
+                    if grid.markedEdges(forVertex: vertices.start) == 1 {
+                        stack.append(vertices.start)
+                    }
+                    if grid.markedEdges(forVertex: vertices.end) == 1 {
+                        stack.append(vertices.end)
+                    }
+                }
             }
         }
     }

@@ -137,6 +137,19 @@ class LoopyGridTests: XCTestCase {
         XCTAssert(grid.isFaceSolved(3))
     }
     
+    func testFaceIsSolvedIsTrueForNonHintedFaces() {
+        grid = LoopySquareGridGen(width: 1, height: 1).generate()
+        
+        XCTAssert(grid.isFaceSolved(0))
+    }
+    
+    func testFaceIsSolvedIsFalseForHintedFacesThatAreEmpty() {
+        grid = LoopySquareGridGen(width: 1, height: 1).generate()
+        grid.withFace(0) { $0.hint = 2 }
+        
+        XCTAssertFalse(grid.isFaceSolved(0))
+    }
+    
     func testEdgesConnectedTo() {
         // Create two triangle faces forming a box
         grid.addVertex(Vertex(x: 0, y: 0))

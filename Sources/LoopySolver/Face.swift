@@ -21,14 +21,14 @@ public struct Face: Equatable {
     public var id: Face.Id
     
     /// Indices of vertices that make up this face
-    public var indices: [Int]
+    public let indices: [Int]
     
     /// Maps local edges from 0 to n edges to global edge index on the grid this
     /// face is located in.
     ///
     /// Each index on this array represents the 0th to edge-count edge within
     /// this face, and the value within the index, the global edge index.
-    public var localToGlobalEdges: [Edge.Id]
+    public let localToGlobalEdges: [Edge.Id]
     
     /// The hint that describes the number of edges on this face that are part
     /// of the solution of the grid.

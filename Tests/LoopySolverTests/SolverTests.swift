@@ -227,7 +227,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 5, hints: [n, n, n, n, 2, 2, 1])
         gridGen.setHints(atRow: 6, hints: [2, 3, n, 3, n, n, n])
         let solver = Solver(grid: gridGen.generate())
-        solver.maxNumberOfGuesses = 6
+        solver.maxNumberOfGuesses = 8
         
         let result = solver.solve()
         
@@ -371,6 +371,23 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         let printer = LoopyGridPrinter(bufferWidth: 73, bufferHeight: 53)
+        printer.printGrid(grid: solver.grid)
+    }
+    
+    func testSolverHardHoneycomb10x10() {
+        // Attempt solving a honeycomb game grid.
+        // Game is this one:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#10x10t2:2b35c5f442a4a5443c2b34444223d4a4244a433e3045a4435b2d4a3a4b3a4b4d4454b44a
+        let gen = LoopyHoneycombGridGenerator(width: 10, height: 10)
+        gen.loadHints(from: "2b35c5f442a4a5443c2b34444223d4a4244a433e3045a4435b2d4a3a4b3a4b4d4454b44a")
+        
+        let solver = Solver(grid: gen.generate())
+        solver.maxNumberOfGuesses = 30
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        let printer = LoopyGridPrinter(bufferWidth: 64, bufferHeight: 43)
         printer.printGrid(grid: solver.grid)
     }
 }

@@ -9,10 +9,12 @@ public struct LoopyGrid: Equatable, Graph {
     public typealias FaceId = Face.Id
     public typealias EdgeId = Edge.Id
     
+    private var _markedEdgesPerVertex: [Int] = []
     private var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
-    private var _edgesPerVertex: [Int: [Edge.Id]] = [:]
-    private var _facesPerVertex: [Int: [Face.Id]] = [:]
-    private var _facesPerEdge: [Int: [Face.Id]] = [:]
+    private var _edgesPerVertex: [[Edge.Id]] = []
+    private var _facesPerVertex: [[Face.Id]] = []
+    private var _facesPerEdge: [[Face.Id]] = []
+    private var _faceIsSolved: [Bool] = []
     
     private var _ingoringDisabledEdges: Bool = false
     
@@ -39,6 +41,79 @@ public struct LoopyGrid: Equatable, Graph {
     /// Every face in `faces` has a matching face ID within this array, and vice-versa.
     private(set) public var faceIds: [Face.Id]
     
+    /// List of states for every edge on this grid.
+    /// Has same length as `edgeIds` and `edges` arrays, and is laid down
+    /// sequentially the same way.
+    public var edgeStates: [Edge.State] {
+        return edges.map { $0.state }
+    }
+    
+    /// Returns a value specifying whether this grid is consistent.
+    /// Consistency is based upon a partial or full solution attempt, be that the
+    /// target solution to the playfield or not.
+    ///
+    /// A grid is consistent when all of the following assertions hold:
+    ///
+    /// 1. A vertex has either zero, one, or two marked edges associated with it.
+    /// 2. A face with a hint has less or exactly as many marked edges around it
+    /// as its hint indicates.
+    /// 3. A face with a hint has more or exactly as many non-disabled edges
+    /// around it as its hint indicates.
+    /// 4. If a set of edges form a closed loop, all marked edges in the grid
+    /// must be part of the loop.
+    public var isConsistent: Bool {
+        for i in 0..<vertices.count {
+            if _markedEdgesPerVertex[i] > 2 {
+                return false
+            }
+        }
+        
+        for face in faceIds {
+            if isFaceSolved(face) {
+                continue
+            }
+            
+            guard let hint = hintForFace(face) else {
+                continue
+            }
+            
+            let edges = self.edges(forFace: face)
+            
+            if edges.count(where: { self.edges[$0.edgeIndex].state == .marked }) > hint {
+                return false
+            }
+            if edges.count(where: { self.edges[$0.edgeIndex].state.isEnabled }) < hint {
+                return false
+            }
+        }
+        
+        let marked = edgeIds.filter { self.edges[$0.edgeIndex].state == .marked }
+        
+        var runs: [[Edge.Id]] = []
+        var edgesCollected: Set<Edge.Id> = []
+        for edge in marked {
+            if edgesCollected.contains(edge) {
+                continue
+            }
+            
+            let run =
+                singlePathEdges(fromEdge: edge,
+                                includeTest: { self.edges[$0.edgeIndex].state == .marked })
+            
+            for e in run {
+                edgesCollected.insert(e)
+            }
+            
+            runs.append(run)
+        }
+        
+        if runs.count > 1 && runs.contains(where: isLoop) {
+            return false
+        }
+        
+        return true
+    }
+    
     public init() {
         vertices = []
         edges = []
@@ -62,16 +137,43 @@ public struct LoopyGrid: Equatable, Graph {
     /// Changes block is not called, in case face is not found within this grid.
     public mutating func withFace(_ face: FaceReferenceConvertible, changes: (inout Face) -> Void) {
         changes(&faces[face.id.value])
+        
+        _updateFaceResolved(face)
     }
     
     /// With a given edge reference, apply a set of changes to the matching edge.
     /// Changes block is not called, in case edge is not found within this grid.
     public mutating func withEdge(_ edge: EdgeReferenceConvertible, changes: (inout Edge) -> Void) {
-        changes(&edges[edge.edgeIndex(in: edges)])
+        let previous = edges[edge.edgeIndex]
+        
+        changes(&edges[edge.edgeIndex])
+        
+        let new = edges[edge.edgeIndex]
+        
+        switch (previous.state, new.state) {
+        case (.marked, .marked):
+            break
+        case (.marked, _):
+            _markedEdgesPerVertex[new.start] -= 1
+            _markedEdgesPerVertex[new.end] -= 1
+        case (_, .marked):
+            _markedEdgesPerVertex[new.start] += 1
+            _markedEdgesPerVertex[new.end] += 1
+        default:
+            break
+        }
+        
+        for f in _facesPerEdge[edge.edgeIndex] {
+            _updateFaceResolved(f)
+        }
     }
     
     public mutating func addVertex(_ vertex: Vertex) {
         vertices.append(vertex)
+        
+        _facesPerVertex.append([])
+        _edgesPerVertex.append([])
+        _markedEdgesPerVertex.append(0)
     }
     
     public mutating func addOrGetVertex(x: Int, y: Int) -> Int {
@@ -106,20 +208,22 @@ public struct LoopyGrid: Equatable, Graph {
         let edge = Edge(start: start, end: end)
         let edgeId = Edge.Id(edges.count)
         
-        for el in _edgesPerVertex[start, default: []] {
+        for el in _edgesPerVertex[start] {
             _edgesConnectedToEdge[el, default: []].append(edgeId)
         }
-        for el in _edgesPerVertex[end, default: []] {
+        for el in _edgesPerVertex[end] {
             _edgesConnectedToEdge[el, default: []].append(edgeId)
         }
         
         _edgesConnectedToEdge[edgeId, default: []]
             .append(contentsOf:
-                _edgesPerVertex[start, default: []]
-                    + _edgesPerVertex[end, default: []])
+                _edgesPerVertex[start]
+                    + _edgesPerVertex[end])
         
-        _edgesPerVertex[start, default: []].append(edgeId)
-        _edgesPerVertex[end, default: []].append(edgeId)
+        _edgesPerVertex[start].append(edgeId)
+        _edgesPerVertex[end].append(edgeId)
+        
+        _facesPerEdge.append([])
         
         edges.append(edge)
         edgeIds.append(edgeId)
@@ -138,8 +242,7 @@ public struct LoopyGrid: Equatable, Graph {
         
         let faceId = Face.Id(faces.count)
         
-        var face = Face(id: faceId, indices: indices,
-                        localToGlobalEdges: [], hint: hint)
+        var localToGlobalEdges: [Edge.Id] = []
         
         // Make edges, connecting all vertices from the first to the last, and
         // the last connecting back to the first vertex
@@ -147,13 +250,17 @@ public struct LoopyGrid: Equatable, Graph {
             let end = indices[(i + 1) % indices.count]
             
             let edgeId = createEdge(from: start, to: end)
-            face.localToGlobalEdges.append(edgeId)
+            localToGlobalEdges.append(edgeId)
             
-            _facesPerVertex[start, default: []].append(faceId)
+            _facesPerVertex[start].append(faceId)
             
-            _facesPerEdge[edgeId.value, default: []].append(faceId)
+            _facesPerEdge[edgeId.value].append(faceId)
         }
         
+        let face = Face(id: faceId, indices: indices,
+                        localToGlobalEdges: localToGlobalEdges, hint: hint)
+        
+        _faceIsSolved.append(hint == nil)
         faces.append(face)
         faceIds.append(faceId)
         
@@ -166,7 +273,7 @@ public struct LoopyGrid: Equatable, Graph {
     /// This method uses only the edge's start and end indices and ignores any
     /// other metadata associated with the edge.
     public func edgeId(forEdge edge: EdgeReferenceConvertible) -> Edge.Id? {
-        return Edge.Id(edge.edgeIndex(in: edges))
+        return Edge.Id(edge.edgeIndex)
     }
     
     /// Returns a matching Face Id for a given face.
@@ -175,6 +282,13 @@ public struct LoopyGrid: Equatable, Graph {
     /// This method uses only the face's vertex array to figure out equality.
     public func faceId(forFace face: FaceReferenceConvertible) -> Face.Id {
         return face.id
+    }
+    
+    /// Gets the edge with a given id on this grid.
+    ///
+    /// - precondition: id is contained within this loopy grid
+    public func edgeWithId(_ id: EdgeId) -> Edge {
+        return edges[id.value]
     }
 }
 
@@ -200,12 +314,17 @@ public extension LoopyGrid {
         
         return Array(Set(first.indices).intersection(second.indices))
     }
+    
+    /// Returns the number of edges marked for a given vertex
+    public func markedEdges(forVertex vertex: Int) -> Int {
+        return _markedEdgesPerVertex[vertex]
+    }
 }
 
 // MARK: - Edge querying methods
 public extension LoopyGrid {
     private func edgeReferenceFrom(_ edge: EdgeReferenceConvertible) -> Edge {
-        return edges[edge.edgeIndex(in: edges)]
+        return edges[edge.edgeIndex]
     }
     
     private func shouldIgnore(_ edge: Edge) -> Bool {
@@ -228,8 +347,8 @@ public extension LoopyGrid {
     /// Comparison ignores order of vertices between edges.
     public func edgesMatchVertices(_ first: EdgeReferenceConvertible,
                                    _ second: EdgeReferenceConvertible) -> Bool {
-        let first = first.edgeIndex(in: edges)
-        let second = second.edgeIndex(in: edges)
+        let first = first.edgeIndex
+        let second = second.edgeIndex
         
         return first == second || edges[first].matchesEdgeVertices(edges[second])
     }
@@ -261,15 +380,17 @@ public extension LoopyGrid {
     /// Returns an array of all edges within this grid sharing a given common
     /// vertex index.
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
+        let edges = _edgesPerVertex[vertexIndex]
+        
         if _ingoringDisabledEdges {
-            return _edgesPerVertex[vertexIndex, default: []].filter { !shouldIgnore(edgeReferenceFrom($0)) }
+            return edges.filter { !shouldIgnore(edgeReferenceFrom($0)) }
         }
-        return _edgesPerVertex[vertexIndex, default: []]
+        return edges
     }
     
     /// Returns an array of all edges that are connected to a given edge.
     public func edgesConnected(to edge: EdgeReferenceConvertible) -> [Edge.Id] {
-        let index = edge.edgeIndex(in: edges)
+        let index = edge.edgeIndex
         let id = Edge.Id(index)
         
         if _ingoringDisabledEdges {
@@ -313,9 +434,14 @@ public extension LoopyGrid {
         return faces[face.id.value].isSemiComplete
     }
     
-    /// Returns the edge count for a given face
+    /// Returns the edge count for a given face.
     public func edgeCount(forFace face: FaceReferenceConvertible) -> Int {
         return faces[face.id.value].edgesCount
+    }
+    
+    /// Returns the number of edges of a given face that are in a specified state.
+    public func edgeCount(withState state: Edge.State, onFace face: FaceReferenceConvertible) -> Int {
+        return edges(forFace: face.id).count(where: { edgeState(forEdge: $0) == state })
     }
     
     /// Returns `true` if a given face is considered solved on this grid.
@@ -325,14 +451,7 @@ public extension LoopyGrid {
     ///
     /// Non-hinted faces are always considered to be 'solved'.
     public func isFaceSolved(_ faceId: FaceReferenceConvertible) -> Bool {
-        let face = faces[faceId.id.value]
-        
-        guard let hint = face.hint else {
-            return true
-        }
-        
-        let edges = self.edges(forFace: faceId.id)
-        return edges.count { edgeState(forEdge: $0) == .marked } == hint
+        return _faceIsSolved[faceId.id.value]
     }
     
     /// Returns an array of vertices that make up a specified polygon face
@@ -343,21 +462,20 @@ public extension LoopyGrid {
     
     /// Returns an array of faces within this grid that share a given vertex index.
     public func facesSharing(vertexIndex: Int) -> [Face.Id] {
-        return _facesPerVertex[vertexIndex, default: []]
+        return _facesPerVertex[vertexIndex]
     }
     
     /// Returns an array of faces within this grid that share a common edge.
     /// Either one or two faces share a common edge at all times.
     public func facesSharing(edge: EdgeReferenceConvertible) -> [Face.Id] {
-        return _facesPerEdge[edge.edgeIndex(in: edges), default: []]
+        return _facesPerEdge[edge.edgeIndex]
     }
     
     /// Returns `true` if a given edge forms the side of a given face.
-    public func faceContainsEdge(face: FaceReferenceConvertible,
-                                 edge: EdgeReferenceConvertible) -> Bool {
+    public func faceContainsEdge(face: Face.Id, edge: Edge.Id) -> Bool {
         
         let face = faces[face.id.value]
-        let edgeId = edgeIds[edge.edgeIndex(in: edges)]
+        let edgeId = edgeIds[edge.edgeIndex]
         
         return face.containsEdge(id: edgeId)
     }
@@ -370,5 +488,62 @@ public extension LoopyGrid {
         let face2 = faces[face2.id.value]
         
         return !Set(face1.localToGlobalEdges).isDisjoint(with: face2.localToGlobalEdges)
+    }
+    
+    private mutating func _updateFaceResolved(_ faceId: FaceReferenceConvertible) {
+        _faceIsSolved[faceId.id.value] = _internalIsFaceSolved(faceId)
+    }
+    
+    private func _internalIsFaceSolved(_ faceId: FaceReferenceConvertible) -> Bool {
+        let face = faces[faceId.id.value]
+        
+        guard let hint = face.hint else {
+            return true
+        }
+        
+        let edges = self.edges(forFace: faceId.id)
+        return edges.count { edgeState(forEdge: $0) == .marked } == hint
+    }
+}
+
+extension LoopyGrid {
+    public func singlePathEdges(fromEdge edge: Edge.Id, includeTest: (Edge.Id) -> Bool) -> [Edge.Id] {
+        return withoutActuallyEscaping(includeTest) { includeTest in
+            var result: [Edge.Id] = []
+            var added: Set<Edge.Id> = []
+            
+            // Only include edges not already accounted for in the result array
+            let includeFilter: (Edge.Id) -> Bool = { edge in
+                if added.contains(edge) {
+                    return false
+                }
+                
+                return includeTest(edge)
+            }
+            
+            var stack = [edge]
+            
+            while let next = stack.popLast() {
+                result.append(next)
+                added.insert(next)
+                
+                let edgesLeft =
+                    edgesSharing(vertexIndex: vertices(forEdge: next).start)
+                        .filter(includeFilter)
+                
+                let edgesRight =
+                    edgesSharing(vertexIndex: vertices(forEdge: next).end)
+                        .filter(includeFilter)
+                
+                if edgesLeft.count == 1 && !stack.contains(edgesLeft[0]) {
+                    stack.append(edgesLeft[0])
+                }
+                if edgesRight.count == 1 && !stack.contains(edgesRight[0]) {
+                    stack.append(edgesRight[0])
+                }
+            }
+            
+            return result
+        }
     }
 }

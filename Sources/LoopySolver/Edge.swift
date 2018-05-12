@@ -4,7 +4,7 @@ import Commons
 /// Common protocol to abstract edge references between actual edge structures and
 /// edge IDs.
 public protocol EdgeReferenceConvertible {
-    func edgeIndex(in list: [Edge]) -> Int
+    var edgeIndex: Int { get }
 }
 
 /// Represents an edge between two vertices.
@@ -75,13 +75,13 @@ public struct Edge: Equatable, EdgeProtocol {
 }
 
 extension Int: EdgeReferenceConvertible {
-    public func edgeIndex(in list: [Edge]) -> Int {
+    public var edgeIndex: Int {
         return self
     }
 }
 
 extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
-    public func edgeIndex(in list: [Edge]) -> Int {
+    public var edgeIndex: Int {
         return value
     }
 }

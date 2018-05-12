@@ -1,9 +1,21 @@
 /// Solver for a Loopy match
-public class Solver {
+public final class Solver {
+    /// Shared metadata for step types
+    private var metadatas: [String: SolverStepMetadata] = [:]
+    
     /// Set to `true` when a solver step reports an invalid state before it can
-    /// be detected by the solver via `isConsistent`
+    /// be detected by the solver via `isConsistent`.
     private var _diagnosedInconsistentState: Bool = false
+    
+    // Solver steps applied during normal resolving.
     private var steps: [SolverStep] = []
+    
+    // Solver steps applied after exhausting normal solving attempts.
+    private var postSolveAttemptSteps: [SolverStep] = []
+    
+    /// Whether this solver was spawned by a solver when attempting to inspect
+    /// the results of a play isolatedly.
+    var isChildSolver = false
     
     private(set) public var grid: LoopyGrid
     
@@ -56,63 +68,13 @@ public class Solver {
     /// grid or as reported by a SolverStep, which cannot be undone by marking
     /// or disabling edges, a board is considered inconsistent.
     ///
-    /// A grid is consistent when all of the following assertions hold:
-    ///
-    /// 1. A vertex has either zero, one, or two marked edges associated with it.
-    /// 2. A face with a hint has less or exactly as many marked edges around it
-    /// as its hint indicates.
-    /// 3. A face with a hint has more or exactly as many non-disabled edges
-    /// around it as its hint indicates.
-    /// 4. If a set of edges form a closed loop, all marked edges in the grid
-    /// must be part of the loop.
+    /// - seealso: `LoopyGrid.isConsistent`
     public var isConsistent: Bool {
         if _diagnosedInconsistentState {
             return true
         }
         
-        for i in 0..<grid.vertices.count {
-            let edges = grid
-                .edgesSharing(vertexIndex: i)
-            
-            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) > 2 {
-                return false
-            }
-        }
-        
-        for face in grid.faceIds {
-            let edges = grid.edges(forFace: face)
-            guard let hint = grid.hintForFace(face) else {
-                continue
-            }
-            
-            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) > hint {
-                return false
-            }
-            if edges.count(where: { grid.edgeState(forEdge: $0).isEnabled }) < hint {
-                return false
-            }
-        }
-        
-        let marked = grid.edgeIds.filter { grid.edgeState(forEdge: $0) == .marked }
-        
-        var runs: [[Edge.Id]] = []
-        for edge in marked {
-            if runs.contains(where: { $0.contains(edge) }) {
-                continue
-            }
-            
-            let run =
-                grid.singlePathEdges(fromEdge: edge,
-                                     includeTest: { grid.edgeState(forEdge: $0) == .marked })
-            
-            runs.append(run)
-        }
-        
-        if runs.count > 1 && runs.contains(where: grid.isLoop) {
-            return false
-        }
-        
-        return true
+        return grid.isConsistent
     }
     
     public init(grid: LoopyGrid) {
@@ -120,6 +82,22 @@ public class Solver {
         guessesAvailable = maxNumberOfGuesses
         
         addSteps()
+    }
+    
+    func mergeSolver(_ solver: Solver) {
+        grid = solver.grid
+        metadatas = solver.metadatas
+    }
+    
+    private func makeSubsolver(grid: LoopyGrid) -> Solver {
+        let solver = Solver(grid: grid)
+        if self.grid == grid {
+            solver.metadatas = metadatas
+        }
+        solver.maxNumberOfGuesses = guessesAvailable
+        solver.isChildSolver = true
+        
+        return solver
     }
     
     private func addSteps() {
@@ -134,30 +112,12 @@ public class Solver {
         steps.append(NeighboringSemiCompleteFacesSolverStep())
         steps.append(NeighboringShortFacesSolverStep())
         steps.append(InvalidLoopClosingDetectionSolverStep())
+        
+        postSolveAttemptSteps.append(CommonEdgesBetweenGuessesSolverStep())
     }
     
     public func solve() -> Result {
-        // Keep applying passes until the grid no longer changes between steps
-        while !isSolved && isConsistent {
-            var oldGrid = grid
-            grid = applySteps(to: grid)
-            
-            // If no changes where made, try a speculative play here
-            if grid == oldGrid {
-                
-                oldGrid = grid
-                
-                // Perform a speculative step to attempt solving the grid by making
-                // guessing plays.
-                speculate()
-                
-                // No changes detected- stop solve attempts since no further changes
-                // will be made, anyway.
-                if grid == oldGrid {
-                    break
-                }
-            }
-        }
+        basicSolveCycle()
         
         if isSolved {
             // Present a clean solution by disabling remaining normal edges that
@@ -176,11 +136,68 @@ public class Solver {
         return .unsolved
     }
     
+    private func basicSolveCycle() {
+        // Keep applying passes until the grid no longer changes between steps
+        while isConsistent && !isSolved {
+            var oldGrid = grid
+
+            applySolverLoopToExhaustion {
+                grid = applySteps(to: grid)
+            }
+            
+            // If no changes where made, try a speculative play here
+            if grid == oldGrid {
+                oldGrid = grid
+
+                // Perform a speculative step to attempt solving the grid by making
+                // guessing plays.
+                speculate()
+
+                // No changes detected- stop solve attempts since no further changes
+                // will be made, anyway.
+                if grid == oldGrid {
+                    break
+                }
+            }
+        }
+        
+        if !isSolved && isConsistent && !isChildSolver {
+            let before = grid
+            grid = applyPostSolveAttemptSteps(to: grid)
+            
+            if grid != before {
+                basicSolveCycle()
+            }
+        }
+    }
+    
+    /// Applies a solver changes block until either a solution is found, an
+    /// inconsistency is reached, or no changes have been made during the cycle.
+    private func applySolverLoopToExhaustion(changes: () -> Void) {
+        // Keep applying passes until the grid no longer changes between steps
+        while !isSolved && isConsistent {
+            let oldGrid = grid
+            
+            changes()
+            
+            if grid == oldGrid {
+                break
+            }
+        }
+    }
+    
     private func applySteps(to grid: LoopyGrid) -> LoopyGrid {
-        let delegate = SolverDelegate()
+        return applySteps(steps, to: grid)
+    }
+    
+    private func applyPostSolveAttemptSteps(to grid: LoopyGrid) -> LoopyGrid {
+        return applySteps(postSolveAttemptSteps, to: grid)
+    }
+    
+    private func applySteps(_ steps: [SolverStep], to grid: LoopyGrid) -> LoopyGrid {
         var grid = grid
-        for step in steps where !delegate.isInconsistent {
-            grid = step.apply(to: grid, delegate)
+        for step in steps where !_diagnosedInconsistentState {
+            grid = step.apply(to: grid, self)
         }
         return grid
     }
@@ -198,32 +215,28 @@ public class Solver {
         for play in plays where guessesAvailable > 0 {
             guessesAvailable -= 1
             
-            if doSpeculativePlay(play, &guessesAvailable) {
+            if doSpeculativePlay(play) {
                 return
             }
         }
     }
     
-    private func doSpeculativePlay(_ edge: Edge.Id, _ guessesAvailable: inout Int) -> Bool {
-        let subSolver = Solver(grid: grid)
-        subSolver.maxNumberOfGuesses = guessesAvailable
-        defer {
-            guessesAvailable -= subSolver.maxNumberOfGuesses - subSolver.guessesAvailable
+    private func doSpeculativePlay(_ edge: Edge.Id) -> Bool {
+        return withSubsolver(grid: grid) { subSolver in
+            subSolver.grid.withEdge(edge) { $0.state = .marked }
+            
+            if subSolver.solve() == .solved {
+                mergeSolver(subSolver)
+                return true
+            }
+            
+            if !subSolver.isConsistent {
+                grid.withEdge(edge) { $0.state = .disabled }
+                return true
+            }
+            
+            return false
         }
-        
-        subSolver.grid.withEdge(edge) { $0.state = .marked }
-        
-        if subSolver.solve() == .solved {
-            grid = subSolver.grid
-            return true
-        }
-        
-        if !subSolver.isConsistent {
-            grid.withEdge(edge) { $0.state = .disabled }
-            return true
-        }
-        
-        return false
     }
     
     private func collectSpeculativeSteps() -> [Edge.Id] {
@@ -294,10 +307,39 @@ public class Solver {
     }
 }
 
-class SolverDelegate: SolverStepDelegate {
-    var isInconsistent = false
+extension Solver: SolverStepDelegate {
+    public func metadataForSolverStepClass<T: SolverStep>(_ solverStepType: T.Type) -> SolverStepMetadata {
+        let type = "\(solverStepType)"
+        
+        if let meta = metadatas[type] {
+            return meta
+        }
+        
+        let metadata = SolverStepMetadata()
+        
+        metadatas[type] = metadata
+        
+        return metadata
+    }
     
-    func solverStepDidReportInconsistentState(_ step: SolverStep) {
-        isInconsistent = true
+    public func canSolverStepPerformGuessAttempt(_ step: SolverStep) -> Bool {
+        return guessesAvailable > 0
+    }
+    
+    public func solverStepDidPerformGuess(_ step: SolverStep) {
+        guessesAvailable -= 1
+    }
+    
+    public func solverStepDidReportInconsistentState(_ step: SolverStep) {
+        _diagnosedInconsistentState = true
+    }
+    
+    public func withSubsolver<T>(grid: LoopyGrid, do closure: (Solver) throws -> T) rethrows -> T {
+        let solver = makeSubsolver(grid: grid)
+        defer {
+            guessesAvailable -= solver.maxNumberOfGuesses - solver.guessesAvailable
+        }
+        
+        return try closure(solver)
     }
 }

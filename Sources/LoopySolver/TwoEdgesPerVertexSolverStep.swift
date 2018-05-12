@@ -3,13 +3,23 @@
 /// an intersecting loopy line at that vertex)
 public class TwoEdgesPerVertexSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
+        let metadata = delegate.metadataForSolverStepClass(type(of: self))
+        
         let controller = LoopyGridController(grid: grid)
         
         for vertex in 0..<grid.vertices.count {
-            let edges = grid.edgesSharing(vertexIndex: vertex)
-            let marked = edges.count { grid.edgeState(forEdge: $0) == .marked }
+            if metadata.matchesStoredVertexState(vertex, from: controller.grid) {
+                continue
+            }
+            defer {
+                metadata.storeVertexState(vertex, from: controller.grid)
+            }
+            
+            let marked = grid.markedEdges(forVertex: vertex)
             
             if marked == 2 {
+                let edges = grid.edgesSharing(vertexIndex: vertex)
+                
                 let toDisable = edges.filter { grid.edgeState(forEdge: $0) != .marked }
                 controller.setEdges(state: .disabled, forEdges: toDisable)
             }

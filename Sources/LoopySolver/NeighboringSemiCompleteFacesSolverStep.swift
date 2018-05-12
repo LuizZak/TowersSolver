@@ -33,6 +33,9 @@ private class InternalSolver {
         var pairs: [FacePair] = []
         
         let semifaces = controller.semiCompleteFaces()
+        if semifaces.count == 0 {
+            return pairs
+        }
         
         for i in 0..<semifaces.count - 1 {
             let semi1 = semifaces[i]

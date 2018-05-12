@@ -79,7 +79,7 @@ private class InternalSolver {
         controller.setEdge(state: .disabled, forEdge: entry.edge)
     }
     
-    private struct Entry {
+    private struct Entry: Equatable {
         var edge: Edge.Id
         
         var firstEdge: Edge.Id

@@ -28,7 +28,9 @@
 ///          two vertices where the inner and outer path for the corner face join.
 public class CornerSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+        let metadata = delegate.metadataForSolverStepClass(type(of: self))
+        
+        let solver = InternalSolver(grid: grid, metadata: metadata)
         solver.apply()
         
         return solver.grid
@@ -37,13 +39,15 @@ public class CornerSolverStep: SolverStep {
 
 private class InternalSolver {
     var controller: LoopyGridController
+    var metadata: SolverStepMetadata
     
     var grid: LoopyGrid {
         return controller.grid
     }
     
-    init(grid: LoopyGrid) {
+    init(grid: LoopyGrid, metadata: SolverStepMetadata) {
         controller = LoopyGridController(grid: grid)
+        self.metadata = metadata
     }
     
     func apply() {
@@ -52,22 +56,31 @@ private class InternalSolver {
         }
     }
     
-    func applyToFace(_ face: Face.Id) {
-        let edges = grid.edges(forFace: face)
-        if grid.isFaceSolved(face) && !edges.contains(where: { grid.edgeState(forEdge: $0) == .normal }) {
+    func applyToFace(_ faceId: Face.Id) {
+        // Requires hint!
+        guard let hint = grid.hintForFace(faceId) else {
             return
         }
         
-        // Requires hint!
-        guard let hint = grid.hintForFace(face) else {
+        let edges = grid.edges(forFace: faceId)
+        
+        // Store last face shape so we don't redo work unnecessarily
+        if metadata.matchesStoredFaceState(faceId, from: grid) {
+            return
+        }
+        defer {
+            metadata.storeFaceState(faceId, from: grid)
+        }
+        
+        if grid.isFaceSolved(faceId) && !edges.contains(where: { grid.edgeState(forEdge: $0) == .normal }) {
             return
         }
         
         let linearPaths = grid
             .ignoringDisabledEdges()
-            .linearPathGraphEdges(around: face.id)
+            .linearPathGraphEdges(around: faceId.id)
             .map {
-                $0.filter { grid.faceContainsEdge(face: face, edge: $0) }
+                $0.filter { grid.faceContainsEdge(face: faceId, edge: $0) }
             }
         
         // 1.
@@ -100,7 +113,7 @@ private class InternalSolver {
         // solution, since at least one of the outer edges will have to be marked
         // to be part of the solution, and if a single outer edge is marked, all
         // outer edges must be marked due to them forming a single continuous line.
-        if grid.edges(forFace: face).count - nonShared.count < hint {
+        if grid.edges(forFace: faceId).count - nonShared.count < hint {
             controller.setEdges(state: .marked, forEdges: nonShared)
             return
         }
@@ -131,17 +144,17 @@ private class InternalSolver {
         // | 2 |
         // └---┴══
         //
-        if grid.edges(forFace: face).count == nonShared.count * 2 && nonShared.count == hint {
+        if grid.edges(forFace: faceId).count == nonShared.count * 2 && nonShared.count == hint {
             // Find the out-going edges from the join vertices
             let start = grid
                 .ignoringDisabledEdges()
                 .edgesConnected(to: nonShared.first!)
-                .filter { !grid.faceContainsEdge(face: face, edge: $0) }
+                .filter { !grid.faceContainsEdge(face: faceId, edge: $0) }
             
             let end = grid
                 .ignoringDisabledEdges()
                 .edgesConnected(to: nonShared.last!)
-                .filter { !grid.faceContainsEdge(face: face, edge: $0) }
+                .filter { !grid.faceContainsEdge(face: faceId, edge: $0) }
             
             if start.count == 1 {
                 controller.setEdges(state: .marked, forEdges: start)
@@ -153,7 +166,7 @@ private class InternalSolver {
             // 3.1
             // Test if the outer path is not 'hijacked' by an `edge_count - 1`-hinted
             // face.
-            let shared = grid.edges(forFace: face)
+            let shared = grid.edges(forFace: faceId)
                 .filter { !nonShared.contains($0) }
             
             // Find vertices where inner and outer paths join (we'll use that to
@@ -166,7 +179,7 @@ private class InternalSolver {
             // Find vertices for inner edges (excluding vertices from join above)
             // These are the query vertices we'll use to test for the hijacking
             // faces
-            let testVertices = Set(grid.vertices(forFace: face)).subtracting(joinVertices)
+            let testVertices = Set(grid.vertices(forFace: faceId)).subtracting(joinVertices)
             
             for vertex in testVertices {
                 let faces = grid

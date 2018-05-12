@@ -16,7 +16,9 @@
 /// right edges marked as part of the solution.
 public class SinglePathSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+        let metadata = delegate.metadataForSolverStepClass(type(of: self))
+        
+        let solver = InternalSolver(grid: grid, metadata: metadata)
         solver.apply()
         
         return solver.grid
@@ -25,13 +27,15 @@ public class SinglePathSolverStep: SolverStep {
 
 private class InternalSolver {
     var controller: LoopyGridController
+    var metadata: SolverStepMetadata
     
     var grid: LoopyGrid {
         return controller.grid
     }
     
-    init(grid: LoopyGrid) {
+    init(grid: LoopyGrid, metadata: SolverStepMetadata) {
         controller = LoopyGridController(grid: grid)
+        self.metadata = metadata
     }
     
     func apply() {
@@ -43,6 +47,13 @@ private class InternalSolver {
     func applyToFace(_ face: Face.Id) {
         if grid.isFaceSolved(face) {
             return
+        }
+        
+        if metadata.matchesStoredFaceState(face, from: grid) {
+            return
+        }
+        defer {
+            metadata.storeFaceState(face, from: grid)
         }
         
         guard let hint = grid.hintForFace(face) else {

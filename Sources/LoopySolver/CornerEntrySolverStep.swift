@@ -21,7 +21,9 @@
 ///
 public class CornerEntrySolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+        let metadata = delegate.metadataForSolverStepClass(type(of: self))
+        
+        let solver = InternalSolver(grid: grid, metadata: metadata)
         solver.apply()
         return solver.grid
     }
@@ -29,13 +31,15 @@ public class CornerEntrySolverStep: SolverStep {
 
 private class InternalSolver {
     var controller: LoopyGridController
+    var metadata: SolverStepMetadata
     
     var grid: LoopyGrid {
         return controller.grid
     }
     
-    init(grid: LoopyGrid) {
+    init(grid: LoopyGrid, metadata: SolverStepMetadata) {
         controller = LoopyGridController(grid: grid)
+        self.metadata = metadata
     }
     
     func apply() {
@@ -45,6 +49,12 @@ private class InternalSolver {
     }
     
     func applyToVertex(_ vertexIndex: Int) {
+        if metadata.matchesStoredVertexState(vertexIndex, from: grid) {
+            return
+        }
+        defer {
+            metadata.storeVertexState(vertexIndex, from: grid)
+        }
         
         let edges = grid.edgesSharing(vertexIndex: vertexIndex)
         
@@ -107,6 +117,13 @@ private class InternalSolver {
     }
     
     func applyToFace(_ face: Face.Id, vertex: Int) {
+        if metadata.matchesStoredFaceState(face, from: grid) {
+            return
+        }
+        defer {
+            metadata.storeFaceState(face, from: grid)
+        }
+        
         if grid.isFaceSolved(face) {
             return
         }

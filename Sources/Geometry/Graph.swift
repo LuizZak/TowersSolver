@@ -28,6 +28,9 @@ public protocol Graph {
     /// Returns `true` if two edges have a vertex index in common.
     func edgesShareVertex(_ first: EdgeId, _ second: EdgeId) -> Bool
     
+    /// Returns `true` if a given edge forms the side of a given face.
+    func faceContainsEdge(face: FaceId, edge: EdgeId) -> Bool
+    
     /// Returns the index of an index that matches a given vertex object.
     ///
     /// Returns nil, in case a matching vertex is not found.
@@ -94,22 +97,24 @@ public extension Graph {
     public func linearPathGraphEdges(around face: FaceId) -> [[EdgeId]] {
         let edges = self.edges(forFace: face)
         
+        var edgesSet: Set<EdgeId> = []
         var edgeRuns: [[EdgeId]] = []
         
         for edge in edges {
-            if edgeRuns.contains(where: { $0.contains(edge) }) {
+            if edgesSet.contains(edge) {
                 continue
             }
             
             let path = singlePathEdges(fromEdge: edge, includeTest: { _ in true })
             edgeRuns.append(path)
+            path.forEach { edgesSet.insert($0) }
         }
         
         return edgeRuns
     }
     
     public func singlePathEdges(fromEdge edge: EdgeId) -> [EdgeId] {
-        return singlePathEdges(fromEdge: edge, includeTest: { _ in true})
+        return singlePathEdges(fromEdge: edge, includeTest: { _ in true })
     }
     
     public func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> [EdgeId] {
@@ -119,11 +124,11 @@ public extension Graph {
             
             // Only include edges not already accounted for in the result array
             let includeFilter: (EdgeId) -> Bool = { edge in
-                if !includeTest(edge) {
+                if added.contains(edge) {
                     return false
                 }
                 
-                return !added.contains(edge)
+                return includeTest(edge)
             }
             
             var stack = [edge]
@@ -205,6 +210,7 @@ public extension Graph {
         // returns to.
         var remaining = Array(array.dropFirst())
         var collected = [array[0]]
+        collected.reserveCapacity(remaining.count)
         var current: EdgeId { return collected[collected.count - 1] }
         
         while remaining.count > 0 {

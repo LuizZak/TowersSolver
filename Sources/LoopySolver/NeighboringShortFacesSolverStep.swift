@@ -15,7 +15,9 @@
 /// resulting in a guaranteed larger-than-one marked edges count for either face.
 public class NeighboringShortFacesSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+        let metadata = delegate.metadataForSolverStepClass(type(of: self))
+        
+        let solver = InternalSolver(grid: grid, metadata: metadata)
         solver.apply()
         
         return solver.grid
@@ -23,16 +25,23 @@ public class NeighboringShortFacesSolverStep: SolverStep {
 }
 private class InternalSolver {
     var controller: LoopyGridController
+    var metadata: SolverStepMetadata
     
     var grid: LoopyGrid {
         return controller.grid
     }
     
-    init(grid: LoopyGrid) {
+    init(grid: LoopyGrid, metadata: SolverStepMetadata) {
         controller = LoopyGridController(grid: grid)
+        self.metadata = metadata
     }
     
     func apply() {
+        if metadata.isFlagMarked() {
+            return
+        }
+        metadata.markFlag()
+        
         // Collect pairs of semi-complete faces to work on
         let pairs = collect()
         
@@ -46,6 +55,10 @@ private class InternalSolver {
         
         // Examine only faces with hints
         let faces = grid.faceIds.filter { grid.hintForFace($0) != nil }
+        
+        if faces.count == 0 {
+            return pairs
+        }
         
         for i in 0..<faces.count - 1 {
             let semi1 = faces[i]
@@ -84,8 +97,8 @@ private class InternalSolver {
             let face1Edge = grid.faceContainsEdge(face: pair.face1, edge: $0) ? $0 : $1
             let face2Edge = grid.faceContainsEdge(face: pair.face2, edge: $0) ? $0 : $1
             
-            // Check if the paths taken by the line exeed the requirement of the
-            // face's hint, when considered alone
+            // Check if the paths taken by the line exceeds the requirement of
+            // the face's hint, when considered alone
             let count1 = grid
                 .singlePathEdges(fromEdge: face1Edge)
                 .count { grid.faceContainsEdge(face: pair.face1, edge: $0) }
