@@ -67,10 +67,11 @@ private class InternalSolver {
             visited.insert(next)
             
             let edges = grid.edgesSharing(vertexIndex: next)
-            let enabled = edges.filter { grid.edgeState(forEdge: $0) == .normal }
+            let normal = edges.filter { grid.edgeState(forEdge: $0) == .normal }
+            let markedCount = edges.count { grid.edgeState(forEdge: $0) == .marked }
             
-            if enabled.count == 1 {
-                controller.setEdges(state: .marked, forEdges: enabled)
+            if normal.count == 1 && markedCount == 1 {
+                controller.setEdges(state: .marked, forEdges: normal)
                 
                 for edge in edges {
                     let vertices = grid.vertices(forEdge: edge)

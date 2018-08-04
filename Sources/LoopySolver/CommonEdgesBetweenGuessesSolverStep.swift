@@ -35,20 +35,25 @@ public class CommonEdgesBetweenGuessesSolverStep: SolverStep {
 
 private class InternalSolver {
     var controller: LoopyGridController
-    var solverStep: SolverStep
+    var solverStep: CommonEdgesBetweenGuessesSolverStep
     var delegate: SolverStepDelegate
     
     var grid: LoopyGrid {
         return controller.grid
     }
     
-    init(grid: LoopyGrid, solverStep: SolverStep, delegate: SolverStepDelegate) {
+    init(grid: LoopyGrid, solverStep: CommonEdgesBetweenGuessesSolverStep, delegate: SolverStepDelegate) {
+        
         controller = LoopyGridController(grid: grid)
         self.solverStep = solverStep
         self.delegate = delegate
     }
     
     func apply() {
+        if !delegate.canSolverStepPerformGuessAttempt(solverStep) {
+            return
+        }
+        
         let candidates = collectCandidates()
         for candidate in candidates {
             if apply(on: candidate) {
@@ -58,6 +63,8 @@ private class InternalSolver {
     }
     
     func apply(on candidate: Candidate) -> Bool {
+        let metadata = delegate.metadataForSolverStepClass(type(of: solverStep))
+        
         var results: [LoopyGrid] = []
         var badEdges: [Edge.Id] = []
         
@@ -66,6 +73,18 @@ private class InternalSolver {
             var testGrid = grid
             testGrid.withEdge(edge) {
                 $0.state = .marked
+            }
+            
+            // Skip grids that have been previously guessed already
+            let grids = metadata["grids", type: [LoopyGrid].self] ?? []
+            if grids.contains(testGrid) {
+                continue
+            }
+            metadata["grids", type: [LoopyGrid].self] =
+                (metadata["grids", type: [LoopyGrid].self] ?? []) + [testGrid]
+            
+            defer {
+                delegate.solverStepDidPerformGuess(solverStep)
             }
             
             let didSolve = delegate.withSubsolver(grid: testGrid) { solver -> Bool in

@@ -105,7 +105,7 @@ public extension Graph {
                 continue
             }
             
-            let path = singlePathEdges(fromEdge: edge, includeTest: { _ in true })
+            let path = singlePathEdges(fromEdge: edge)
             edgeRuns.append(path)
             path.forEach { edgesSet.insert($0) }
         }

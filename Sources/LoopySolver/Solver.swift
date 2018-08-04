@@ -121,7 +121,7 @@ public final class Solver {
         
         if isSolved {
             // Present a clean solution by disabling remaining normal edges that
-            // not part of the solution
+            // are not part of the solution
             for edge in grid.edgeIds {
                 grid.withEdge(edge) { edge in
                     if edge.state == .normal {
@@ -161,7 +161,7 @@ public final class Solver {
             }
         }
         
-        if !isSolved && isConsistent && !isChildSolver {
+        if !isChildSolver && isConsistent && !isSolved {
             let before = grid
             grid = applyPostSolveAttemptSteps(to: grid)
             
@@ -206,7 +206,7 @@ public final class Solver {
     /// is checked to verify if the edge is not actually part of the solved
     /// puzzle.
     private func speculate() {
-        if guessesAvailable == 0 {
+        if guessesAvailable <= 0 {
             return
         }
         
@@ -215,14 +215,16 @@ public final class Solver {
         for play in plays where guessesAvailable > 0 {
             guessesAvailable -= 1
             
-            if doSpeculativePlay(play) {
+            if doSpeculativePlay(play, guesses: guessesAvailable) {
                 return
             }
         }
     }
     
-    private func doSpeculativePlay(_ edge: Edge.Id) -> Bool {
+    private func doSpeculativePlay(_ edge: Edge.Id, guesses: Int) -> Bool {
         return withSubsolver(grid: grid) { subSolver in
+            subSolver.maxNumberOfGuesses = guesses
+            subSolver.guessesAvailable = guesses
             subSolver.grid.withEdge(edge) { $0.state = .marked }
             
             if subSolver.solve() == .solved {
@@ -244,31 +246,55 @@ public final class Solver {
         
         // Search for vertices with open loop ends to fill
         struct VertEntry {
-            var vertex: Int
             var edges: [Edge.Id]
             var priority: Int
         }
         
         var vertEntries: [VertEntry] = []
         
-        for i in 0..<grid.vertices.count {
-            let edges = grid
-                .edgesSharing(vertexIndex: i)
-                .filter { grid.edgeState(forEdge: $0).isEnabled }
+        for e in grid.edgeIds where grid.edgeState(forEdge: e) == .normal {
+            let start = grid.vertices(forEdge: e).start
+            let end = grid.vertices(forEdge: e).end
             
-            if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) == 1 {
-                let edgesToPlay = edges
-                    .filter { grid.edgeState(forEdge: $0) == .normal }
-                
-                let hintedFaces =
-                    grid.faceIds.count { grid.vertices(forFace: $0).contains(i) && grid.hintForFace($0) != nil }
-                let semicompleteFaces =
-                    grid.faceIds.count { grid.vertices(forFace: $0).contains(i) && grid.isFaceSemicomplete($0) }
-                
-                let priority = hintedFaces + semicompleteFaces
-                
-                vertEntries.append(VertEntry(vertex: i, edges: edgesToPlay, priority: priority))
+            guard grid.markedEdges(forVertex: start) == 1 else {
+                continue
             }
+            guard grid.markedEdges(forVertex: end) == 1 else {
+                continue
+            }
+            
+            let hintedFaces =
+                grid.faceIds.count { grid.faceContainsEdge(face: $0, edge: e) && grid.hintForFace($0) != nil }
+            let semicompleteFaces =
+                grid.faceIds.count { grid.faceContainsEdge(face: $0, edge: e) && grid.isFaceSemicomplete($0) }
+            
+            let priority = hintedFaces + semicompleteFaces + 1
+            
+            vertEntries.append(VertEntry(edges: [e], priority: priority))
+        }
+        
+        for i in 0..<grid.vertices.count {
+            guard grid.markedEdges(forVertex: i) == 1 else {
+                continue
+            }
+            
+            let edgesToPlay = grid
+                .edgesSharing(vertexIndex: i)
+                .filter { grid.edgeState(forEdge: $0) == .normal }
+            
+            let hintedFaces =
+                grid.faceIds.count { grid.vertices(forFace: $0).contains(i) && grid.hintForFace($0) != nil }
+            
+            if hintedFaces == 0 {
+                continue
+            }
+            
+            let semicompleteFaces =
+                grid.faceIds.count { grid.vertices(forFace: $0).contains(i) && grid.isFaceSemicomplete($0) }
+            
+            let priority = hintedFaces + semicompleteFaces
+            
+            vertEntries.append(VertEntry(edges: edgesToPlay, priority: priority))
         }
         
         // Sort entries by number of faces the play would affect to increase chances

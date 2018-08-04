@@ -124,4 +124,68 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         // 3, 3
         XCTAssertEqual(edgeStatesForFace(8), [.marked, .marked, .marked, .disabled])
     }
+    
+    func testApplyEdgeCase2() {
+        // Create a grid with a loopy line that ends in a corner:
+        //
+        // •───•───•───•
+        // |   |   │   │
+        // •   •   •───•
+        // ║   ║   ║   ║
+        // •   •═══•   •
+        // ║           ║
+        // •═══•═══•═══•
+        //
+        // Result should be a grid with the following configuration:
+        //
+        // •═══•───•───•
+        // ║   ║   │   │
+        // •   •   •───•
+        // ║   ║   ║   ║
+        // •   •═══•   •
+        // ║           ║
+        // •═══•═══•═══•
+        //
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        let controller = LoopyGridController(grid: gridGen.generate())
+        // Disabled edges
+        controller.setEdge(state: .disabled, forFace: 0, edgeIndex: 2)
+        controller.setEdges(state: .disabled, forFace: 1, edgeIndices: [2])
+        controller.setEdges(state: .disabled, forFace: 3, edgeIndices: [2])
+        controller.setEdges(state: .disabled, forFace: 5, edgeIndices: [2])
+        controller.setEdges(state: .disabled, forFace: 6, edgeIndices: [1])
+        controller.setEdges(state: .disabled, forFace: 7, edgeIndices: [1])
+        // Marked edges
+        controller.setEdges(state: .marked, forFace: 3, edgeIndices: [1, 3])
+        controller.setEdges(state: .marked, forFace: 4, edgeIndices: [1, 2])
+        controller.setEdges(state: .marked, forFace: 5, edgeIndices: [1])
+        controller.setEdges(state: .marked, forFace: 6, edgeIndices: [2, 3])
+        controller.setEdges(state: .marked, forFace: 7, edgeIndices: [2])
+        controller.setEdges(state: .marked, forFace: 8, edgeIndices: [1, 2])
+        
+        let result = sut.apply(to: controller.grid, delegate)
+        
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
+        }
+        // 1, 1
+        XCTAssertEqual(edgeStatesForFace(0), [.marked, .marked, .disabled, .marked])
+        // 2, 1
+        XCTAssertEqual(edgeStatesForFace(1), [.normal, .normal, .disabled, .marked])
+        // 3, 1
+        XCTAssertEqual(edgeStatesForFace(2), [.normal, .normal, .normal, .normal])
+        // 1, 2
+        XCTAssertEqual(edgeStatesForFace(3), [.disabled, .marked, .disabled, .marked])
+        // 2, 2
+        XCTAssertEqual(edgeStatesForFace(4), [.disabled, .marked, .marked, .marked])
+        // 3, 2
+        XCTAssertEqual(edgeStatesForFace(5), [.normal, .marked, .disabled, .marked])
+        // 1, 3
+        XCTAssertEqual(edgeStatesForFace(6), [.disabled, .disabled, .marked, .marked])
+        // 2, 3
+        XCTAssertEqual(edgeStatesForFace(7), [.marked, .disabled, .marked, .disabled])
+        // 3, 3
+        XCTAssertEqual(edgeStatesForFace(8), [.disabled, .marked, .marked, .disabled])
+        LoopyGridPrinter(bufferWidth: 14, bufferHeight: 7).printGrid(grid: result)
+    }
 }

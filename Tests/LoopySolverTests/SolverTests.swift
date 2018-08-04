@@ -382,7 +382,7 @@ class SolverTests: XCTestCase {
         gen.loadHints(from: "2b35c5f442a4a5443c2b34444223d4a4244a433e3045a4435b2d4a3a4b3a4b4d4454b44a")
         
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 30
+        solver.maxNumberOfGuesses = 50
         
         let result = solver.solve()
         
