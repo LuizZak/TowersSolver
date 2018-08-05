@@ -2,7 +2,7 @@
 /// loop, but such loop would be invalid due to it not including other edges.
 public class InvalidLoopClosingDetectionSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
-        let solver = InternalSolver(grid: grid)
+        let solver = InternalSolver(grid: grid, delegate: delegate)
         solver.apply()
         
         return solver.grid
@@ -11,16 +11,27 @@ public class InvalidLoopClosingDetectionSolverStep: SolverStep {
 
 private class InternalSolver {
     var controller: LoopyGridController
+    var delegate: SolverStepDelegate
     
     var grid: LoopyGrid {
         return controller.grid
     }
     
-    init(grid: LoopyGrid) {
+    init(grid: LoopyGrid, delegate: SolverStepDelegate) {
         controller = LoopyGridController(grid: grid)
+        self.delegate = delegate
     }
     
     func apply() {
+        let metadata =
+            delegate.metadataForSolverStepClass(InvalidLoopClosingDetectionSolverStep.self)
+        
+        if metadata.isGridStateStored(grid) {
+            return
+        }
+        
+        metadata.storeGridState(grid)
+        
         let entries = collectEdges()
         let allMarked = grid.edgeIds.filter { grid.edgeState(forEdge: $0) == .marked }
         

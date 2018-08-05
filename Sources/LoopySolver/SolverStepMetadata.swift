@@ -10,6 +10,15 @@ public final class SolverStepMetadata {
         }
     }
     
+    public subscript<T>(_ name: String, type type: T.Type, defaultValue defaultValue: T) -> T {
+        get {
+            return metadata[name] as? T ?? defaultValue
+        }
+        set {
+            metadata[name] = newValue
+        }
+    }
+    
     public init() {
         
     }
@@ -31,6 +40,14 @@ public final class SolverStepMetadata {
         }
         
         return true
+    }
+    
+    public func storeGridState(_ grid: LoopyGrid) {
+        self["_grids", type: [LoopyGrid].self, defaultValue: []].append(grid)
+    }
+    
+    public func isGridStateStored(_ grid: LoopyGrid) -> Bool {
+        return self["_grids", type: [LoopyGrid].self, defaultValue: []].contains(grid)
     }
     
     public func storeFaceState(_ faceId: Face.Id, from grid: LoopyGrid) {

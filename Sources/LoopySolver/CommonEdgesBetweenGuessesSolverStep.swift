@@ -5,7 +5,8 @@
 /// Both common marked and disabled edges from possible path outcomes are detected.
 ///
 /// In the following board, the line can go either left or bottom of the centered
-/// `1` cell, and if it does, both paths taken will result in the
+/// `1` cell, and if it does, both paths taken will result in two edges being the
+/// same state in both solutions:
 ///
 /// .___.___.___.        .___.___.___.        .___.___.___.
 /// !___!___!___!        !___!___!___!        !___!___!___!
@@ -63,7 +64,7 @@ private class InternalSolver {
     }
     
     func apply(on candidate: Candidate) -> Bool {
-        let metadata = delegate.metadataForSolverStepClass(type(of: solverStep))
+        let metadata = delegate.metadataForSolverStepClass(CommonEdgesBetweenGuessesSolverStep.self)
         
         var results: [LoopyGrid] = []
         var badEdges: [Edge.Id] = []
@@ -76,12 +77,12 @@ private class InternalSolver {
             }
             
             // Skip grids that have been previously guessed already
-            let grids = metadata["grids", type: [LoopyGrid].self] ?? []
+            let grids = metadata["grids", type: [LoopyGrid].self, defaultValue: []]
             if grids.contains(testGrid) {
                 continue
             }
-            metadata["grids", type: [LoopyGrid].self] =
-                (metadata["grids", type: [LoopyGrid].self] ?? []) + [testGrid]
+            
+            metadata["grids", type: [LoopyGrid].self, defaultValue: []].append(testGrid)
             
             defer {
                 delegate.solverStepDidPerformGuess(solverStep)
@@ -117,7 +118,11 @@ private class InternalSolver {
         
         // Now check common edge states across results
         for id in grid.edgeIds {
-            let states = results.reduce(Set([.disabled, .marked, .normal])) { $0.intersection([$1.edgeState(forEdge: id)]) }
+            let states =
+                results
+                    .reduce(Set([.disabled, .marked, .normal])) {
+                        $0.intersection([$1.edgeState(forEdge: id)])
+                    }
             
             // Pick edges that have the same exact result across all candidate solutions
             // for the vertex

@@ -29,6 +29,7 @@ public final class Solver {
     }
     
     private var guessesAvailable: Int
+    private var postSolveGuessesAvailable: Int
     
     /// Returns `true` if the solution requirements are met on this solver's grid.
     ///
@@ -80,6 +81,7 @@ public final class Solver {
     public init(grid: LoopyGrid) {
         self.grid = grid
         guessesAvailable = maxNumberOfGuesses
+        postSolveGuessesAvailable = 10
         
         addSteps()
     }
@@ -349,10 +351,19 @@ extension Solver: SolverStepDelegate {
     }
     
     public func canSolverStepPerformGuessAttempt(_ step: SolverStep) -> Bool {
+        if postSolveAttemptSteps.contains(where: { $0 === step }) {
+            return postSolveGuessesAvailable > 0
+        }
+        
         return guessesAvailable > 0
     }
     
     public func solverStepDidPerformGuess(_ step: SolverStep) {
+        if postSolveAttemptSteps.contains(where: { $0 === step }) {
+            postSolveGuessesAvailable -= 1
+            return
+        }
+        
         guessesAvailable -= 1
     }
     

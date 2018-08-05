@@ -50,7 +50,7 @@ public struct LoopyGrid: Equatable, Graph {
     
     /// Returns a value specifying whether this grid is consistent.
     /// Consistency is based upon a partial or full solution attempt, be that the
-    /// target solution to the playfield or not.
+    /// actual solution to the playfield or not.
     ///
     /// A grid is consistent when all of the following assertions hold:
     ///
@@ -323,7 +323,11 @@ public extension LoopyGrid {
 
 // MARK: - Edge querying methods
 public extension LoopyGrid {
-    private func edgeReferenceFrom(_ edge: EdgeReferenceConvertible) -> Edge {
+    private func edgeReferenceFrom<E: EdgeReferenceConvertible>(_ edge: E) -> Edge {
+        return edges[edge.edgeIndex]
+    }
+    
+    private func edgeReferenceFrom(_ edge: EdgeId) -> Edge {
         return edges[edge.edgeIndex]
     }
     
@@ -332,13 +336,13 @@ public extension LoopyGrid {
     }
     
     /// Returns the state of a given edge reference
-    public func edgeState(forEdge edge: EdgeReferenceConvertible) -> Edge.State {
+    public func edgeState<E: EdgeReferenceConvertible>(forEdge edge: E) -> Edge.State {
         let edge = edgeReferenceFrom(edge)
         return edge.state
     }
     
     /// Returns `true` if a given edge starts or ends at a given vertex.
-    public func edgeSharesVertex(_ edge: EdgeReferenceConvertible, vertex: Int) -> Bool {
+    public func edgeSharesVertex<E: EdgeReferenceConvertible>(_ edge: E, vertex: Int) -> Bool {
         let edge = edgeReferenceFrom(edge)
         return edge.sharesVertex(vertex)
     }

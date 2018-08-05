@@ -38,15 +38,17 @@ public class LoopyHoneycombGridGenerator: LoopyGridGenerator {
                 continue
             }
             
-            let n = Int(chars[char].unicodeScalars.first!.value) - Int("0".unicodeScalars.first!.value)
-            let n2 = Int(chars[char].unicodeScalars.first!.value) - Int("A".unicodeScalars.first!.value) + 10
+            let charInt = Int(chars[char].unicodeScalars.first!.value)
+            
+            let n = charInt - Int(("0" as UnicodeScalar).value)
+            let n2 = charInt - Int(("A" as UnicodeScalar).value) + 10
             
             if n >= 0 && n < 10 {
-                hints[f] = Int(n)
+                hints[f] = n
             } else if n2 >= 10 && n2 < 36 {
-                hints[f] = Int(n2)
+                hints[f] = n2
             } else {
-                let n3 = Int(chars[char].unicodeScalars.first!.value) - Int("a".unicodeScalars.first!.value) + 1
+                let n3 = charInt - Int(("a" as UnicodeScalar).value) + 1
                 emptiesToMake = n3 - 1
             }
             char += 1
