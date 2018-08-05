@@ -6,14 +6,14 @@ public typealias IntPoint = Vector2<Int>
 
 /// A protocol for vector types
 public protocol VectorType {
-    associatedtype Coordinate: Numeric & Hashable
+    associatedtype Coordinate
     
     var x: Coordinate { get }
     var y: Coordinate { get }
 }
 
 /// Represents a vertex that has up to 4 cardinal connections to other vertices.
-public struct Vector2<T: Numeric & Hashable>: Hashable, VectorType {
+public struct Vector2<T>: VectorType {
     public var x: T
     public var y: T
     
@@ -23,8 +23,31 @@ public struct Vector2<T: Numeric & Hashable>: Hashable, VectorType {
     }
 }
 
+// MARK: - Equatable / Hashable
+extension Vector2: Equatable where T: Equatable { }
+extension Vector2: Hashable where T: Hashable { }
+
+// MARK: - Comparison
+extension Vector2: Comparable where T: Comparable {
+    public static func <(lhs: Vector2, rhs: Vector2) -> Bool {
+        return lhs.x < rhs.x && lhs.y < rhs.y
+    }
+    
+    public static func <=(lhs: Vector2, rhs: Vector2) -> Bool {
+        return lhs.x <= rhs.x && lhs.y <= rhs.y
+    }
+    
+    public static func >(lhs: Vector2, rhs: Vector2) -> Bool {
+        return lhs.x > rhs.x && lhs.y > rhs.y
+    }
+    
+    public static func >=(lhs: Vector2, rhs: Vector2) -> Bool {
+        return lhs.x >= rhs.x && lhs.y >= rhs.y
+    }
+}
+
 // MARK: - Basic operators
-public extension Vector2 {
+public extension Vector2 where T: Numeric {
     public static func +(lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
     }
@@ -55,25 +78,6 @@ public extension Vector2 {
     
     public static func *=(lhs: inout Vector2, rhs: T) {
         lhs = lhs * rhs
-    }
-}
-
-// MARK: - Comparison
-extension Vector2: Comparable where T: Comparable {
-    public static func <(lhs: Vector2, rhs: Vector2) -> Bool {
-        return lhs.x < rhs.x && lhs.y < rhs.y
-    }
-    
-    public static func <=(lhs: Vector2, rhs: Vector2) -> Bool {
-        return lhs.x <= rhs.x && lhs.y <= rhs.y
-    }
-    
-    public static func >(lhs: Vector2, rhs: Vector2) -> Bool {
-        return lhs.x > rhs.x && lhs.y > rhs.y
-    }
-    
-    public static func >=(lhs: Vector2, rhs: Vector2) -> Bool {
-        return lhs.x >= rhs.x && lhs.y >= rhs.y
     }
 }
 
