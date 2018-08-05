@@ -432,7 +432,7 @@ public extension LoopyGrid {
     /// Returns a value specifying whether a given face is semi-complete within
     /// the grid.
     ///
-    /// Semi complete grids have a required edge count equal to their total edge
+    /// Semi complete faces have a required edge count equal to their total edge
     /// count - 1, i.e. all but one of its edges are part of the solution.
     public func isFaceSemicomplete(_ face: FaceReferenceConvertible) -> Bool {
         return faces[face.id.value].isSemiComplete
