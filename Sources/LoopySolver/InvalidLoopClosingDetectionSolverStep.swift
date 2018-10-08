@@ -33,7 +33,7 @@ private class InternalSolver {
         metadata.storeGridState(grid)
         
         let entries = collectEdges()
-        let allMarked = grid.edgeIds.filter { grid.edgeState(forEdge: $0) == .marked }
+        let allMarked = grid.edgeIds.lazy.filter { self.grid.edgeState(forEdge: $0) == .marked }
         
         for edge in entries {
             apply(on: edge, allMarked: allMarked)
@@ -46,30 +46,43 @@ private class InternalSolver {
         // Search for all edges, unmarked, which connect two vertices that point
         // to two dead-end marked edges (in a 'doorway' or 'window' fashion)
         for edge in grid.edgeIds where grid.edgeState(forEdge: edge) == .normal {
-            let edgesInStart =
+            let edgesSharingStart =
                 grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).start)
-                    .filter { grid.edgeState(forEdge: $0) == .marked }
             
-            guard edgesInStart.count == 1 else {
+            let edgesInStartCount =
+                edgesSharingStart
+                    .count { grid.edgeState(forEdge: $0) == .marked }
+            
+            guard edgesInStartCount == 1 else {
                 continue
             }
+            
+            let edgesSharingEnd =
+                grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).end)
+            
+            let edgesInEndCount =
+                edgesSharingEnd.count { grid.edgeState(forEdge: $0) == .marked }
+            
+            guard edgesInEndCount == 1 else {
+                continue
+            }
+            
+            let edgesInStart =
+                edgesSharingStart
+                    .first { grid.edgeState(forEdge: $0) == .marked }
             
             let edgesInEnd =
-                grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).end)
-                    .filter { grid.edgeState(forEdge: $0) == .marked }
+                edgesSharingEnd
+                    .first { grid.edgeState(forEdge: $0) == .marked }
             
-            guard edgesInEnd.count == 1 else {
-                continue
-            }
-            
-            entries.append(Entry(edge: edge, firstEdge: edgesInStart[0],
-                                 secondEdge: edgesInEnd[0]))
+            entries.append(Entry(edge: edge, firstEdge: edgesInStart!,
+                                 secondEdge: edgesInEnd!))
         }
         
         return entries
     }
     
-    private func apply(on entry: Entry, allMarked: [Edge.Id]) {
+    private func apply<S: Sequence>(on entry: Entry, allMarked: S) where S.Element == Edge.Id {
         // Check if the edges from the entry link to one another
         let path =
             grid.singlePathEdges(fromEdge: entry.firstEdge) { edge in

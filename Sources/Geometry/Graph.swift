@@ -1,3 +1,5 @@
+import Commons
+
 public protocol EdgeProtocol {
     var start: Int { get }
     var end: Int { get }
@@ -140,19 +142,29 @@ public extension Graph {
                 result.append(next)
                 added.insert(next)
                 
-                let edgesLeft =
+                let edgesSharingStart =
                     edgesSharing(vertexIndex: vertices(forEdge: next).start)
-                        .filter(includeFilter)
-
-                let edgesRight =
+                
+                let edgesSharingEnd =
                     edgesSharing(vertexIndex: vertices(forEdge: next).end)
-                        .filter(includeFilter)
+                
+                let edgesLeftCount =
+                    edgesSharingStart
+                        .count(where: includeFilter)
 
-                if edgesLeft.count == 1 && !stack.contains(edgesLeft[0]) {
-                    stack.append(edgesLeft[0])
+                let edgesRightCount =
+                    edgesSharingEnd
+                        .count(where: includeFilter)
+                
+                if edgesLeftCount == 1, let first = edgesSharingStart.first(where: includeFilter) {
+                    if !stack.contains(first) {
+                        stack.append(first)
+                    }
                 }
-                if edgesRight.count == 1 && !stack.contains(edgesRight[0]) {
-                    stack.append(edgesRight[0])
+                if edgesRightCount == 1, let first = edgesSharingEnd.first(where: includeFilter) {
+                    if !stack.contains(first) {
+                        stack.append(first)
+                    }
                 }
             }
             

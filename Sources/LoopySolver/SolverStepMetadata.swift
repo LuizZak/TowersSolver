@@ -1,5 +1,6 @@
 public final class SolverStepMetadata {
     private var metadata: [String: Any] = [:]
+    private var vertexMetadata: [Int: Any] = [:]
     
     public subscript<T>(_ name: String, type type: T.Type) -> T? {
         get {
@@ -24,11 +25,11 @@ public final class SolverStepMetadata {
     }
     
     public func storeVertexState(_ vertex: Int, from grid: LoopyGrid) {
-        metadata["_vertex\(vertex)"] = grid.edgesSharing(vertexIndex: vertex).map(grid.edgeWithId)
+        vertexMetadata[vertex] = grid.edgesSharing(vertexIndex: vertex).map(grid.edgeWithId)
     }
     
     public func matchesStoredVertexState(_ vertex: Int, from grid: LoopyGrid) -> Bool {
-        guard let edges = self["_vertex\(vertex)", type: [Edge].self] else {
+        guard let edges = vertexMetadata[vertex] as? [Edge] else {
             return false
         }
         

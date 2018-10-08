@@ -13,17 +13,18 @@ public class ExactEdgeCountSolverStep: SolverStep {
                 continue
             }
             
-            let enabledEdges = edges.filter { grid.edgeState(forEdge: $0).isEnabled }
+            let enabledEdgesCount = edges.count { grid.edgeState(forEdge: $0).isEnabled }
             
-            if enabledEdges.count == grid.hintForFace(face) {
+            if enabledEdgesCount == grid.hintForFace(face) {
+                let enabledEdges = edges.filter { grid.edgeState(forEdge: $0).isEnabled }
                 controller.setEdges(state: .marked, forEdges: enabledEdges)
                 continue
             }
             
-            let markedEdges = edges.filter { grid.edgeState(forEdge: $0) == .marked }
-            let normalEdges = edges.filter { grid.edgeState(forEdge: $0) == .normal }
+            let markedEdgesCount = edges.count { grid.edgeState(forEdge: $0) == .marked }
             
-            if markedEdges.count == grid.hintForFace(face) {
+            if markedEdgesCount == grid.hintForFace(face) {
+                let normalEdges = edges.filter { grid.edgeState(forEdge: $0) == .normal }
                 controller.setEdges(state: .disabled, forEdges: normalEdges)
             }
         }

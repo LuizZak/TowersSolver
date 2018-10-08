@@ -50,9 +50,10 @@ private class InternalSolver {
         for i in 0..<grid.vertices.count {
             let edges = grid.edgesSharing(vertexIndex: i)
             
-            let enabled = edges.filter({ grid.edgeState(forEdge: $0).isEnabled })
+            let enabledCount = edges.count { grid.edgeState(forEdge: $0).isEnabled }
             
-            if enabled.count == 1 {
+            if enabledCount == 1 {
+                let enabled = edges.filter { grid.edgeState(forEdge: $0).isEnabled }
                 controller.setEdges(state: .disabled, forEdges: enabled)
             }
         }
