@@ -287,6 +287,7 @@ public struct LoopyGrid: Equatable, Graph {
     ///
     /// This method uses only the edge's start and end indices and ignores any
     /// other metadata associated with the edge.
+    @inlinable
     public func edgeId(forEdge edge: EdgeReferenceConvertible) -> Edge.Id? {
         return Edge.Id(edge.edgeIndex)
     }
@@ -295,6 +296,7 @@ public struct LoopyGrid: Equatable, Graph {
     /// Returns `nil`, in case the face is not found within this graph.
     ///
     /// This method uses only the face's vertex array to figure out equality.
+    @inlinable
     public func faceId(forFace face: FaceReferenceConvertible) -> Face.Id {
         return face.id
     }
@@ -302,6 +304,7 @@ public struct LoopyGrid: Equatable, Graph {
     /// Gets the edge with a given id on this grid.
     ///
     /// - precondition: id is contained within this loopy grid
+    @inlinable
     public func edgeWithId(_ id: EdgeId) -> Edge {
         return edges[id.value]
     }
@@ -323,6 +326,14 @@ public extension LoopyGrid {
     @inlinable
     public mutating func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible) {
         setEdges(state: state, forEdges: edges(forFace: face.id))
+    }
+    
+    /// Sets the edge state for a given edge on this LoopyGrid
+    @inlinable
+    public mutating func setEdge(state: Edge.State, forEdge edge: EdgeReferenceConvertible) {
+        withEdge(edge) {
+            $0.state = state
+        }
     }
 }
 

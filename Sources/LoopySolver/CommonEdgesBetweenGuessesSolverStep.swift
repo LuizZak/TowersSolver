@@ -35,17 +35,12 @@ public class CommonEdgesBetweenGuessesSolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
     var solverStep: CommonEdgesBetweenGuessesSolverStep
     var delegate: SolverStepDelegate
-    
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid, solverStep: CommonEdgesBetweenGuessesSolverStep, delegate: SolverStepDelegate) {
-        
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
         self.solverStep = solverStep
         self.delegate = delegate
     }
@@ -95,7 +90,7 @@ private class InternalSolver {
                 
                 if solver.isSolved {
                     // Marking this edge resulted in a proper solution!
-                    controller.grid = solver.grid
+                    grid = solver.grid
                     
                     return true
                 } else if !solver.isConsistent {
@@ -128,7 +123,7 @@ private class InternalSolver {
             // for the vertex
             if states.count == 1, let state = states.first {
                 if state != .normal, grid.edgeState(forEdge: id) != state {
-                    controller.setEdge(state: state, forEdge: id)
+                    grid.setEdge(state: state, forEdge: id)
                     modified = true
                 }
             }
@@ -136,7 +131,7 @@ private class InternalSolver {
         
         // Disable bad edges
         for edge in badEdges {
-            controller.setEdge(state: .disabled, forEdge: edge)
+            grid.setEdge(state: .disabled, forEdge: edge)
             modified = true
         }
         

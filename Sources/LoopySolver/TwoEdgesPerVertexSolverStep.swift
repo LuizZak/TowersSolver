@@ -2,6 +2,8 @@
 /// all remaining edges as not part of the solution (since these would result in
 /// an intersecting loopy line at that vertex)
 public class TwoEdgesPerVertexSolverStep: SolverStep {
+    public static let metadataKey: String = "\(TwoEdgesPerVertexSolverStep.self)"
+    
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))
         

@@ -1,6 +1,8 @@
 /// Detects patterns where a single selected edge between two edges would form a
 /// loop, but such loop would be invalid due to it not including other edges.
 public class InvalidLoopClosingDetectionSolverStep: SolverStep {
+    public static let metadataKey: String = "\(InvalidLoopClosingDetectionSolverStep.self)"
+    
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid, delegate: delegate)
         solver.apply()
