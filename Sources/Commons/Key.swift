@@ -19,16 +19,5 @@ extension Key: ExpressibleByIntegerLiteral where U: ExpressibleByIntegerLiteral 
     }
 }
 
-extension Key: Equatable where U: Equatable {
-    @inlinable
-    public static func ==(lhs: Key, rhs: Key) -> Bool {
-        return lhs.value == rhs.value
-    }
-}
-
-extension Key: Hashable where U: Hashable {
-    @inlinable
-    public var hashValue: Int {
-        return value.hashValue
-    }
-}
+extension Key: Equatable where U: Equatable { }
+extension Key: Hashable where U: Hashable { }
