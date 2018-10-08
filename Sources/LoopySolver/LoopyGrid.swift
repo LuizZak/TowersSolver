@@ -402,7 +402,7 @@ public extension LoopyGrid {
     
     /// Returns `true` if a given edge starts or ends at a given vertex.
     @inlinable
-    public func edgeSharesVertex<E: EdgeReferenceConvertible>(_ edge: E, vertex: Int) -> Bool {
+    public func edgeSharesVertex(_ edge: EdgeId, vertex: Int) -> Bool {
         let edge = edgeReferenceFrom(edge)
         return edge.sharesVertex(vertex)
     }
