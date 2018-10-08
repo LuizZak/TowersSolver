@@ -26,15 +26,12 @@ public class SinglePathSolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
     var metadata: SolverStepMetadata
     
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid, metadata: SolverStepMetadata) {
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
         self.metadata = metadata
     }
     
@@ -72,7 +69,7 @@ private class InternalSolver {
         edgeRuns.sort(by: { $0.count > $1.count })
         
         if edgeRuns[0].count == hint && grid.edges(forFace: face).count - edgeRuns[0].count < hint {
-            controller.setEdges(state: .marked, forEdges: edgeRuns[0])
+            grid.setEdges(state: .marked, forEdges: edgeRuns[0])
         }
     }
 }

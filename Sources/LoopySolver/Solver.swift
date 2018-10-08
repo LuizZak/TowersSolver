@@ -337,15 +337,15 @@ public final class Solver {
 
 extension Solver: SolverStepDelegate {
     public func metadataForSolverStepClass<T: SolverStep>(_ solverStepType: T.Type) -> SolverStepMetadata {
-        let type = "\(solverStepType)"
+        let key = T.metadataKey
         
-        if let meta = metadatas[type] {
+        if let meta = metadatas[key] {
             return meta
         }
         
         let metadata = SolverStepMetadata()
         
-        metadatas[type] = metadata
+        metadatas[key] = metadata
         
         return metadata
     }

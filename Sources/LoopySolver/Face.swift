@@ -35,6 +35,7 @@ public struct Face: Equatable {
     public var hint: Int?
     
     /// Returns the number of edges that form this face
+    @inlinable
     public var edgesCount: Int {
         return localToGlobalEdges.count
     }
@@ -44,23 +45,27 @@ public struct Face: Equatable {
     /// A semi-complete face has a hint number matching the number of edges of
     /// the face minus one, thus requiring all but one edge of the face to be
     /// marked as part of the solution.
+    @inlinable
     public var isSemiComplete: Bool {
         return hint == edgesCount - 1
     }
     
     /// Returns `true` if this face contains a given edge id
+    @inlinable
     public func containsEdge(id: Edge.Id) -> Bool {
         return localToGlobalEdges.contains(id)
     }
 }
 
 extension Int: FaceReferenceConvertible {
+    @inlinable
     public var id: Face.Id {
         return Face.Id(self)
     }
 }
 
 extension Key: FaceReferenceConvertible where T == Face, U == Int {
+    @inlinable
     public var id: Face.Id {
         return self
     }

@@ -25,14 +25,10 @@ public class SolePathEdgeExtenderSolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
-    
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid) {
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
     }
     
     func apply() {
@@ -71,7 +67,7 @@ private class InternalSolver {
             let markedCount = edges.count { grid.edgeState(forEdge: $0) == .marked }
             
             if normal.count == 1 && markedCount == 1 {
-                controller.setEdges(state: .marked, forEdges: normal)
+                grid.setEdges(state: .marked, forEdges: normal)
                 
                 for edge in edges {
                     let vertices = grid.vertices(forEdge: edge)

@@ -30,15 +30,12 @@ public class CornerEntrySolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
     var metadata: SolverStepMetadata
     
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid, metadata: SolverStepMetadata) {
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
         self.metadata = metadata
     }
     
@@ -83,7 +80,7 @@ private class InternalSolver {
             let oppositeEdges = grid.edges(forFace: semiComplete)
                 .filter { !grid.edgeSharesVertex($0, vertex: vertexIndex) }
             
-            controller.setEdges(state: .marked, forEdges: oppositeEdges)
+            grid.setEdges(state: .marked, forEdges: oppositeEdges)
             
             // Disable edges from other faces that share that vertex to finish
             // hijacking the line path
@@ -91,7 +88,7 @@ private class InternalSolver {
                 .filter { !grid.faceContainsEdge(face: semiComplete, edge: grid.edgeId(forEdge: $0)!) }
                 .filter { marked[0] != $0 }
             
-            controller.setEdges(state: .disabled, forEdges: otherEdges)
+            grid.setEdges(state: .disabled, forEdges: otherEdges)
             
             return
         }
@@ -156,7 +153,7 @@ private class InternalSolver {
             // If we follow this path, we'll end up with more edges marked than
             // the face requirement; disable this path, then
             if edgeCount > hint {
-                controller.setEdges(state: .disabled, forEdges: edgesPath)
+                grid.setEdges(state: .disabled, forEdges: edgesPath)
             }
         }
         
@@ -164,7 +161,7 @@ private class InternalSolver {
             // Disable all edges not sharing the common vertex
             let toDisable = allEdges.filter { !grid.edgeSharesVertex($0, vertex: vertex) }
             
-            controller.setEdges(state: .disabled, forEdges: toDisable)
+            grid.setEdges(state: .disabled, forEdges: toDisable)
         }
     }
 }

@@ -1,7 +1,15 @@
 /// A protocol for objects capable of performing discrete solution steps on a loopy
 /// field.
 public protocol SolverStep: class {
+    static var metadataKey: String { get }
+    
     func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid
+}
+
+public extension SolverStep {
+    static var metadataKey: String {
+        return "\(self)"
+    }
 }
 
 /// A delegate for solver steps to call to report invalid states ahead of time

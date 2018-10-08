@@ -9,14 +9,26 @@ public struct LoopyGrid: Equatable, Graph {
     public typealias FaceId = Face.Id
     public typealias EdgeId = Edge.Id
     
-    private var _markedEdgesPerVertex: [Int] = []
-    private var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
-    private var _edgesPerVertex: [[Edge.Id]] = []
-    private var _facesPerVertex: [[Face.Id]] = []
-    private var _facesPerEdge: [[Face.Id]] = []
-    private var _faceIsSolved: [Bool] = []
+    @usableFromInline
+    internal var _markedEdgesPerVertex: [Int] = []
     
-    private var _ingoringDisabledEdges: Bool = false
+    @usableFromInline
+    internal var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
+    
+    @usableFromInline
+    internal var _edgesPerVertex: [[Edge.Id]] = []
+    
+    @usableFromInline
+    internal var _facesPerVertex: [[Face.Id]] = []
+    
+    @usableFromInline
+    internal var _facesPerEdge: [[Face.Id]] = []
+    
+    @usableFromInline
+    internal var _faceIsSolved: [Bool] = []
+    
+    @usableFromInline
+    internal var _ingoringDisabledEdges: Bool = false
     
     /// List of edges that connect vertices
     @usableFromInline
@@ -64,9 +76,10 @@ public struct LoopyGrid: Equatable, Graph {
     /// around it as its hint indicates.
     /// 4. If a set of edges form a closed loop, all marked edges in the grid
     /// must be part of the loop.
+    @inlinable
     public var isConsistent: Bool {
         for i in 0..<vertices.count {
-            if _markedEdgesPerVertex[i] > 2 {
+            if markedEdges(forVertex: i) > 2 {
                 return false
             }
         }
@@ -92,11 +105,10 @@ public struct LoopyGrid: Equatable, Graph {
         
         // Fetch all marked edges and try to connect them into a single contiguous
         // line.
-        let marked = edgeIds.lazy.filter { self.edges[$0.edgeIndex].state == .marked }
-        
         var runs: [[Edge.Id]] = []
         var edgesCollected: Set<Edge.Id> = []
-        for edge in marked {
+        
+        for edge in edgeIds where edgeState(forEdge: edge) == .marked {
             if edgesCollected.contains(edge) {
                 continue
             }
@@ -295,21 +307,37 @@ public struct LoopyGrid: Equatable, Graph {
     }
 }
 
+// MARK: - Edge mutation methods
+public extension LoopyGrid {
+    /// Sets the state of the given edges on this loopy grid.
+    @inlinable
+    public mutating func setEdges(state: Edge.State, forEdges edges: [EdgeId]) {
+        for edge in edges {
+            withEdge(edge) {
+                $0.state = state
+            }
+        }
+    }
+}
+
 // MARK: - Vertex querying methods
 public extension LoopyGrid {
     /// Returns the index of the vertex with the given coordinates.
     ///
     /// Returns nil, in case the coordinate does not match any vertex.
+    @inlinable
     public func vertexIndex(x: Float, y: Float) -> Int? {
         return vertices.index(of: Vertex(x: x, y: y))
     }
     
     /// Returns a list of vertex indices that make up a face.
+    @inlinable
     public func vertices(forFace face: FaceReferenceConvertible) -> [Int] {
         return faces[face.id.value].indices
     }
     
     /// Returns the shared vertices between two faces.
+    @inlinable
     public func sharedVertices(between first: FaceReferenceConvertible,
                                _ second: FaceReferenceConvertible) -> [Int] {
         let first = faces[first.id.value]
@@ -319,6 +347,7 @@ public extension LoopyGrid {
     }
     
     /// Returns the number of edges marked for a given vertex
+    @inlinable
     public func markedEdges(forVertex vertex: Int) -> Int {
         return _markedEdgesPerVertex[vertex]
     }
@@ -336,7 +365,8 @@ public extension LoopyGrid {
         return edges[edge.edgeIndex]
     }
     
-    private func shouldIgnore(_ edge: Edge) -> Bool {
+    @inlinable
+    internal func shouldIgnore(_ edge: Edge) -> Bool {
         return _ingoringDisabledEdges ? !edge.state.isEnabled : false
     }
     
@@ -362,6 +392,7 @@ public extension LoopyGrid {
     
     /// Returns `true` if two edges match vertices-wise (ignoring edge state).
     /// Comparison ignores order of vertices between edges.
+    @inlinable
     public func edgesMatchVertices(_ first: EdgeReferenceConvertible,
                                    _ second: EdgeReferenceConvertible) -> Bool {
         let first = first.edgeIndex
@@ -371,6 +402,7 @@ public extension LoopyGrid {
     }
     
     /// Returns `true` if two edges have a vertex index in common.
+    @inlinable
     public func edgesShareVertex(_ first: Edge.Id, _ second: Edge.Id) -> Bool {
         let v = vertices(forEdge: second)
         
@@ -378,6 +410,7 @@ public extension LoopyGrid {
     }
     
     /// Returns the two vertex indices for the start/end of a given edge.
+    @inlinable
     public func vertices(forEdge edge: Edge.Id) -> (start: Int, end: Int) {
         let edge = edgeReferenceFrom(edge)
         
@@ -387,6 +420,7 @@ public extension LoopyGrid {
     /// Returns the index for the edge of the given vertices.
     /// Detects both direction of edges.
     /// Returns `nil`, if no edge is present between the two edges.
+    @inlinable
     public func edgeBetween(vertex1: Int, vertex2: Int) -> Edge.Id? {
         return edges.enumerated().filter { !shouldIgnore($0.element) }.first { (i, edge) in
             (edge.start == vertex1 && edge.end == vertex2)
@@ -396,6 +430,7 @@ public extension LoopyGrid {
     
     /// Returns an array of all edges within this grid sharing a given common
     /// vertex index.
+    @inlinable
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
         let edges = _edgesPerVertex[vertexIndex]
         
@@ -406,6 +441,7 @@ public extension LoopyGrid {
     }
     
     /// Returns an array of all edges that are connected to a given edge.
+    @inlinable
     public func edgesConnected(to edge: EdgeReferenceConvertible) -> [Edge.Id] {
         let index = edge.edgeIndex
         let id = Edge.Id(index)
@@ -418,6 +454,7 @@ public extension LoopyGrid {
     }
     
     /// Returns an array of all edges that enclose a face with a given id.
+    @inlinable
     public func edges(forFace face: Face.Id) -> [Edge.Id] {
         let face = faces[face.id.value]
         return face.localToGlobalEdges
@@ -425,6 +462,7 @@ public extension LoopyGrid {
     
     /// Returns the edge ID of the shared edge between two faces.
     /// If the two faces do not share an edge, nil is returned, instead.
+    @inlinable
     public func sharedEdge(between first: FaceReferenceConvertible,
                            _ second: FaceReferenceConvertible) -> Edge.Id? {
         
@@ -438,6 +476,7 @@ public extension LoopyGrid {
 // MARK: - Face querying methods
 public extension LoopyGrid {
     /// Gets the hint for a particular face in this loopy grid
+    @inlinable
     public func hintForFace(_ face: FaceReferenceConvertible) -> Int? {
         return faces[face.id.value].hint
     }
@@ -447,16 +486,19 @@ public extension LoopyGrid {
     ///
     /// Semi complete faces have a required edge count equal to their total edge
     /// count - 1, i.e. all but one of its edges are part of the solution.
+    @inlinable
     public func isFaceSemicomplete(_ face: FaceReferenceConvertible) -> Bool {
         return faces[face.id.value].isSemiComplete
     }
     
     /// Returns the edge count for a given face.
+    @inlinable
     public func edgeCount(forFace face: FaceReferenceConvertible) -> Int {
         return faces[face.id.value].edgesCount
     }
     
     /// Returns the number of edges of a given face that are in a specified state.
+    @inlinable
     public func edgeCount(withState state: Edge.State, onFace face: FaceReferenceConvertible) -> Int {
         return edges(forFace: face.id).count(where: { edgeState(forEdge: $0) == state })
     }
@@ -467,28 +509,33 @@ public extension LoopyGrid {
     /// as their hint points.
     ///
     /// Non-hinted faces are always considered to be 'solved'.
+    @inlinable
     public func isFaceSolved(_ faceId: FaceReferenceConvertible) -> Bool {
         return _faceIsSolved[faceId.id.value]
     }
     
     /// Returns an array of vertices that make up a specified polygon face
+    @inlinable
     public func polygonFor(face: FaceReferenceConvertible) -> [Vertex] {
         let face = faces[face.id.value]
         return face.indices.map { vertices[$0] }
     }
     
     /// Returns an array of faces within this grid that share a given vertex index.
+    @inlinable
     public func facesSharing(vertexIndex: Int) -> [Face.Id] {
         return _facesPerVertex[vertexIndex]
     }
     
     /// Returns an array of faces within this grid that share a common edge.
     /// Either one or two faces share a common edge at all times.
+    @inlinable
     public func facesSharing(edge: EdgeReferenceConvertible) -> [Face.Id] {
         return _facesPerEdge[edge.edgeIndex]
     }
     
     /// Returns `true` if a given edge forms the side of a given face.
+    @inlinable
     public func faceContainsEdge(face: Face.Id, edge: Edge.Id) -> Bool {
         
         let face = faces[face.id.value]
@@ -498,6 +545,7 @@ public extension LoopyGrid {
     }
     
     /// Returns `true` if two given faces share a common edge.
+    @inlinable
     public func facesShareEdge(_ face1: FaceReferenceConvertible,
                                _ face2: FaceReferenceConvertible) -> Bool {
         

@@ -5,14 +5,14 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))
         
-        let controller = LoopyGridController(grid: grid)
+        var grid = grid
         
         for vertex in 0..<grid.vertices.count {
-            if metadata.matchesStoredVertexState(vertex, from: controller.grid) {
+            if metadata.matchesStoredVertexState(vertex, from: grid) {
                 continue
             }
             defer {
-                metadata.storeVertexState(vertex, from: controller.grid)
+                metadata.storeVertexState(vertex, from: grid)
             }
             
             let marked = grid.markedEdges(forVertex: vertex)
@@ -21,10 +21,11 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
                 let edges = grid.edgesSharing(vertexIndex: vertex)
                 
                 let toDisable = edges.filter { grid.edgeState(forEdge: $0) != .marked }
-                controller.setEdges(state: .disabled, forEdges: toDisable)
+                
+                grid.setEdges(state: .disabled, forEdges: toDisable)
             }
         }
         
-        return controller.grid
+        return grid
     }
 }

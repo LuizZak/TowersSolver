@@ -24,15 +24,12 @@ public class NeighboringShortFacesSolverStep: SolverStep {
     }
 }
 private class InternalSolver {
-    var controller: LoopyGridController
     var metadata: SolverStepMetadata
     
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid, metadata: SolverStepMetadata) {
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
         self.metadata = metadata
     }
     
@@ -108,7 +105,9 @@ private class InternalSolver {
                 .count { grid.faceContainsEdge(face: pair.face2, edge: $0) }
             
             if count1 >= (grid.hintForFace(pair.face1) ?? Int.max) && count2 >= (grid.hintForFace(pair.face2) ?? Int.max) {
-                self.controller.setEdge(state: .disabled, forEdge: edge)
+                self.grid.withEdge(edge) {
+                    $0.state = .disabled
+                }
             }
         }
         

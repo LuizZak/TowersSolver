@@ -38,15 +38,12 @@ public class CornerSolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
     var metadata: SolverStepMetadata
     
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid, metadata: SolverStepMetadata) {
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
         self.metadata = metadata
     }
     
@@ -87,7 +84,7 @@ private class InternalSolver {
         // Detect sequential edges that exceed the required number for the face
         for path in linearPaths {
             if path.count > hint {
-                controller.setEdges(state: .disabled, forEdges: path)
+                grid.setEdges(state: .disabled, forEdges: path)
             }
         }
         
@@ -114,7 +111,7 @@ private class InternalSolver {
         // to be part of the solution, and if a single outer edge is marked, all
         // outer edges must be marked due to them forming a single continuous line.
         if grid.edges(forFace: faceId).count - nonShared.count < hint {
-            controller.setEdges(state: .marked, forEdges: nonShared)
+            grid.setEdges(state: .marked, forEdges: nonShared)
             return
         }
         
@@ -157,10 +154,10 @@ private class InternalSolver {
                 .filter { !grid.faceContainsEdge(face: faceId, edge: $0) }
             
             if start.count == 1 {
-                controller.setEdges(state: .marked, forEdges: start)
+                grid.setEdges(state: .marked, forEdges: start)
             }
             if end.count == 1 {
-                controller.setEdges(state: .marked, forEdges: end)
+                grid.setEdges(state: .marked, forEdges: end)
             }
             
             // 3.1
@@ -190,8 +187,8 @@ private class InternalSolver {
                 if faces.contains(where: grid.isFaceSemicomplete) {
                     // Hijacking!
                     // Mark outer edges as solution and quit.
-                    controller.setEdges(state: .disabled, forEdges: shared)
-                    controller.setEdges(state: .marked, forEdges: nonShared)
+                    grid.setEdges(state: .disabled, forEdges: shared)
+                    grid.setEdges(state: .marked, forEdges: nonShared)
                     return
                 }
             }

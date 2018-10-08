@@ -10,15 +10,12 @@ public class InvalidLoopClosingDetectionSolverStep: SolverStep {
 }
 
 private class InternalSolver {
-    var controller: LoopyGridController
     var delegate: SolverStepDelegate
     
-    var grid: LoopyGrid {
-        return controller.grid
-    }
+    var grid: LoopyGrid
     
     init(grid: LoopyGrid, delegate: SolverStepDelegate) {
-        controller = LoopyGridController(grid: grid)
+        self.grid = grid
         self.delegate = delegate
     }
     
@@ -100,7 +97,9 @@ private class InternalSolver {
             return
         }
         
-        controller.setEdge(state: .disabled, forEdge: entry.edge)
+        grid.withEdge(entry.edge) {
+            $0.state = .disabled
+        }
     }
     
     private struct Entry: Equatable {
