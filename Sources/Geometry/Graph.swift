@@ -220,8 +220,8 @@ public extension Graph {
             return false
         }
         
-        // The edge list forms a loop if every single edge is connected to exactly
-        // two other edges from the list.
+        // The edge list forms a loop iff every single edge is connected to exactly
+        // two other edges from the input list.
         for edge in edges {
             let count = edges.count(where: { $0 != edge && edgesShareVertex($0, edge) })
             
