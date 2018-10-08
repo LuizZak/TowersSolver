@@ -318,6 +318,12 @@ public extension LoopyGrid {
             }
         }
     }
+    
+    /// Sets the state of the edges of a given face on this loopy grid.
+    @inlinable
+    public mutating func setEdges(state: Edge.State, forFace face: FaceReferenceConvertible) {
+        setEdges(state: state, forEdges: edges(forFace: face.id))
+    }
 }
 
 // MARK: - Vertex querying methods

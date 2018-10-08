@@ -110,7 +110,7 @@ public extension Graph {
             
             let path = singlePathEdges(fromEdge: edge)
             edgeRuns.append(path)
-            path.forEach { edgesSet.insert($0) }
+            edgesSet.formUnion(path)
         }
         
         return edgeRuns

@@ -2,6 +2,7 @@ public final class SolverStepMetadata {
     private var metadata: [String: Any] = [:]
     private var vertexMetadata: [Int: Any] = [:]
     private var faceMetadata: [Int: Any] = [:]
+    private var flag = false
     
     public subscript<T>(_ name: String, type type: T.Type) -> T? {
         get {
@@ -77,12 +78,12 @@ public final class SolverStepMetadata {
     /// Marks a global flag to this metadata that stipulates an overall action
     /// was already taken.
     public func markFlag() {
-        metadata["_flag"] = true
+        flag = true
     }
     
     /// Returns `true` if `markFlag()` has been invoked previously in this metadata
     /// instance.
     public func isFlagMarked() -> Bool {
-        return self["_flag", type: Bool.self] == true
+        return flag
     }
 }
