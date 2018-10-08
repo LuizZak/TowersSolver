@@ -13,6 +13,7 @@ public struct Key<T, U> {
 extension Key: ExpressibleByIntegerLiteral where U: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = U.IntegerLiteralType
     
+    @inlinable
     public init(integerLiteral value: IntegerLiteralType) {
         self.init(U(integerLiteral: value))
     }

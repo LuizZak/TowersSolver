@@ -35,18 +35,14 @@ private class InternalSolver {
     }
     
     func apply() {
-        while true {
-            let before = grid
-            
-            applyInternal()
-            
-            if before == grid {
-                return
-            }
+        while applyInternal() {
+            // Empty
         }
     }
     
-    private func applyInternal() {
+    private func applyInternal() -> Bool {
+        var didWork = false
+        
         for i in 0..<grid.vertices.count {
             let edges = grid.edgesSharing(vertexIndex: i)
             
@@ -55,7 +51,10 @@ private class InternalSolver {
             if enabledCount == 1 {
                 let enabled = edges.filter { grid.edgeState(forEdge: $0).isEnabled }
                 controller.setEdges(state: .disabled, forEdges: enabled)
+                didWork = true
             }
         }
+        
+        return didWork
     }
 }

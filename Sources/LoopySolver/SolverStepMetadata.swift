@@ -1,6 +1,7 @@
 public final class SolverStepMetadata {
     private var metadata: [String: Any] = [:]
     private var vertexMetadata: [Int: Any] = [:]
+    private var faceMetadata: [Int: Any] = [:]
     
     public subscript<T>(_ name: String, type type: T.Type) -> T? {
         get {
@@ -25,17 +26,17 @@ public final class SolverStepMetadata {
     }
     
     public func storeVertexState(_ vertex: Int, from grid: LoopyGrid) {
-        vertexMetadata[vertex] = grid.edgesSharing(vertexIndex: vertex).map(grid.edgeWithId)
+        vertexMetadata[vertex] = grid.edgesSharing(vertexIndex: vertex).map(grid.edgeState)
     }
     
     public func matchesStoredVertexState(_ vertex: Int, from grid: LoopyGrid) -> Bool {
-        guard let edges = vertexMetadata[vertex] as? [Edge] else {
+        guard let storedEdgeStates = vertexMetadata[vertex] as? [Edge.State] else {
             return false
         }
         
-        let newEdges = grid.edgesSharing(vertexIndex: vertex)
-        for i in 0..<newEdges.count {
-            if grid.edges[newEdges[i].value] != edges[i] {
+        let edges = grid.edgesSharing(vertexIndex: vertex)
+        for i in 0..<edges.count {
+            if grid.edgeState(forEdge: edges[i]) != storedEdgeStates[i] {
                 return false
             }
         }
@@ -52,11 +53,17 @@ public final class SolverStepMetadata {
     }
     
     public func storeFaceState(_ faceId: Face.Id, from grid: LoopyGrid) {
-        metadata["_face\(faceId.value)"] = grid.edges(forFace: faceId).map(grid.edgeWithId)
+        faceMetadata[faceId.value] = grid.edges(forFace: faceId).map(grid.edgeWithId)
     }
     
     public func matchesStoredFaceState(_ faceId: Face.Id, from grid: LoopyGrid) -> Bool {
-        return self["_face\(faceId.value)", type: [Edge].self] == grid.edges(forFace: faceId).map(grid.edgeWithId)
+        guard let stored = faceMetadata[faceId.value] as? [Edge] else {
+            return false
+        }
+        
+        return stored.elementsEqual(
+            grid.edges(forFace: faceId).lazy.map(grid.edgeWithId)
+        )
     }
     
     public func markFace(_ faceId: Face.Id) {

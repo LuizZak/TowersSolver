@@ -19,11 +19,13 @@ public struct LoopyGrid: Equatable, Graph {
     private var _ingoringDisabledEdges: Bool = false
     
     /// List of edges that connect vertices
+    @usableFromInline
     internal var edges: [Edge]
     
     /// List of faces in this grid.
     ///
     /// Faces are compositions of vertex indices, with an optional hint associated.
+    @usableFromInline
     internal var faces: [Face]
     
     /// The list of vertices on this grid.
@@ -44,6 +46,7 @@ public struct LoopyGrid: Equatable, Graph {
     /// List of states for every edge on this grid.
     /// Has same length as `edgeIds` and `edges` arrays, and is laid down
     /// sequentially the same way.
+    @inlinable
     public var edgeStates: [Edge.State] {
         return edges.map { $0.state }
     }
@@ -77,22 +80,19 @@ public struct LoopyGrid: Equatable, Graph {
                 continue
             }
             
-            let edges = self.edges(forFace: face)
+            let faceEdges = self.edges(forFace: face)
             
-            if edges.count(where: { self.edges[$0.edgeIndex].state == .marked }) > hint {
+            if faceEdges.count(where: { edges[$0.edgeIndex].state == .marked }) > hint {
                 return false
             }
-            if edges.count(where: { self.edges[$0.edgeIndex].state.isEnabled }) < hint {
+            if faceEdges.count(where: { edges[$0.edgeIndex].state.isEnabled }) < hint {
                 return false
             }
         }
         
         // Fetch all marked edges and try to connect them into a single contiguous
         // line.
-        let marked = edgeIds.filter { self.edges[$0.edgeIndex].state == .marked }
-        if marked.isEmpty {
-            return true
-        }
+        let marked = edgeIds.lazy.filter { self.edges[$0.edgeIndex].state == .marked }
         
         var runs: [[Edge.Id]] = []
         var edgesCollected: Set<Edge.Id> = []
@@ -103,11 +103,9 @@ public struct LoopyGrid: Equatable, Graph {
             
             let run =
                 singlePathEdges(fromEdge: edge,
-                                includeTest: { self.edges[$0.edgeIndex].state == .marked })
+                                includeTest: { edges[$0.edgeIndex].state == .marked })
             
-            for e in run {
-                edgesCollected.insert(e)
-            }
+            edgesCollected.formUnion(run)
             
             runs.append(run)
         }
@@ -328,11 +326,13 @@ public extension LoopyGrid {
 
 // MARK: - Edge querying methods
 public extension LoopyGrid {
-    private func edgeReferenceFrom<E: EdgeReferenceConvertible>(_ edge: E) -> Edge {
+    @inlinable
+    internal func edgeReferenceFrom<E: EdgeReferenceConvertible>(_ edge: E) -> Edge {
         return edges[edge.edgeIndex]
     }
     
-    private func edgeReferenceFrom(_ edge: EdgeId) -> Edge {
+    @inlinable
+    internal func edgeReferenceFrom(_ edge: EdgeId) -> Edge {
         return edges[edge.edgeIndex]
     }
     
@@ -341,12 +341,20 @@ public extension LoopyGrid {
     }
     
     /// Returns the state of a given edge reference
+    @inlinable
     public func edgeState<E: EdgeReferenceConvertible>(forEdge edge: E) -> Edge.State {
         let edge = edgeReferenceFrom(edge)
         return edge.state
     }
     
+    @inlinable
+    public func edgeState(forEdge edge: Edge.Id) -> Edge.State {
+        let edge = edgeReferenceFrom(edge)
+        return edge.state
+    }
+    
     /// Returns `true` if a given edge starts or ends at a given vertex.
+    @inlinable
     public func edgeSharesVertex<E: EdgeReferenceConvertible>(_ edge: E, vertex: Int) -> Bool {
         let edge = edgeReferenceFrom(edge)
         return edge.sharesVertex(vertex)
