@@ -4,6 +4,7 @@
 public struct Key<T, U> {
     public var value: U
     
+    @inlinable
     public init(_ value: U) {
         self.value = value
     }
@@ -18,12 +19,14 @@ extension Key: ExpressibleByIntegerLiteral where U: ExpressibleByIntegerLiteral 
 }
 
 extension Key: Equatable where U: Equatable {
+    @inlinable
     public static func ==(lhs: Key, rhs: Key) -> Bool {
         return lhs.value == rhs.value
     }
 }
 
 extension Key: Hashable where U: Hashable {
+    @inlinable
     public var hashValue: Int {
         return value.hashValue
     }

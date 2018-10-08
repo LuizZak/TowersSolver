@@ -94,6 +94,7 @@ public extension Graph {
 }
 
 public extension Graph {
+    @inlinable
     public func linearPathGraphEdges(around face: FaceId) -> [[EdgeId]] {
         let edges = self.edges(forFace: face)
         
@@ -113,10 +114,12 @@ public extension Graph {
         return edgeRuns
     }
     
+    @inlinable
     public func singlePathEdges(fromEdge edge: EdgeId) -> [EdgeId] {
         return singlePathEdges(fromEdge: edge, includeTest: { _ in true })
     }
     
+    @inlinable
     public func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> [EdgeId] {
         return withoutActuallyEscaping(includeTest) { includeTest in
             var result: [EdgeId] = []
@@ -159,6 +162,7 @@ public extension Graph {
     
     /// Returns `true` iff each edge on a given list is directly connected to the
     /// next, forming a singular chain.
+    @inlinable
     public func isUniqueSegment(_ edges: [EdgeId]) -> Bool {
         let array = edges
         if array.count == 0 {
@@ -195,6 +199,7 @@ public extension Graph {
     
     /// Returns `true` iff all edges in a given list are connected, and they form
     /// a loop (i.e. all edges connected start-to-end).
+    @inlinable
     public func isLoop(_ edges: [EdgeId]) -> Bool {
         let array = edges
         

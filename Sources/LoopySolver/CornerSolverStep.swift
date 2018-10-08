@@ -3,16 +3,16 @@
 /// 1. When the number of required edges exceeds edges not shared with another
 /// face.
 ///
-/// In this case, the outer edges cannot be part of the solution, since their
-/// singular path would exceed the solution of the face.
+///     In this case, the outer edges cannot be part of the solution, since their
+///     singular path would exceed the solution of the face.
 ///
 /// 2. When the number of required edges shared amongst other cells is smaller
 /// than the required solution of the cell.
 ///
-/// This indicates that the cell's outer edges are all part of the solution.
+///     This indicates that the cell's outer edges are all part of the solution.
 ///
-/// This only works for cells that have a single sequential number of edges that
-/// are outside the graph and not connected to other faces.
+///     This only works for cells that have a single sequential number of edges that
+///     are outside the graph and not connected to other faces.
 ///
 /// 3. When the number of shared and non-shared edges both match the requirement
 /// for the face, this means that the solution is either a single continuous line
@@ -20,12 +20,12 @@
 /// other combination of solution would result in either more or less edges being
 /// marked for the face.
 ///
-///     3.1. When 3. applies, if the inner path of the line traverses through a
-///          face that has hint matching `edges_count - 1`, the inner path cannot
-///          be taken, since that face would ultimately hijack the loopy line path
-///          around itself in order to satisfy its own edge count.
-///          This rule does not apply if the face in question shares one of the
-///          two vertices where the inner and outer path for the corner face join.
+/// 3.1. When 3. applies, if the inner path of the line traverses through a
+/// face that has hint matching `edges_count - 1`, the inner path cannot
+/// be taken, since that face would ultimately hijack the loopy line path
+/// around itself in order to satisfy its own edge count.
+/// This rule does not apply if the face in question shares one of the
+/// two vertices where the inner and outer path for the corner face join.
 public class CornerSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))

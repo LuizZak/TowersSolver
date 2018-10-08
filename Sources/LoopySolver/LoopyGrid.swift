@@ -87,7 +87,12 @@ public struct LoopyGrid: Equatable, Graph {
             }
         }
         
+        // Fetch all marked edges and try to connect them into a single contiguous
+        // line.
         let marked = edgeIds.filter { self.edges[$0.edgeIndex].state == .marked }
+        if marked.isEmpty {
+            return true
+        }
         
         var runs: [[Edge.Id]] = []
         var edgesCollected: Set<Edge.Id> = []
@@ -507,47 +512,5 @@ public extension LoopyGrid {
         
         let edges = self.edges(forFace: faceId.id)
         return edges.count { edgeState(forEdge: $0) == .marked } == hint
-    }
-}
-
-extension LoopyGrid {
-    public func singlePathEdges(fromEdge edge: Edge.Id, includeTest: (Edge.Id) -> Bool) -> [Edge.Id] {
-        return withoutActuallyEscaping(includeTest) { includeTest in
-            var result: [Edge.Id] = []
-            var added: Set<Edge.Id> = []
-            
-            // Only include edges not already accounted for in the result array
-            let includeFilter: (Edge.Id) -> Bool = { edge in
-                if added.contains(edge) {
-                    return false
-                }
-                
-                return includeTest(edge)
-            }
-            
-            var stack = [edge]
-            
-            while let next = stack.popLast() {
-                result.append(next)
-                added.insert(next)
-                
-                let edgesLeft =
-                    edgesSharing(vertexIndex: vertices(forEdge: next).start)
-                        .filter(includeFilter)
-                
-                let edgesRight =
-                    edgesSharing(vertexIndex: vertices(forEdge: next).end)
-                        .filter(includeFilter)
-                
-                if edgesLeft.count == 1 && !stack.contains(edgesLeft[0]) {
-                    stack.append(edgesLeft[0])
-                }
-                if edgesRight.count == 1 && !stack.contains(edgesRight[0]) {
-                    stack.append(edgesRight[0])
-                }
-            }
-            
-            return result
-        }
     }
 }
