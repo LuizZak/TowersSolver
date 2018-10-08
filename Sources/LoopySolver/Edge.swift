@@ -32,11 +32,13 @@ public struct Edge: Equatable, EdgeProtocol {
     }
     
     /// Returns `true` if either the start/end vertices match a given vertex index.
+    @inlinable
     public func sharesVertex(_ vertex: Int) -> Bool {
         return start == vertex || end == vertex
     }
     
     /// Returns `true` if this edge shares a vertex index with a given edge.
+    @inlinable
     public func sharesVertex(with edge: Edge) -> Bool {
         return sharesVertex(edge.start) || sharesVertex(edge.end)
     }
@@ -44,10 +46,12 @@ public struct Edge: Equatable, EdgeProtocol {
     /// Returns `true` if this edge has the same vertex start/end values as a given
     /// edge, without taking into acount the directionality of the start/end
     /// values.
+    @inlinable
     public func matchesEdgeVertices(_ edge: Edge) -> Bool {
         return sharesVertex(edge.start) && sharesVertex(edge.end)
     }
     
+    @inlinable
     public static func ==(lhs: Edge, rhs: Edge) -> Bool {
         if lhs.state != rhs.state {
             return false
@@ -68,6 +72,7 @@ public struct Edge: Equatable, EdgeProtocol {
         case disabled
         
         /// Returns `true` if `self != .disabled`
+        @inlinable
         public var isEnabled: Bool {
             return self != .disabled
         }
