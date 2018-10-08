@@ -220,28 +220,16 @@ public extension Graph {
             return false
         }
         
-        // Take the list of edges, pick a single vertex, and traverse the edges
-        // using a vertex hopper which hops across from edge to edge using the
-        // vertices as pivots.
-        // At the end, the first edge picked must be the edge the vertex hopper
-        // returns to.
-        var remaining = Array(array.dropFirst())
-        var collected = [array[0]]
-        collected.reserveCapacity(remaining.count)
-        var current: EdgeId { return collected[collected.count - 1] }
-        
-        while remaining.count > 0 {
-            for (i, edge) in remaining.enumerated() {
-                if edgesShareVertex(current, edge) {
-                    collected.append(edge)
-                    remaining.remove(at: i)
-                    break
-                } else if i == remaining.count - 1 {
-                    return false
-                }
+        // The edge list forms a loop if every single edge is connected to exactly
+        // two other edges from the list.
+        for edge in edges {
+            let count = edges.count(where: { $0 != edge && edgesShareVertex($0, edge) })
+            
+            if count != 2 {
+                return false
             }
         }
         
-        return edgesShareVertex(collected[0], collected.last!)
+        return true
     }
 }
