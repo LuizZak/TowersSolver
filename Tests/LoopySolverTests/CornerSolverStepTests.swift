@@ -311,4 +311,58 @@ class CornerSolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(7), [.disabled, .normal, .normal, .normal])
         XCTAssertEqual(edgeStatesForFace(8), [.disabled, .normal, .normal, .normal])
     }
+    
+    func testBugDisablingValidEdges() {
+        // Tests a bug reproduction case with the following grid producing wrong
+        // results in the bottom-center 2 cell:
+        //
+        // •═══•   •   •
+        // ║   ║ 2   0
+        // •   •═══•   •
+        // ║       ║
+        // •───•   •═══•
+        // │   | 2   3 ║
+        // •───•═══•═══•
+        //
+        // The step would erroneously disable the cells around the bottom cell:
+        //
+        // •═══•   •   •
+        // ║   ║ 2   0
+        // •   •═══•   •
+        // ║       ║
+        // •───•   •═══•
+        // │     2   3 ║
+        // •───•   •═══•
+        //
+        let gridGen = LoopySquareGridGen(width: 3, height: 3)
+        gridGen.setHint(x: 1, y: 0, hint: 2)
+        gridGen.setHint(x: 2, y: 0, hint: 0)
+        gridGen.setHint(x: 1, y: 2, hint: 2)
+        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let controller = LoopyGridController(grid: gridGen.generate())
+        controller.setAllEdges(state: .disabled)
+        controller.setEdges(state: .marked, forFace: 0, edgeIndices: [0, 1, 3])
+        controller.setEdges(state: .marked, forFace: 1, edgeIndices: [2, 3])
+        controller.setEdges(state: .marked, forFace: 3, edgeIndices: [3])
+        controller.setEdges(state: .marked, forFace: 4, edgeIndices: [1])
+        controller.setEdges(state: .marked, forFace: 5, edgeIndices: [2])
+        controller.setEdges(state: .normal, forFace: 6)
+        controller.setEdges(state: .marked, forFace: 7, edgeIndices: [2])
+        controller.setEdges(state: .marked, forFace: 8, edgeIndices: [1, 2])
+        
+        let result = sut.apply(to: controller.grid, delegate)
+        
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
+        }
+        XCTAssertEqual(edgeStatesForFace(0), [.marked, .marked, .disabled, .marked])
+        XCTAssertEqual(edgeStatesForFace(1), [.disabled, .disabled, .marked, .marked])
+        XCTAssertEqual(edgeStatesForFace(2), [.disabled, .disabled, .disabled, .disabled])
+        XCTAssertEqual(edgeStatesForFace(3), [.disabled, .disabled, .normal, .marked])
+        XCTAssertEqual(edgeStatesForFace(4), [.marked, .marked, .disabled, .disabled])
+        XCTAssertEqual(edgeStatesForFace(5), [.disabled, .disabled, .marked, .marked])
+        XCTAssertEqual(edgeStatesForFace(6), [.normal, .normal, .normal, .normal])
+        XCTAssertEqual(edgeStatesForFace(7), [.disabled, .disabled, .marked, .normal])
+        XCTAssertEqual(edgeStatesForFace(8), [.marked, .marked, .marked, .disabled])
+    }
 }

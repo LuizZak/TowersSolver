@@ -13,6 +13,19 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     /// Whether to print the faces' indices alongside their hint value
     public var printFaceIndices: Bool = false
     
+    /// Whether to print the edges' indices in the center point of their span
+    public var printEdgeIndices: Bool = false
+    
+    public override init(bufferWidth: Int, bufferHeight: Int) {
+        super.init(bufferWidth: bufferWidth, bufferHeight: bufferHeight)
+    }
+    
+    public init(bufferWidth: Int, bufferHeight: Int, printEdgeIndices: Bool) {
+        super.init(bufferWidth: bufferWidth, bufferHeight: bufferHeight)
+        
+        self.printEdgeIndices = true
+    }
+    
     public func printGrid(grid: LoopyGrid) {
         printGrid(grid: grid, width: bufferWidth - 2, height: bufferHeight - 1)
     }
@@ -88,6 +101,20 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             let (x, y) = toScreen(v.x, v.y)
             
             putChar("•", x: Int(x), y: Int(y))
+        }
+        
+        if printEdgeIndices {
+            for edge in grid.edgeIds {
+                let (v1Index, v2Index) = grid.vertices(forEdge: edge)
+                let (v1, v2) = (grid.vertices[v1Index], grid.vertices[v2Index])
+                
+                let center = (v1 + v2) / 2
+                let edgeIndexString = edge.edgeIndex.description
+                var (x, y) = toScreen(center.x, center.y)
+                x -= edgeIndexString.count / 2
+                
+                putString(edgeIndexString, x: x, y: y)
+            }
         }
         
         print()

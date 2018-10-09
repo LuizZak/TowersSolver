@@ -123,53 +123,55 @@ public extension Graph {
     
     @inlinable
     public func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> [EdgeId] {
-        return withoutActuallyEscaping(includeTest) { includeTest in
-            var result: [EdgeId] = []
-            var added: Set<EdgeId> = []
+        var stack: [(pivot: EdgeId, previous: EdgeId?)] = []
+        
+        stack = [(edge, nil)]
+        
+        var result: [EdgeId] = []
+        var added: Set<EdgeId> = []
+        
+        while let top = stack.popLast() {
+            let (pivot, previous) = top
             
-            // Only include edges not already accounted for in the result array
-            let includeFilter: (EdgeId) -> Bool = { edge in
-                if added.contains(edge) {
-                    return false
-                }
-                
-                return includeTest(edge)
+            // Make sure we don't duplicate an edge in case the line forms a closed
+            // loop
+            if result.last == pivot {
+                continue
             }
             
-            var stack = [edge]
+            result.append(pivot)
+            added.insert(pivot)
             
-            while let next = stack.popLast() {
-                result.append(next)
-                added.insert(next)
+            let vertices = self.vertices(forEdge: pivot)
+            
+            let sharingStart = edgesSharing(vertexIndex: vertices.start)
+            let sharingEnd = edgesSharing(vertexIndex: vertices.end)
+            
+            if sharingStart.contains(where: { $0 == pivot && includeTest($0) }) && sharingStart.count(where: includeTest) == 2 {
+                let sharingStartIncluded = sharingStart.filter(includeTest)
                 
-                let edgesSharingStart =
-                    edgesSharing(vertexIndex: vertices(forEdge: next).start)
+                let new = sharingStartIncluded[0] == pivot
+                    ? sharingStartIncluded[1]
+                    : sharingStartIncluded[0]
                 
-                let edgesSharingEnd =
-                    edgesSharing(vertexIndex: vertices(forEdge: next).end)
-                
-                let edgesLeftCount =
-                    edgesSharingStart
-                        .count(where: includeFilter)
-
-                let edgesRightCount =
-                    edgesSharingEnd
-                        .count(where: includeFilter)
-                
-                if edgesLeftCount == 1, let first = edgesSharingStart.first(where: includeFilter) {
-                    if !stack.contains(first) {
-                        stack.append(first)
-                    }
-                }
-                if edgesRightCount == 1, let first = edgesSharingEnd.first(where: includeFilter) {
-                    if !stack.contains(first) {
-                        stack.append(first)
-                    }
+                if new != previous && !added.contains(new) {
+                    stack.append((new, pivot))
                 }
             }
-            
-            return result
+            if sharingEnd.contains(where: { $0 == pivot && includeTest($0) }) && sharingEnd.count(where: includeTest) == 2 {
+                let sharingEndIncluded = sharingEnd.filter(includeTest)
+                
+                let new = sharingEndIncluded[0] == pivot
+                    ? sharingEndIncluded[1]
+                    : sharingEndIncluded[0]
+                
+                if new != previous && !added.contains(new) {
+                    stack.append((new, pivot))
+                }
+            }
         }
+        
+        return result
     }
     
     /// Returns `true` iff each edge on a given list is directly connected to the
