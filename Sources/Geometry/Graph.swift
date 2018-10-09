@@ -128,19 +128,17 @@ public extension Graph {
         stack = [(edge, nil)]
         
         var result: [EdgeId] = []
-        var added: Set<EdgeId> = []
         
         while let top = stack.popLast() {
             let (pivot, previous) = top
             
             // Make sure we don't duplicate an edge in case the line forms a closed
             // loop
-            if result.last == pivot {
+            if previous == edge && result.last == pivot {
                 continue
             }
             
             result.append(pivot)
-            added.insert(pivot)
             
             let vertices = self.vertices(forEdge: pivot)
             
@@ -154,7 +152,7 @@ public extension Graph {
                     ? sharingStartIncluded[1]
                     : sharingStartIncluded[0]
                 
-                if new != previous && !added.contains(new) {
+                if new != previous && !result.contains(new) {
                     stack.append((new, pivot))
                 }
             }
@@ -165,7 +163,7 @@ public extension Graph {
                     ? sharingEndIncluded[1]
                     : sharingEndIncluded[0]
                 
-                if new != previous && !added.contains(new) {
+                if new != previous && !result.contains(new) {
                     stack.append((new, pivot))
                 }
             }
