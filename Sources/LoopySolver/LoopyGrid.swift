@@ -489,7 +489,7 @@ public extension LoopyGrid {
         let face1 = faces[first.id.value]
         let face2 = faces[second.id.value]
         
-        return Set(face1.localToGlobalEdges).intersection(face2.localToGlobalEdges).first
+        return face1.localToGlobalEdges.first(where: face2.localToGlobalEdges.contains)
     }
 }
 
