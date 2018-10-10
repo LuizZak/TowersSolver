@@ -84,10 +84,12 @@ public protocol Graph {
 
 // MARK: - Default Implementations
 public extension Graph {
+    @inlinable
     public func vertexIndex(_ vertex: Vertex) -> Int? {
         return vertices.index(of: vertex)
     }
     
+    @inlinable
     public func vertexIndex(x: Vertex.Coordinate, y: Vertex.Coordinate) -> Int? {
         return vertices.index { v -> Bool in
             v.x == x && v.y == y

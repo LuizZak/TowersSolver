@@ -180,6 +180,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 1, hints: [n, n, n])
         gridGen.setHints(atRow: 2, hints: [n, 2, 3])
         let solver = Solver(grid: gridGen.generate())
+        solver.maxNumberOfGuesses = 0
         
         let result = solver.solve()
         
@@ -199,6 +200,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 1, hints: [1, n, 1])
         gridGen.setHints(atRow: 2, hints: [n, 3, 3])
         let solver = Solver(grid: gridGen.generate())
+        solver.maxNumberOfGuesses = 0
         
         let result = solver.solve()
         
@@ -227,7 +229,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 5, hints: [n, n, n, n, 2, 2, 1])
         gridGen.setHints(atRow: 6, hints: [2, 3, n, 3, n, n, n])
         let solver = Solver(grid: gridGen.generate())
-        solver.maxNumberOfGuesses = 8
+        solver.maxNumberOfGuesses = 0
         
         let result = solver.solve()
         
@@ -282,7 +284,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 8, hints: [n, n, 3, 2, 2, 2, 1, 0, n, 2])
         gridGen.setHints(atRow: 9, hints: [3, n, n, n, n, 2, 3, 3, n, n])
         let solver = Solver(grid: gridGen.generate())
-        solver.maxNumberOfGuesses = 12
+        solver.maxNumberOfGuesses = 11
         
         let result = solver.solve()
         
