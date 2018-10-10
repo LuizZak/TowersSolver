@@ -1,6 +1,6 @@
 # TowersSolver
 
-A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 4.1](https://swift.org).
+A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 4.2](https://swift.org). The project also features an in-progress [Loopy](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html) (or 'Slitherlink') solver.
 
 Towers is a logic game where a _at most_ half-filled grid is presented and is to be filled with towers of height 1 through N _(N = length of square grid's side)_, such that all lines and columns have all possible tower heights, but no line or column has repeated tower heights.
 
