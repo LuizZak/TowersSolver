@@ -1,59 +1,246 @@
 @_exported import Geometry
 
+@usableFromInline
+final class BackingLoopyGrid: Equatable {
+    typealias VertexType = Vertex
+    typealias EdgeType = Edge
+    typealias FaceId = Face.Id
+    typealias EdgeId = Edge.Id
+    
+    @usableFromInline
+    var _markedEdgesPerVertex: [Int] = []
+    @usableFromInline
+    var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
+    @usableFromInline
+    var _edgesPerVertex: [[Edge.Id]] = []
+    @usableFromInline
+    var _facesPerVertex: [[Face.Id]] = []
+    @usableFromInline
+    var _facesPerEdge: [[Face.Id]] = []
+    @usableFromInline
+    var _faceIsSolved: [Bool] = []
+    @usableFromInline
+    var _ignoringDisabledEdges: Bool = false
+    
+    @usableFromInline
+    var edges: [Edge] = []
+    @usableFromInline
+    var faces: [Face] = []
+    @usableFromInline
+    var vertices: [Vertex] = []
+    @usableFromInline
+    var edgeIds: [Edge.Id] = []
+    @usableFromInline
+    var faceIds: [Face.Id] = []
+    
+    @usableFromInline
+    init(edges: [Edge],
+         faces: [Face],
+         vertices: [Vertex],
+         edgeIds: [Edge.Id],
+         faceIds: [Face.Id]) {
+        
+        self.edges = edges
+        self.faces = faces
+        self.vertices = vertices
+        self.edgeIds = edgeIds
+        self.faceIds = faceIds
+    }
+    
+    @usableFromInline
+    init() {
+        edges = []
+        faces = []
+        vertices = []
+        edgeIds = []
+        faceIds = []
+    }
+    
+    @usableFromInline
+    func makeCopy() -> BackingLoopyGrid {
+        
+        let copy =
+            BackingLoopyGrid(
+                edges: edges,
+                faces: faces,
+                vertices: vertices,
+                edgeIds: edgeIds,
+                faceIds: faceIds)
+        
+        copy._markedEdgesPerVertex = _markedEdgesPerVertex
+        copy._edgesConnectedToEdge = _edgesConnectedToEdge
+        copy._edgesPerVertex = _edgesPerVertex
+        copy._facesPerVertex = _facesPerVertex
+        copy._facesPerEdge = _facesPerEdge
+        copy._faceIsSolved = _faceIsSolved
+        copy._ignoringDisabledEdges = _ignoringDisabledEdges
+        
+        return copy
+    }
+    
+    @usableFromInline
+    static func == (lhs: BackingLoopyGrid, rhs: BackingLoopyGrid) -> Bool {
+        return lhs.edges == rhs.edges
+            && lhs.faces == rhs.faces
+            && lhs.vertices == rhs.vertices
+            && lhs.edgeIds == rhs.edgeIds
+            && lhs.faceIds == rhs.faceIds
+    }
+}
+
 /// A grid for a loopy game.
 /// Consists of a collection of vertices laid on a grid, connected with edges
 /// forming faces.
 public struct LoopyGrid: Equatable, Graph {
+    @usableFromInline
+    internal var _backing = BackingLoopyGrid()
+    
     public typealias VertexType = Vertex
     public typealias EdgeType = Edge
     public typealias FaceId = Face.Id
     public typealias EdgeId = Edge.Id
     
-    @usableFromInline
-    internal var _markedEdgesPerVertex: [Int] = []
+    @inlinable
+    internal var _markedEdgesPerVertex: [Int] {
+        get {
+            return _backing._markedEdgesPerVertex
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._markedEdgesPerVertex = newValue
+        }
+    }
     
-    @usableFromInline
-    internal var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] = [:]
+    @inlinable
+    internal var _edgesConnectedToEdge: [Edge.Id: [Edge.Id]] {
+        get {
+            return _backing._edgesConnectedToEdge
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._edgesConnectedToEdge = newValue
+        }
+    }
     
-    @usableFromInline
-    internal var _edgesPerVertex: [[Edge.Id]] = []
+    @inlinable
+    internal var _edgesPerVertex: [[Edge.Id]] {
+        get {
+            return _backing._edgesPerVertex
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._edgesPerVertex = newValue
+        }
+    }
     
-    @usableFromInline
-    internal var _facesPerVertex: [[Face.Id]] = []
+    @inlinable
+    internal var _facesPerVertex: [[Face.Id]] {
+        get {
+            return _backing._facesPerVertex
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._facesPerVertex = newValue
+        }
+    }
     
-    @usableFromInline
-    internal var _facesPerEdge: [[Face.Id]] = []
+    @inlinable
+    internal var _facesPerEdge: [[Face.Id]] {
+        get {
+            return _backing._facesPerEdge
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._facesPerEdge = newValue
+        }
+    }
     
-    @usableFromInline
-    internal var _faceIsSolved: [Bool] = []
+    @inlinable
+    internal var _faceIsSolved: [Bool] {
+        get {
+            return _backing._faceIsSolved
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._faceIsSolved = newValue
+        }
+    }
     
-    @usableFromInline
-    internal var _ingoringDisabledEdges: Bool = false
+    @inlinable
+    internal var _ignoringDisabledEdges: Bool {
+        get {
+            return _backing._ignoringDisabledEdges
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._ignoringDisabledEdges = newValue
+        }
+    }
     
     /// List of edges that connect vertices
-    @usableFromInline
-    internal var edges: [Edge]
+    @inlinable
+    internal var edges: [Edge] {
+        get {
+            return _backing.edges
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing.edges = newValue
+        }
+    }
     
     /// List of faces in this grid.
     ///
     /// Faces are compositions of vertex indices, with an optional hint associated.
-    @usableFromInline
-    internal var faces: [Face]
+    @inlinable
+    internal var faces: [Face] {
+        get {
+            return _backing.faces
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing.faces = newValue
+        }
+    }
     
     /// The list of vertices on this grid.
     /// Each vertex is always connected to two or more edges, and always belongs
     /// to one or more faces.
-    private(set) public var vertices: [Vertex]
+    private(set) public var vertices: [Vertex] {
+        get {
+            return _backing.vertices
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing.vertices = newValue
+        }
+    }
     
     /// List of edge IDs in this grid.
     ///
     /// Every edge in `edges` has a matching edge ID within this array, and vice-versa.
-    private(set) public var edgeIds: [Edge.Id]
+    private(set) public var edgeIds: [Edge.Id] {
+        get {
+            return _backing.edgeIds
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing.edgeIds = newValue
+        }
+    }
     
     /// List of face IDs in this grid.
     ///
     /// Every face in `faces` has a matching face ID within this array, and vice-versa.
-    private(set) public var faceIds: [Face.Id]
+    private(set) public var faceIds: [Face.Id] {
+        get {
+            return _backing.faceIds
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing.faceIds = newValue
+        }
+    }
     
     /// List of states for every edge on this grid.
     /// Has same length as `edgeIds` and `edges` arrays, and is laid down
@@ -130,11 +317,16 @@ public struct LoopyGrid: Equatable, Graph {
     }
     
     public init() {
-        vertices = []
-        edges = []
-        edgeIds = []
-        faces = []
-        faceIds = []
+        _backing = BackingLoopyGrid()
+    }
+    
+    @inlinable
+    internal mutating func _ensureUniqueCopy() {
+        if isKnownUniquelyReferenced(&_backing) {
+            return
+        }
+        
+        _backing = _backing.makeCopy()
     }
     
     /// Returns a copy of this grid with disabled edges ignored when queried over
@@ -144,7 +336,7 @@ public struct LoopyGrid: Equatable, Graph {
     /// structurally modified.
     public func ignoringDisabledEdges() -> LoopyGrid {
         var copy = self
-        copy._ingoringDisabledEdges = true
+        copy._ignoringDisabledEdges = true
         return copy
     }
     
@@ -314,10 +506,25 @@ public struct LoopyGrid: Equatable, Graph {
 public extension LoopyGrid {
     /// Sets the state of the given edges on this loopy grid.
     @inlinable
-    public mutating func setEdges(state: Edge.State, forEdges edges: [EdgeId]) {
+    public mutating func setEdges<S: Sequence>(state: Edge.State, forEdges edges: S) where S.Element == EdgeId {
         for edge in edges {
             withEdge(edge) {
                 $0.state = state
+            }
+        }
+    }
+    
+    /// Sets the state of the given edges on this loopy grid.
+    @inlinable
+    public mutating func setEdges<S: Sequence>(state: Edge.State,
+                                               forEdges edges: S,
+                                               where predicate: (Edge) -> Bool) where S.Element == EdgeId {
+        
+        for edge in edges {
+            withEdge(edge) {
+                if predicate($0) {
+                    $0.state = state
+                }
             }
         }
     }
@@ -384,7 +591,7 @@ public extension LoopyGrid {
     
     @inlinable
     internal func shouldIgnore(_ edge: Edge) -> Bool {
-        return _ingoringDisabledEdges ? !edge.state.isEnabled : false
+        return _ignoringDisabledEdges ? !edge.state.isEnabled : false
     }
     
     /// Returns the state of a given edge reference
@@ -454,7 +661,7 @@ public extension LoopyGrid {
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
         let edges = _edgesPerVertex[vertexIndex]
         
-        if _ingoringDisabledEdges {
+        if _ignoringDisabledEdges {
             return edges.filter { !shouldIgnore(edgeReferenceFrom($0)) }
         }
         return edges
@@ -466,7 +673,7 @@ public extension LoopyGrid {
         let index = edge.edgeIndex
         let id = Edge.Id(index)
         
-        if _ingoringDisabledEdges {
+        if _ignoringDisabledEdges {
             return _edgesConnectedToEdge[id, default: []].filter { !shouldIgnore(edgeReferenceFrom($0)) }
         }
         

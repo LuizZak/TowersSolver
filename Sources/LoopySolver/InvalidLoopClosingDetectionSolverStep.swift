@@ -48,34 +48,29 @@ private class InternalSolver {
             let edgesSharingStart =
                 grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).start)
             
-            let edgesInStartCount =
+            let _edgesInStart =
                 edgesSharingStart
-                    .count { grid.edgeState(forEdge: $0) == .marked }
+                    .only { grid.edgeState(forEdge: $0) == .marked }
             
-            guard edgesInStartCount == 1 else {
+            guard let edgesInStart = _edgesInStart else {
                 continue
             }
+            
             
             let edgesSharingEnd =
                 grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).end)
             
-            let edgesInEndCount =
-                edgesSharingEnd.count { grid.edgeState(forEdge: $0) == .marked }
+            let _edgesInEnd =
+                edgesSharingEnd
+                    .only { grid.edgeState(forEdge: $0) == .marked }
             
-            guard edgesInEndCount == 1 else {
+            guard let edgesInEnd = _edgesInEnd else {
                 continue
             }
             
-            let edgesInStart =
-                edgesSharingStart
-                    .first { grid.edgeState(forEdge: $0) == .marked }
-            
-            let edgesInEnd =
-                edgesSharingEnd
-                    .first { grid.edgeState(forEdge: $0) == .marked }
-            
-            entries.append(Entry(edge: edge, firstEdge: edgesInStart!,
-                                 secondEdge: edgesInEnd!))
+            entries.append(Entry(edge: edge,
+                                 firstEdge: edgesInStart,
+                                 secondEdge: edgesInEnd))
         }
         
         return entries

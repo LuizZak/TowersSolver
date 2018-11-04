@@ -147,23 +147,25 @@ public extension Graph {
             let sharingStart = edgesSharing(vertexIndex: vertices.start)
             let sharingEnd = edgesSharing(vertexIndex: vertices.end)
             
-            if sharingStart.contains(where: { $0 == pivot && includeTest($0) }) && sharingStart.count(where: includeTest) == 2 {
-                let sharingStartIncluded = sharingStart.filter(includeTest)
+            sharingEdgeIf:
+            if sharingStart.contains(where: { $0 == pivot && includeTest($0) }) {
+                guard let edges = sharingStart.onlyTwo(where: includeTest) else {
+                    break sharingEdgeIf
+                }
                 
-                let new = sharingStartIncluded[0] == pivot
-                    ? sharingStartIncluded[1]
-                    : sharingStartIncluded[0]
+                let new = edges.first == pivot ? edges.second : edges.first
                 
                 if new != previous && !result.contains(new) {
                     stack.append((new, pivot))
                 }
             }
-            if sharingEnd.contains(where: { $0 == pivot && includeTest($0) }) && sharingEnd.count(where: includeTest) == 2 {
-                let sharingEndIncluded = sharingEnd.filter(includeTest)
+            sharingEdgeIf:
+            if sharingEnd.contains(where: { $0 == pivot && includeTest($0) }) {
+                guard let edges = sharingEnd.onlyTwo(where: includeTest) else {
+                    break sharingEdgeIf
+                }
                 
-                let new = sharingEndIncluded[0] == pivot
-                    ? sharingEndIncluded[1]
-                    : sharingEndIncluded[0]
+                let new = edges.first == pivot ? edges.second : edges.first
                 
                 if new != previous && !result.contains(new) {
                     stack.append((new, pivot))

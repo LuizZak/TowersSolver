@@ -45,9 +45,9 @@ private class InternalSolver {
             let enabledCount = edges.count { grid.edgeState(forEdge: $0).isEnabled }
             
             if enabledCount == 1 {
-                let enabled = edges.filter { grid.edgeState(forEdge: $0).isEnabled }
-                
-                grid.setEdges(state: .disabled, forEdges: enabled)
+                grid.setEdges(state: .disabled,
+                              forEdges: edges,
+                              where: { $0.state.isEnabled })
                 
                 didWork = true
             }
