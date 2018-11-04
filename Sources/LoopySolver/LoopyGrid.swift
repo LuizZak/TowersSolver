@@ -22,29 +22,57 @@ final class BackingLoopyGrid: Equatable {
     @usableFromInline
     var _ignoringDisabledEdges: Bool = false
     
+    /// Sequence of single-edge runs currently known
+    var _edgeRuns: [[Edge.Id]] = []
+    
     @usableFromInline
-    var edges: [Edge] = []
+    var edges: [Edge] = [] {
+        didSet {
+            clearCaches()
+        }
+    }
     @usableFromInline
-    var faces: [Face] = []
+    var faces: [Face] = [] {
+        didSet {
+            clearCaches()
+        }
+    }
     @usableFromInline
-    var vertices: [Vertex] = []
+    var vertices: [Vertex] = [] {
+        didSet {
+            clearCaches()
+        }
+    }
     @usableFromInline
-    var edgeIds: [Edge.Id] = []
+    var edgeIds: [Edge.Id] = [] {
+        didSet {
+            clearCaches()
+        }
+    }
     @usableFromInline
-    var faceIds: [Face.Id] = []
+    var faceIds: [Face.Id] = [] {
+        didSet {
+            clearCaches()
+        }
+    }
+    
+    @usableFromInline
+    var lastIsConsistentResult: Bool?
     
     @usableFromInline
     init(edges: [Edge],
          faces: [Face],
          vertices: [Vertex],
          edgeIds: [Edge.Id],
-         faceIds: [Face.Id]) {
+         faceIds: [Face.Id],
+         lastIsConsistentResult: Bool?) {
         
         self.edges = edges
         self.faces = faces
         self.vertices = vertices
         self.edgeIds = edgeIds
         self.faceIds = faceIds
+        self.lastIsConsistentResult = lastIsConsistentResult
     }
     
     @usableFromInline
@@ -54,6 +82,7 @@ final class BackingLoopyGrid: Equatable {
         vertices = []
         edgeIds = []
         faceIds = []
+        lastIsConsistentResult = nil
     }
     
     @usableFromInline
@@ -65,7 +94,8 @@ final class BackingLoopyGrid: Equatable {
                 faces: faces,
                 vertices: vertices,
                 edgeIds: edgeIds,
-                faceIds: faceIds)
+                faceIds: faceIds,
+                lastIsConsistentResult: lastIsConsistentResult)
         
         copy._markedEdgesPerVertex = _markedEdgesPerVertex
         copy._edgesConnectedToEdge = _edgesConnectedToEdge
@@ -74,8 +104,42 @@ final class BackingLoopyGrid: Equatable {
         copy._facesPerEdge = _facesPerEdge
         copy._faceIsSolved = _faceIsSolved
         copy._ignoringDisabledEdges = _ignoringDisabledEdges
+        copy._edgeRuns = _edgeRuns
         
         return copy
+    }
+    
+    @usableFromInline
+    func clearCaches() {
+        lastIsConsistentResult = nil
+    }
+    
+    @usableFromInline
+    func updateEdge(_ index: Int, _ newEdge: Edge) {
+        let previous = edges[index]
+        let new = newEdge
+        
+        if edges[index] == newEdge {
+            return
+        }
+        
+        switch (previous.state, new.state) {
+        case (.marked, .marked):
+            break
+            
+        case (.marked, _):
+            _markedEdgesPerVertex[new.start] -= 1
+            _markedEdgesPerVertex[new.end] -= 1
+            
+        case (_, .marked):
+            _markedEdgesPerVertex[new.start] += 1
+            _markedEdgesPerVertex[new.end] += 1
+            
+        default:
+            break
+        }
+        
+        edges[index] = newEdge
     }
     
     @usableFromInline
@@ -265,8 +329,13 @@ public struct LoopyGrid: Equatable, Graph {
     /// must be part of the loop.
     @inlinable
     public var isConsistent: Bool {
+        if let last = _backing.lastIsConsistentResult {
+            return last
+        }
+        
         for i in 0..<vertices.count {
             if markedEdges(forVertex: i) > 2 {
+                _backing.lastIsConsistentResult = false
                 return false
             }
         }
@@ -283,9 +352,11 @@ public struct LoopyGrid: Equatable, Graph {
             let faceEdges = self.edges(forFace: face)
             
             if faceEdges.count(where: { edges[$0.edgeIndex].state == .marked }) > hint {
+                _backing.lastIsConsistentResult = false
                 return false
             }
             if faceEdges.count(where: { edges[$0.edgeIndex].state.isEnabled }) < hint {
+                _backing.lastIsConsistentResult = false
                 return false
             }
         }
@@ -310,9 +381,11 @@ public struct LoopyGrid: Equatable, Graph {
         }
         
         if runs.count > 1 && runs.contains(where: isLoop) {
+            _backing.lastIsConsistentResult = false
             return false
         }
         
+        _backing.lastIsConsistentResult = true
         return true
     }
     
@@ -350,27 +423,22 @@ public struct LoopyGrid: Equatable, Graph {
     
     /// With a given edge reference, apply a set of changes to the matching edge.
     /// Changes block is not called, in case edge is not found within this grid.
+    @inlinable
     public mutating func withEdge(_ edge: EdgeReferenceConvertible, changes: (inout Edge) -> Void) {
-        let previous = edges[edge.edgeIndex]
+        let index = edge.edgeIndex
+        let previous = edges[index]
+        var new = previous
         
-        changes(&edges[edge.edgeIndex])
+        changes(&new)
         
-        let new = edges[edge.edgeIndex]
-        
-        switch (previous.state, new.state) {
-        case (.marked, .marked):
-            break
-        case (.marked, _):
-            _markedEdgesPerVertex[new.start] -= 1
-            _markedEdgesPerVertex[new.end] -= 1
-        case (_, .marked):
-            _markedEdgesPerVertex[new.start] += 1
-            _markedEdgesPerVertex[new.end] += 1
-        default:
-            break
+        if previous == new {
+            return
         }
         
-        for f in _facesPerEdge[edge.edgeIndex] {
+        _ensureUniqueCopy()
+        _backing.updateEdge(index, new)
+        
+        for f in _facesPerEdge[index] {
             _updateFaceResolved(f)
         }
     }
@@ -782,7 +850,8 @@ public extension LoopyGrid {
         return !Set(face1.localToGlobalEdges).isDisjoint(with: face2.localToGlobalEdges)
     }
     
-    private mutating func _updateFaceResolved(_ faceId: FaceReferenceConvertible) {
+    @usableFromInline
+    internal mutating func _updateFaceResolved(_ faceId: FaceReferenceConvertible) {
         _faceIsSolved[faceId.id.value] = _internalIsFaceSolved(faceId)
     }
     
