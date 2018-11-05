@@ -60,7 +60,7 @@ private class InternalSolver {
         }
         
         // Collect edges
-        var edgeRuns: [[Edge.Id]] = grid
+        var edgeRuns: [Set<Edge.Id>] = grid
             .ignoringDisabledEdges()
             .linearPathGraphEdges(around: face)
         

@@ -14,6 +14,8 @@ final class BackingLoopyGrid: Equatable {
     @usableFromInline
     var _edgesPerVertex: [[Edge.Id]] = []
     @usableFromInline
+    var _nonDisabledEdgesPerVertex: [[Edge.Id]] = []
+    @usableFromInline
     var _facesPerVertex: [[Face.Id]] = []
     @usableFromInline
     var _facesPerEdge: [[Face.Id]] = []
@@ -100,6 +102,7 @@ final class BackingLoopyGrid: Equatable {
         copy._markedEdgesPerVertex = _markedEdgesPerVertex
         copy._edgesConnectedToEdge = _edgesConnectedToEdge
         copy._edgesPerVertex = _edgesPerVertex
+        copy._nonDisabledEdgesPerVertex = _nonDisabledEdgesPerVertex
         copy._facesPerVertex = _facesPerVertex
         copy._facesPerEdge = _facesPerEdge
         copy._faceIsSolved = _faceIsSolved
@@ -138,6 +141,15 @@ final class BackingLoopyGrid: Equatable {
         default:
             break
         }
+        
+        if previous.state.isEnabled && !new.state.isEnabled {
+            _nonDisabledEdgesPerVertex[new.start].removeAll(where: { $0.edgeIndex == index })
+            _nonDisabledEdgesPerVertex[new.end].removeAll(where: { $0.edgeIndex == index })
+        } else if !previous.state.isEnabled && new.state.isEnabled {
+            _nonDisabledEdgesPerVertex[new.start].append(EdgeId(index))
+            _nonDisabledEdgesPerVertex[new.end].append(EdgeId(index))
+        }
+        
         
         edges[index] = newEdge
     }
@@ -238,6 +250,17 @@ public struct LoopyGrid: Equatable, Graph {
         set {
             _ensureUniqueCopy()
             _backing._ignoringDisabledEdges = newValue
+        }
+    }
+    
+    @inlinable
+    internal var _nonDisabledEdgesPerVertex: [[Edge.Id]] {
+        get {
+            return _backing._nonDisabledEdgesPerVertex
+        }
+        set {
+            _ensureUniqueCopy()
+            _backing._nonDisabledEdgesPerVertex = newValue
         }
     }
     
@@ -363,7 +386,7 @@ public struct LoopyGrid: Equatable, Graph {
         
         // Fetch all marked edges and try to connect them into a single contiguous
         // line.
-        var runs: [[Edge.Id]] = []
+        var runs: [Set<EdgeId>] = []
         var edgesCollected: Set<Edge.Id> = []
         
         for edge in edgeIds where edgeState(forEdge: edge) == .marked {
@@ -448,6 +471,7 @@ public struct LoopyGrid: Equatable, Graph {
         
         _facesPerVertex.append([])
         _edgesPerVertex.append([])
+        _nonDisabledEdgesPerVertex.append([])
         _markedEdgesPerVertex.append(0)
     }
     
@@ -497,6 +521,8 @@ public struct LoopyGrid: Equatable, Graph {
         
         _edgesPerVertex[start].append(edgeId)
         _edgesPerVertex[end].append(edgeId)
+        _nonDisabledEdgesPerVertex[start].append(edgeId)
+        _nonDisabledEdgesPerVertex[end].append(edgeId)
         
         _facesPerEdge.append([])
         
@@ -727,12 +753,11 @@ public extension LoopyGrid {
     /// vertex index.
     @inlinable
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
-        let edges = _edgesPerVertex[vertexIndex]
-        
         if _ignoringDisabledEdges {
-            return edges.filter { !shouldIgnore(edgeReferenceFrom($0)) }
+            return _nonDisabledEdgesPerVertex[vertexIndex]
+        } else {
+            return _edgesPerVertex[vertexIndex]
         }
-        return edges
     }
     
     /// Returns an array of all edges that are connected to a given edge.

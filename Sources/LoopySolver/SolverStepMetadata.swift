@@ -1,6 +1,7 @@
 public final class SolverStepMetadata {
     private var metadata: [String: Any] = [:]
     private var vertexMetadata: [Int: Any] = [:]
+    private var vertexStates: [Int: [Edge.State]] = [:]
     private var faceMetadata: [Int: Any] = [:]
     private var flag = false
     
@@ -27,11 +28,11 @@ public final class SolverStepMetadata {
     }
     
     public func storeVertexState(_ vertex: Int, from grid: LoopyGrid) {
-        vertexMetadata[vertex] = grid.edgesSharing(vertexIndex: vertex).map(grid.edgeState)
+        vertexStates[vertex] = grid.edgesSharing(vertexIndex: vertex).map(grid.edgeState)
     }
     
     public func matchesStoredVertexState(_ vertex: Int, from grid: LoopyGrid) -> Bool {
-        guard let storedEdgeStates = vertexMetadata[vertex] as? [Edge.State] else {
+        guard let storedEdgeStates = vertexStates[vertex] else {
             return false
         }
         

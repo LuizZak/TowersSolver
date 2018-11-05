@@ -18,7 +18,7 @@ extension LoopyGrid {
     /// If the starting edge is not connected to any edges uniquely, an array with
     /// just the starting edge is returned.
     public func singlePathEdges(fromEdge edge: Edge.Id,
-                                excludeDisabled: Bool = true) -> [Edge.Id] {
+                                excludeDisabled: Bool = true) -> Set<Edge.Id> {
         
         return singlePathEdges(fromEdge: edge) { edge in
             if excludeDisabled && edgeState(forEdge: edge) == .disabled {

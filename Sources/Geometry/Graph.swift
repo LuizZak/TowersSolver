@@ -61,7 +61,7 @@ public protocol Graph {
     /// including the starting edge itself.
     /// If the starting edge is not connected to any edges uniquely, an array with
     /// just the starting edge is returned.
-    func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> [EdgeId]
+    func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> Set<EdgeId>
     
     /// Returns an array of array of path edges that form when organizing the
     /// edges of a given face into linear graphs.
@@ -71,15 +71,15 @@ public protocol Graph {
     ///
     /// This may span across other faces, as linear paths traverse through the
     /// grid.
-    func linearPathGraphEdges(around face: FaceId) -> [[EdgeId]]
+    func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>]
     
     /// Returns `true` iff each edge on a given list is directly connected to the
     /// next, forming a singular chain.
-    func isUniqueSegment(_ edges: [EdgeId]) -> Bool
+    func isUniqueSegment<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId
     
     /// Returns `true` iff all edges in a given list are connected, and they form
     /// a loop (i.e. all edges connected start-to-end).
-    func isLoop(_ edges: [EdgeId]) -> Bool
+    func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId
 }
 
 // MARK: - Default Implementations
@@ -99,11 +99,11 @@ public extension Graph {
 
 public extension Graph {
     @inlinable
-    public func linearPathGraphEdges(around face: FaceId) -> [[EdgeId]] {
+    public func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>] {
         let edges = self.edges(forFace: face)
         
         var edgesSet: Set<EdgeId> = []
-        var edgeRuns: [[EdgeId]] = []
+        var edgeRuns: [Set<EdgeId>] = []
         
         for edge in edges {
             if edgesSet.contains(edge) {
@@ -119,28 +119,30 @@ public extension Graph {
     }
     
     @inlinable
-    public func singlePathEdges(fromEdge edge: EdgeId) -> [EdgeId] {
+    public func singlePathEdges(fromEdge edge: EdgeId) -> Set<EdgeId> {
         return singlePathEdges(fromEdge: edge, includeTest: { _ in true })
     }
     
     @inlinable
-    public func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> [EdgeId] {
+    public func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> Set<EdgeId> {
         var stack: [(pivot: EdgeId, previous: EdgeId?)] = []
         
         stack = [(edge, nil)]
         
-        var result: [EdgeId] = []
+        var result: Set<EdgeId> = []
+        var last: EdgeId? = nil
         
         while let top = stack.popLast() {
             let (pivot, previous) = top
             
             // Make sure we don't duplicate an edge in case the line forms a closed
             // loop
-            if previous == edge && result.last == pivot {
+            if previous == edge && last == pivot {
                 continue
             }
             
-            result.append(pivot)
+            last = pivot
+            result.insert(pivot)
             
             let vertices = self.vertices(forEdge: pivot)
             
@@ -179,12 +181,11 @@ public extension Graph {
     /// Returns `true` iff each edge on a given list is directly connected to the
     /// next, forming a singular chain.
     @inlinable
-    public func isUniqueSegment(_ edges: [EdgeId]) -> Bool {
-        let array = edges
-        if array.count == 0 {
+    public func isUniqueSegment<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
+        if edges.count == 0 {
             return false
         }
-        if array.count == 1 {
+        if edges.count == 1 {
             return true
         }
         
@@ -193,8 +194,8 @@ public extension Graph {
         // push that edge to the sequence edges and repeat for all edges until
         // either the list is empty or none of the remaining items are connected
         // to any of the edges in the sequence
-        var rem = Array(array.dropFirst())
-        var seq = [array[0]]
+        var rem = Array(edges.dropFirst())
+        var seq = [edges[edges.startIndex]]
         
         while rem.count > 0 {
             for i in 0..<rem.count {
@@ -216,11 +217,9 @@ public extension Graph {
     /// Returns `true` iff all edges in a given list are connected, and they form
     /// a loop (i.e. all edges connected start-to-end).
     @inlinable
-    public func isLoop(_ edges: [EdgeId]) -> Bool {
-        let array = edges
-        
+    public func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
         // Minimal number of edges connected to form a loop must be 3.
-        if array.count < 3 {
+        if edges.count < 3 {
             return false
         }
         

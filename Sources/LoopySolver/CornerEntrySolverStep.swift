@@ -57,14 +57,13 @@ private class InternalSolver {
         
         let edges = grid.edgesSharing(vertexIndex: vertexIndex)
         
-        let marked = edges.filter { grid.edgeState(forEdge: $0) == .marked }
-        let normal = edges.filter { grid.edgeState(forEdge: $0) == .normal }
-        
         // Can only do work on loose ends of a loopy line (a vertex with a single
         // marked edge)
-        guard marked.count == 1 else {
+        guard let marked = edges.only(where: { grid.edgeState(forEdge: $0) == .marked }) else {
             return
         }
+        
+        let normal = edges.filter { grid.edgeState(forEdge: $0) == .normal }
         
         // If any of the faces is semi-complete, apply a different logic here to
         // 'hijack' the line into it's own path
@@ -75,7 +74,7 @@ private class InternalSolver {
             
             // Can only account for edges coming into the face from an outside
             // edge
-            if grid.faceContainsEdge(face: semiComplete, edge: marked[0]) {
+            if grid.faceContainsEdge(face: semiComplete, edge: marked) {
                 return
             }
             
@@ -88,7 +87,7 @@ private class InternalSolver {
             // hijacking the line path
             let otherEdges = edges
                 .filter { !grid.faceContainsEdge(face: semiComplete, edge: grid.edgeId(forEdge: $0)!) }
-                .filter { marked[0] != $0 }
+                .filter { marked != $0 }
             
             grid.setEdges(state: .disabled, forEdges: otherEdges)
             

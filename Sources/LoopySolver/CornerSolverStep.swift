@@ -102,7 +102,7 @@ private class InternalSolver {
         
         // Can only apply next solving logics when the non-shared edges form a
         // single sequential line across the outer side of the face
-        if !grid.isUniqueSegment(nonShared) {
+        if !grid.isUniqueSegment(nonShared) || grid.isLoop(nonShared) {
             return
         }
         
@@ -116,6 +116,14 @@ private class InternalSolver {
             grid.setEdges(state: .marked, forEdges: nonShared)
             return
         }
+        
+        // Sort edges found such that we get an array of edges from start to end
+        let sorted = nonShared.sorted(by: {
+            let e1 = grid.vertices(forEdge: $0)
+            let e2 = grid.vertices(forEdge: $1)
+            
+            return e1.end == e2.start
+        })
         
         // 3.
         // If the number of edges outside and inside the grid are the same, and
@@ -147,12 +155,12 @@ private class InternalSolver {
             // Find the out-going edges from the join vertices
             let start = grid
                 .ignoringDisabledEdges()
-                .edgesConnected(to: nonShared.first!)
+                .edgesConnected(to: sorted.first!)
                 .filter { !grid.faceContainsEdge(face: faceId, edge: $0) }
             
             let end = grid
                 .ignoringDisabledEdges()
-                .edgesConnected(to: nonShared.last!)
+                .edgesConnected(to: sorted.last!)
                 .filter { !grid.faceContainsEdge(face: faceId, edge: $0) }
             
             if start.count == 1 {
