@@ -444,6 +444,11 @@ public struct LoopyGrid: Equatable, Graph {
         _updateFaceResolved(face)
     }
     
+    @inlinable
+    public mutating func withEdge(_ edge: Int, changes: (inout Edge) -> Void) {
+        withEdge(Edge.Id(edge), changes: changes)
+    }
+    
     /// With a given edge reference, apply a set of changes to the matching edge.
     /// Changes block is not called, in case edge is not found within this grid.
     @inlinable
@@ -760,6 +765,11 @@ public extension LoopyGrid {
         }
     }
     
+    @inlinable
+    public func edgesConnected(to edge: Int) -> [Edge.Id] {
+        return edgesConnected(to: Edge.Id(edge))
+    }
+    
     /// Returns an array of all edges that are connected to a given edge.
     @inlinable
     public func edgesConnected(to edge: EdgeReferenceConvertible) -> [Edge.Id] {
@@ -854,7 +864,6 @@ public extension LoopyGrid {
         return _facesPerEdge[edge.edgeIndex]
     }
     
-    /// Returns `true` if a given edge forms the side of a given face.
     @inlinable
     public func faceContainsEdge(face: Face.Id, edge: Edge.Id) -> Bool {
         

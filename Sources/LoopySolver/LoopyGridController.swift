@@ -53,6 +53,10 @@ public class LoopyGridController {
         }
     }
     
+    public func setEdge(state: Edge.State, forEdge edge: Int) {
+        setEdge(state: state, forEdge: Edge.Id(edge))
+    }
+    
     public func setEdge(state: Edge.State, forEdge edge: EdgeReferenceConvertible) {
         grid.withEdge(edge) {
             $0.state = state

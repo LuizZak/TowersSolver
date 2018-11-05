@@ -132,4 +132,47 @@ class CornerEntrySolverStepTests: XCTestCase {
         
         LoopyGridPrinter(bufferWidth: 14, bufferHeight: 5).printGrid(grid: result)
     }
+    
+    func testApplyCornerEntryForkingPath() {
+        // Test a honeycomb grid of the following configuration:
+        //
+        //   •───•       •───•
+        //  /     \     /     \
+        // •       •───•       •
+        //  \           \     /
+        //   •═══•       •───•
+        //  /     ⤡ 1         \
+        // •       •───•       •
+        //  \    2/     \     /
+        //   •───•   4   •   •
+        //  /     \     /     \
+        // •       •───•       •
+        //  \     /     \     /
+        //   •───•       •───•
+        //        \     /
+        //         •───•
+        //
+        // Assert that the bottom-left path from the marked edge (marked 2.) is
+        // disabled after it is inferred that taking it would disable too many
+        // edges from the top path (starting from marked edge 1.)
+        
+        let honeycomb = LoopyHoneycombGridGenerator(width: 3, height: 3)
+        honeycomb.setHint(faceIndex: 4, hint: 4)
+        let controller = LoopyGridController(grid: honeycomb.generate())
+        controller.setEdge(state: .marked, forEdge: 3)
+        controller.setEdge(state: .marked, forEdge: 10)
+        controller.setEdge(state: .disabled, forEdge: 2)
+        controller.setEdge(state: .disabled, forEdge: 8)
+        controller.setEdge(state: .disabled, forEdge: 26)
+        let input = controller.grid
+        controller.setEdge(state: .disabled, forEdge: 16)
+        let expected = controller.grid
+        
+        let result = sut.apply(to: input, delegate)
+        
+        XCTAssertEqual(result, expected)
+        
+        let printer = LoopyGridPrinter(bufferWidth: 22, bufferHeight: 15)
+        printer.printGrid(grid: result)
+    }
 }

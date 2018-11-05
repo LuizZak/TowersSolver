@@ -1,6 +1,5 @@
 public final class SolverStepMetadata {
     private var metadata: [String: Any] = [:]
-    private var vertexMetadata: [Int: Any] = [:]
     private var vertexStates: [Int: [Edge.State]] = [:]
     private var faceMetadata: [Int: Any] = [:]
     private var flag = false

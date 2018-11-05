@@ -19,31 +19,41 @@ public protocol Graph {
     /// Returns the index for the edge of the given vertices.
     /// Detects both direction of edges.
     /// Returns `nil`, if no edge is present between the two edges.
+    @inlinable
     func edgeBetween(vertex1: Int, vertex2: Int) -> EdgeId?
     
     /// Returns an array of all edges that share a given vertex
+    @inlinable
     func edgesSharing(vertexIndex index: Int) -> [EdgeId]
     
     /// Returns an array of all edges that enclose a face with a given id.
+    @inlinable
     func edges(forFace face: FaceId) -> [EdgeId]
     
     /// Returns `true` if two edges have a vertex index in common.
+    @inlinable
     func edgesShareVertex(_ first: EdgeId, _ second: EdgeId) -> Bool
     
-    /// Returns `true` if a given edge forms the side of a given face.
+    /// Returns `true` if a given edge forms the side of a given face (i.e. both
+    /// vertices that form the edge are vertices that form one of the sides of the
+    /// face.)
+    @inlinable
     func faceContainsEdge(face: FaceId, edge: EdgeId) -> Bool
     
     /// Returns the index of an index that matches a given vertex object.
     ///
     /// Returns nil, in case a matching vertex is not found.
+    @inlinable
     func vertexIndex(_ vertex: Vertex) -> Int?
     
     /// Returns the index of the vertex with the given coordinates.
     ///
     /// Returns nil, in case the coordinate does not match any vertex.
+    @inlinable
     func vertexIndex(x: Vertex.Coordinate, y: Vertex.Coordinate) -> Int?
     
     /// Returns the two vertex indices for the start/end of a given edge.
+    @inlinable
     func vertices(forEdge edge: EdgeId) -> (start: Int, end: Int)
     
     /// From a starting edge in this graph, extract all connected edges that share
@@ -61,6 +71,7 @@ public protocol Graph {
     /// including the starting edge itself.
     /// If the starting edge is not connected to any edges uniquely, an array with
     /// just the starting edge is returned.
+    @inlinable
     func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> Set<EdgeId>
     
     /// Returns an array of array of path edges that form when organizing the
@@ -71,14 +82,17 @@ public protocol Graph {
     ///
     /// This may span across other faces, as linear paths traverse through the
     /// grid.
+    @inlinable
     func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>]
     
     /// Returns `true` iff each edge on a given list is directly connected to the
     /// next, forming a singular chain.
+    @inlinable
     func isUniqueSegment<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId
     
     /// Returns `true` iff all edges in a given list are connected, and they form
     /// a loop (i.e. all edges connected start-to-end).
+    @inlinable
     func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId
 }
 

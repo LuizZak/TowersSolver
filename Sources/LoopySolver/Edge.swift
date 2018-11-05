@@ -79,12 +79,12 @@ public struct Edge: Equatable, EdgeProtocol {
     }
 }
 
-extension Int: EdgeReferenceConvertible {
-    @inlinable
-    public var edgeIndex: Int {
-        return self
-    }
-}
+//extension Int: EdgeReferenceConvertible {
+//    @inlinable
+//    public var edgeIndex: Int {
+//        return self
+//    }
+//}
 
 extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
     @inlinable
