@@ -195,6 +195,10 @@ private class InternalSolver {
     }
     
     func analyzeForkingHintedEdgesPath(for faceId: Face.Id, hint: Int) {
+        if grid.isFaceSolved(faceId) {
+            return
+        }
+        
         let vertices = grid.vertices(forFace: faceId)
         let faceEdges = Set(grid.edges(forFace: faceId))
         let enabledEdges =
@@ -204,14 +208,14 @@ private class InternalSolver {
         // Look for edges perpendicular (i.e., sharing only one vertex with the
         // face) and analyze the neighoring edges (which are connected to the face)
         for vertex in vertices {
-            let edges = grid.edgesSharing(vertexIndex: vertex)
-            guard let entryEdge = edges.only(where: { grid.edgeState(forEdge: $0) == .marked }) else {
+            let edgesOnVertex = grid.edgesSharing(vertexIndex: vertex)
+            guard let entryEdge = edgesOnVertex.only(where: { grid.edgeState(forEdge: $0) == .marked }) else {
                 continue
             }
             // One edge exactly must be connected from outside to the face (shares
             // one vertex with face), while the remaining must be part of the face
             // (sharing both vertices with face)
-            guard edges.count(1, where: { !grid.faceContainsEdge(face: faceId, edge: $0) }) else {
+            guard edgesOnVertex.count(1, where: { !grid.faceContainsEdge(face: faceId, edge: $0) }) else {
                 continue
             }
             // Entry edge must be the perpendicular edge
@@ -223,7 +227,7 @@ private class InternalSolver {
             // Int:     Count of edges forming single path from this edge on
             var paths: [(Edge.Id, Int)] = []
             
-            for faceEdge in edges where faceEdge != entryEdge {
+            for faceEdge in edgesOnVertex where faceEdge != entryEdge {
                 let path = grid.singlePathEdges(fromEdge: faceEdge, excludeDisabled: true)
                 
                 // If we take this path, how many enabled edges which are sides

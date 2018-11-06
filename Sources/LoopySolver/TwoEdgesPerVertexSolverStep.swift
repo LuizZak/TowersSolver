@@ -10,6 +10,11 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
         var grid = grid
         
         for vertex in 0..<grid.vertices.count {
+            let marked = grid.markedEdges(forVertex: vertex)
+            guard marked == 2 else {
+                continue
+            }
+            
             if metadata.matchesStoredVertexState(vertex, from: grid) {
                 continue
             }
@@ -17,15 +22,11 @@ public class TwoEdgesPerVertexSolverStep: SolverStep {
                 metadata.storeVertexState(vertex, from: grid)
             }
             
-            let marked = grid.markedEdges(forVertex: vertex)
+            let edges = grid.edgesSharing(vertexIndex: vertex)
             
-            if marked == 2 {
-                let edges = grid.edgesSharing(vertexIndex: vertex)
-                
-                let toDisable = edges.filter { grid.edgeState(forEdge: $0) != .marked }
-                
-                grid.setEdges(state: .disabled, forEdges: toDisable)
-            }
+            let toDisable = edges.filter { grid.edgeState(forEdge: $0) != .marked }
+            
+            grid.setEdges(state: .disabled, forEdges: toDisable)
         }
         
         return grid

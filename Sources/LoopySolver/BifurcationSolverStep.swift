@@ -19,7 +19,7 @@
 ///    \    */     \     /
 ///     •───•       •───•
 ///
-/// Either:
+/// Both options for the 4-cell mark the same edge going bottom-right of the cell:
 ///
 ///    •───•       •───•           •───•       •───•
 ///   /     \\          \         /     \\          \
@@ -28,9 +28,11 @@
 ///    •   •   4   •   •     or    •───•   4   •   •
 ///   /           //    \         /    \\     //    \
 ///  •       •═══•       •       •       •   •       •
-///   \    //     \     /         \     //    \     /
+///   \  -> //    \     /         \  -> //    \     /
 ///    •───•       •───•           •───•       •───•
 ///
+/// So this edge should be marked as part of the solution, even though we may
+/// still not be sure which of the edges from the 4-cell is part of the solution.
 public class BifurcationSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InnerSolver(grid: grid)
