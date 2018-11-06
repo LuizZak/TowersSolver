@@ -16,6 +16,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     /// Whether to print the edges' indices in the center point of their span
     public var printEdgeIndices: Bool = false
     
+    /// Color to use when printing the marked line path to the console
+    private var lineColor: ConsoleColor = .magenta
+    
     public override init(bufferWidth: Int, bufferHeight: Int) {
         super.init(bufferWidth: bufferWidth, bufferHeight: bufferHeight)
     }
@@ -62,12 +65,12 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             let (x2, y2) = toScreen(v2.x, v2.y)
             
             if (x1, y1) != (x2, y2) {
-                let scalars = lineScalars(forState: grid.edgeState(forEdge: edge))
+                let scalars = lineCharacters(forState: grid.edgeState(forEdge: edge))
                 
                 bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
-                    let scalar = normalLineScalar(forAngle: angle, angleScalars: scalars)
+                    let segment = normalLineSegment(forAngle: angle, angleSegments: scalars)
                     
-                    put(scalar, x: plotX, y: plotY)
+                    putString(segment.symbol, color: segment.color, x: plotX, y: plotY)
                 }
             }
         }
@@ -97,10 +100,14 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         }
         
         // Draw vertices as small dots
-        for v in grid.vertices {
+        for (i, v) in grid.vertices.enumerated() {
             let (x, y) = toScreen(v.x, v.y)
             
-            putChar("•", x: Int(x), y: Int(y))
+            if grid.markedEdges(forVertex: i) > 1 {
+                putChar("•", color: lineColor, x: Int(x), y: Int(y))
+            } else {
+                putChar("•", x: Int(x), y: Int(y))
+            }
         }
         
         if printEdgeIndices {
@@ -142,29 +149,48 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         return maxY.y - minY.y
     }
     
-    internal func lineScalars(forState state: Edge.State) -> [UnicodeScalar] {
+    private func lineCharacters(forState state: Edge.State) -> [LineSegmentChar] {
+        
+        #if !Xcode
+        
         switch state {
         case .normal:
             return ["│", "/", "╱", "─", "╲", "\\", "│"]
         case .marked:
-            return ["║", "⤢", "═", "⤡", "║"]
+            return ["│", "/", "╱", "─", "╲", "\\", "│"].map {
+                LineSegmentChar(symbol: $0, color: lineColor)
+            }
         case .disabled:
             return [" "]
         }
+        
+        #else
+        
+        switch state {
+        case .normal:
+            return ["│", "/", "╱", "─", "╲", "\\", "│"]
+        case .marked:
+            return ["║", "//", "═", "\\\\", "║"]
+        case .disabled:
+            return [" "]
+        }
+        
+        #endif
+        
     }
     
-    internal func normalLineScalar(forAngle angle: Float, angleScalars: [UnicodeScalar]) -> UnicodeScalar {
-        precondition(angleScalars.count > 0)
+    internal func normalLineSegment<T>(forAngle angle: Float, angleSegments: [T]) -> T {
+        precondition(angleSegments.count > 0)
         
         // For an angle that goes from 270º to 90º (passing through 0/360º), turn
         // the angle 90º counterclockwise and normalize it between 0 and 180ª.
         // We then convert it into an index on the array above for the proper angle
         // character.
-        let normalized = (angle + .pi / 2).truncatingRemainder(dividingBy: .pi) / .pi
+        let normalized: Float = (angle + .pi / 2).truncatingRemainder(dividingBy: .pi) / .pi
         
-        let index = Int((normalized * Float(angleScalars.count - 1)).rounded(.toNearestOrEven))
+        let index = Int((normalized * Float(angleSegments.count - 1)).rounded(.toNearestOrEven))
         
-        return angleScalars[index]
+        return angleSegments[index]
     }
     
     func bresenham(x1: Int, y1: Int, x2: Int, y2: Int, plot: (_ x: Int, _ y: Int, _ angle: Float) -> Void) {
@@ -227,6 +253,26 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             }
             
             plot(steep ? (y, x) : (x, y))
+        }
+    }
+    
+    private struct LineSegmentChar: ExpressibleByStringLiteral {
+        var symbol: String
+        var color: ConsoleColor?
+        
+        init(symbol: String) {
+            self.symbol = symbol
+            self.color = nil
+        }
+        
+        init(symbol: String, color: ConsoleColor?) {
+            self.symbol = symbol
+            self.color = color
+        }
+        
+        init(stringLiteral value: String) {
+            self.symbol = value
+            self.color = nil
         }
     }
 }

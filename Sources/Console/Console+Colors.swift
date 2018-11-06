@@ -10,7 +10,7 @@ extension String {
      */
     public func terminalColorize(_ color: ConsoleColor) -> String {
         
-        #if !DEBUG
+        #if !Xcode
             return color.terminalForeground.ansi + self + UInt8(0).ansi
         #else
             return self

@@ -3,7 +3,8 @@ import Foundation
 /// Helper for printing grids and other 2D shapes made of ASCII characters to the
 /// console using ASCII text.
 open class ConsolePrintBuffer {
-    private var buffer: [UnicodeScalar] = []
+    private var buffer: [ConsoleCharacter] = []
+    
     /// Used when diffing print
     private var lastPrintBuffer: String?
     private var _storingDiff = false
@@ -24,8 +25,11 @@ open class ConsolePrintBuffer {
     }
     
     public func resetBuffer() {
-        let line = Array(repeating: " " as UnicodeScalar, count: bufferWidth - 1)
-        buffer = Array(repeating: line + ["\n"], count: bufferHeight).flatMap { $0 }
+        let line = Array(repeating: ConsoleCharacter(character: " " as Character),
+                         count: bufferWidth - 1)
+        
+        buffer = Array(repeating: line + [ConsoleCharacter(character: "\n")],
+                       count: bufferHeight).flatMap { $0 }
     }
     
     /// Removes any prior diff buffer so the next print is clean of diff checks
@@ -33,7 +37,9 @@ open class ConsolePrintBuffer {
         lastPrintBuffer = nil
     }
     
-    public func put(_ scalar: UnicodeScalar, x: Int, y: Int) {
+    public func put(_ scalar: UnicodeScalar, color: ConsoleColor? = nil, x: Int,
+                    y: Int) {
+        
         var offset = y * bufferWidth + x
         
         // Out of buffer's reach
@@ -53,12 +59,12 @@ open class ConsolePrintBuffer {
             }
         }
         
-        putChar(scalar, offset: offset)
+        putChar(scalar, color: color, offset: offset)
         
         offset += 1
     }
     
-    public func putString(_ string: String, x: Int, y: Int) {
+    public func putString(_ string: String, color: ConsoleColor? = nil, x: Int, y: Int) {
         var offset = y * bufferWidth + x
         
         for c in string {
@@ -76,41 +82,13 @@ open class ConsolePrintBuffer {
                 continue
             }
             
-            putChar(c, offset: offset)
+            putChar(c, color: color, offset: offset)
             
             offset += 1
         }
     }
     
-    public func fillRect(char: Character, x: Int, y: Int, w: Int, h: Int) {
-        for _y in y..<y+h {
-            for _x in x..<x+w {
-                putChar(char, x: _x, y: _y)
-            }
-        }
-    }
-    
-    public func putRect(x: Int, y: Int, w: Int, h: Int) {
-        putHorizontalLine("-", x: x, y: y, w: w)
-        putHorizontalLine("-", x: x, y: y + h, w: w)
-        
-        putVerticalLine("|", x: x, y: y, h: h)
-        putVerticalLine("|", x: x + w, y: y, h: h)
-    }
-    
-    public func putHorizontalLine(_ char: UnicodeScalar, x: Int, y: Int, w: Int) {
-        for _x in x...x+w {
-            put(char, x: _x, y: y)
-        }
-    }
-    
-    public func putVerticalLine(_ char: UnicodeScalar, x: Int, y: Int, h: Int) {
-        for _y in y...y+h {
-            put(char, x: x, y: _y)
-        }
-    }
-    
-    public func putChar(_ char: Character, x: Int, y: Int) {
+    public func putChar(_ char: Character, color: ConsoleColor? = nil, x: Int, y: Int) {
         var offset = y * bufferWidth + x
         
         // Out of buffer's reach
@@ -130,24 +108,24 @@ open class ConsolePrintBuffer {
             }
         }
         
-        putChar(char, offset: offset)
+        putChar(char, color: color, offset: offset)
         
         offset += 1
     }
     
-    private func putChar(_ char: Character, offset: Int) {
+    private func putChar(_ char: Character, color: ConsoleColor?, offset: Int) {
         let index = buffer.index(buffer.startIndex, offsetBy: offset)
         
-        buffer.replaceSubrange(index...index, with: char.unicodeScalars)
+        buffer[index] = ConsoleCharacter(character: char, color: color)
     }
     
-    private func putChar(_ char: UnicodeScalar, offset: Int) {
+    private func putChar(_ char: UnicodeScalar, color: ConsoleColor?, offset: Int) {
         let index = buffer.index(buffer.startIndex, offsetBy: offset)
         
-        buffer[index] = char
+        buffer[index] = ConsoleCharacter(character: Character(char), color: color)
     }
     
-    private func get(_ x: Int, _ y: Int) -> UnicodeScalar {
+    private func get(_ x: Int, _ y: Int) -> Character {
         var offset = y * bufferWidth + x
         
         if offset % bufferWidth == (bufferWidth - 1) {
@@ -155,24 +133,58 @@ open class ConsolePrintBuffer {
         }
         
         if offset >= buffer.count - 2 {
-            return UnicodeScalar(0)
+            return " "
         }
         
-        return buffer[offset]
+        return buffer[offset].character
     }
     
-    public func line(index: Int) -> String {
+    public func fillRect(char: Character, color: ConsoleColor? = nil,
+                         x: Int, y: Int, w: Int, h: Int) {
+        
+        for _y in y..<y+h {
+            for _x in x..<x+w {
+                putChar(char, x: _x, y: _y)
+            }
+        }
+    }
+    
+    public func putRect(x: Int, y: Int, w: Int, h: Int, color: ConsoleColor? = nil) {
+        putHorizontalLine("-", x: x, y: y, w: w)
+        putHorizontalLine("-", x: x, y: y + h, w: w)
+        
+        putVerticalLine("|", x: x, y: y, h: h)
+        putVerticalLine("|", x: x + w, y: y, h: h)
+    }
+    
+    public func putHorizontalLine(_ char: UnicodeScalar, color: ConsoleColor? = nil,
+                                  x: Int, y: Int, w: Int) {
+        
+        for _x in x...x+w {
+            put(char, x: _x, y: y)
+        }
+    }
+    
+    public func putVerticalLine(_ char: UnicodeScalar, color: ConsoleColor? = nil,
+                                x: Int, y: Int, h: Int) {
+        
+        for _y in y...y+h {
+            put(char, x: x, y: _y)
+        }
+    }
+    
+    private func line(index: Int) -> String {
         let offset = index * bufferWidth
         let offsetNext = (index + 1) * bufferWidth
         
         let offNext = offsetNext - 1
         
-        return String(String.UnicodeScalarView(buffer[offset..<offNext]))
+        return buffer[offset..<offNext].map { $0.string() }.joined()
     }
     
     private func calculateDiffPrint(old: String, new: String) -> String {
         // Debug means Xcode console. Xcode console means no ANSI color output!
-        #if DEBUG
+        #if Xcode
             return new
         #else
             
@@ -236,7 +248,7 @@ open class ConsolePrintBuffer {
     
     private func getPrintBuffer(trimming: Bool = true) -> String {
         if !trimming {
-            return String(String.UnicodeScalarView(buffer))
+            return buffer.map { $0.string() }.joined()
         }
         
         var maxY = 0
@@ -280,7 +292,7 @@ open class ConsolePrintBuffer {
             }
         }
         
-        var substitutions: [Sides: UnicodeScalar] = [
+        var substitutions: [Sides: Character] = [
             [.left]:   "─",
             [.right]:  "─",
             [.top]:    "│",
@@ -332,9 +344,32 @@ open class ConsolePrintBuffer {
                 }
                 
                 if let str = substitutions[sides] {
-                    put(str, x: x, y: y)
+                    putChar(str, x: x, y: y)
                 }
             }
+        }
+    }
+    
+    private struct ConsoleCharacter {
+        var character: Character
+        var color: ConsoleColor?
+        
+        init(character: Character) {
+            self.character = character
+            color = nil
+        }
+        
+        init(character: Character, color: ConsoleColor?) {
+            self.character = character
+            self.color = color
+        }
+        
+        func string() -> String {
+            if let color = color {
+                return String(character).terminalColorize(color)
+            }
+            
+            return String(character)
         }
     }
 }

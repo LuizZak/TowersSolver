@@ -897,6 +897,6 @@ public extension LoopyGrid {
         }
         
         let edges = self.edges(forFace: faceId.id)
-        return edges.count { edgeState(forEdge: $0) == .marked } == hint
+        return edges.count(hint) { edgeState(forEdge: $0) == .marked }
     }
 }
