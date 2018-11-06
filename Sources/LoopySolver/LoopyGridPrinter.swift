@@ -96,7 +96,10 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
                 }
             }
             
-            putString(label, x: x, y: y)
+            let color: ConsoleColor? =
+                grid.isFaceSolved(Face.Id(faceIndex)) ? .magenta : nil
+            
+            putString(label, color: color, x: x, y: y)
         }
         
         // Draw vertices as small dots
@@ -193,7 +196,8 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         return angleSegments[index]
     }
     
-    func bresenham(x1: Int, y1: Int, x2: Int, y2: Int, plot: (_ x: Int, _ y: Int, _ angle: Float) -> Void) {
+    func bresenham(x1: Int, y1: Int, x2: Int, y2: Int,
+                   plot: (_ x: Int, _ y: Int, _ angle: Float) -> Void) {
         
         var p1 = (x: x1, y: y1)
         var p2 = (x: x2, y: y2)

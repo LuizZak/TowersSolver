@@ -114,6 +114,7 @@ public final class Solver {
         steps.append(NeighboringSemiCompleteFacesSolverStep())
         steps.append(NeighboringShortFacesSolverStep())
         steps.append(InvalidLoopClosingDetectionSolverStep())
+        steps.append(BifurcationSolverStep())
         
         postSolveAttemptSteps.append(CommonEdgesBetweenGuessesSolverStep())
     }

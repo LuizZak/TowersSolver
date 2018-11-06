@@ -43,6 +43,20 @@ public struct Edge: Equatable, EdgeProtocol {
         return sharesVertex(edge.start) || sharesVertex(edge.end)
     }
     
+    /// In case this edge shares a vertex with another edge, returns the index of
+    /// the common vertex; otherwise returns nil
+    @inlinable
+    public func sharedVertex(with edge: Edge) -> Int? {
+        if edge.start == start || edge.end == start {
+            return start
+        }
+        if edge.start == end || edge.end == end {
+            return end
+        }
+        
+        return nil
+    }
+    
     /// Returns `true` if this edge has the same vertex start/end values as a given
     /// edge, without taking into acount the directionality of the start/end
     /// values.
