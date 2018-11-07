@@ -3,7 +3,7 @@
 
 /// Generates a Great Hexagonal-shaped lattice with hexagons interleaved with
 /// squares and triangles.
-public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
+public class LoopyGreatHexagonGridGenerator: BaseLoopyGridGenerator {
     private let tileSize = 18
     // Vector for side of triangle - ratio is close to sqrt(3)
     private let greatHexA = 15
@@ -12,18 +12,54 @@ public class LoopyGreatHexagonGridGenerator: LoopyGridGenerator {
     public var width: Int
     public var height: Int
     
-    private var hints: [Int: Int] = [:]
-    
     public init(width: Int, height: Int) {
         self.width = width
         self.height = height
+        
+        let count = LoopyGreatHexagonGridGenerator
+            .faceCountForGrid(width: width, height: height)
+        
+        super.init(facesCount: count)
     }
     
-    public func setHint(faceIndex index: Int, hint: Int?) {
-        hints[index] = hint
+    static func faceCountForGrid(width: Int, height: Int) -> Int {
+        var facesCount = 0
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                facesCount += 1
+                
+                /* square below left */
+                if ((x > 0) && (((x % 2) == 0) || (y < height - 1))) {
+                    facesCount += 1
+                }
+                
+                /* Triangle below left */
+                if ((x > 0) && (y < height - 1)) {
+                    facesCount += 1
+                }
+                
+                /* square below hexagon */
+                if (y < height - 1) {
+                    facesCount += 1
+                }
+                
+                /* Triangle below right */
+                if ((x < width - 1) && (y < height - 1)) {
+                    facesCount += 1
+                }
+                
+                /* square below right */
+                if ((x < width - 1) && (((x % 2) == 0) || (y < height - 1))) {
+                    facesCount += 1
+                }
+            }
+        }
+        
+        return facesCount
     }
     
-    public func generate() -> LoopyGrid {
+    public override func generate() -> LoopyGrid {
         let a = greatHexA
         let b = greatHexB
         

@@ -330,6 +330,8 @@ class SolverTests: XCTestCase {
         // Game is this one:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#5x4t5:53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d
         let gen = LoopyGreatHexagonGridGenerator(width: 5, height: 4)
+        // TODO: Make loadHints work for this
+//        gen.loadHints(from: "53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d")
         gen.setHint(faceIndex: 0, hint: 5)
         gen.setHint(faceIndex: 1, hint: 3)
         gen.setHint(faceIndex: 4, hint: 2)
@@ -373,6 +375,25 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         let printer = LoopyGridPrinter(bufferWidth: 73, bufferHeight: 53)
+        //printer.printFaceIndices = true
+        printer.printGrid(grid: solver.grid)
+    }
+    
+    func testSolveHardGreatHexagon5x4_2() {
+        // Attempt solving a rather tricky Great Hexagon 5x4 game.
+        // Game is this one:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#5x4t5:5c5a2b1b22a0e243b43b13c132b12e1212152f12c1114c2a1121b5b214a
+        let gen = LoopyGreatHexagonGridGenerator(width: 5, height: 4)
+        gen.loadHints(from: "5c5a2b1b22a0e243b43b13c132b12e1212152f12c1114c2a1121b5b214a")
+        
+        let solver = Solver(grid: gen.generate())
+        solver.maxNumberOfGuesses = 26
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        let printer = LoopyGridPrinter(bufferWidth: 73, bufferHeight: 53)
+        //printer.printFaceIndices = true
         printer.printGrid(grid: solver.grid)
     }
     
