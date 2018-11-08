@@ -1,16 +1,15 @@
 import Geometry
 
 /// Grid generator that generates loopy grid with regular square grid patterns.
-public class LoopySquareGridGen: LoopyGridGenerator {
+public class LoopySquareGridGen: BaseLoopyGridGenerator {
     public let width: Int
     public let height: Int
-    
-    /// Registered hints for cell faces
-    internal var hints: [IntPoint: Int] = [:]
     
     public init(width: Int, height: Int) {
         self.width = width
         self.height = height
+        
+        super.init(facesCount: width * height)
     }
     
     /// Sets all hints at a given row to a given set of values
@@ -25,21 +24,18 @@ public class LoopySquareGridGen: LoopyGridGenerator {
     }
     
     public func setHint(x: Int, y: Int, hint: Int?) {
-        let pair = IntPoint(x: x, y: y)
+        let face = x + y * width
         
-        if let hint = hint {
-            hints[pair] = hint
-        } else {
-            hints.removeValue(forKey: pair)
-        }
+        super.setHint(faceIndex: face, hint: hint)
     }
     
     public func hintForFace(atX x: Int, y: Int) -> Int? {
-        let pair = IntPoint(x: x, y: y)
-        return hints[pair]
+        let face = x + y * width
+        
+        return hints[face]
     }
     
-    public func generate() -> LoopyGrid {
+    public override func generate() -> LoopyGrid {
         var grid = LoopyGrid()
         
         for y in 0...height {
