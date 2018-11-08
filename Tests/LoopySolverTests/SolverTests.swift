@@ -297,26 +297,10 @@ class SolverTests: XCTestCase {
         // Attempt solving a Great Hexagon 3x3 game.
         // Game is this one:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#3x3t5:51b2a21b5b2a1a13c2b2a2133a3
-        let sut = LoopyGreatHexagonGridGenerator(width: 3, height: 3)
-        sut.setHint(faceIndex: 0, hint: 5)
-        sut.setHint(faceIndex: 1, hint: 1)
-        sut.setHint(faceIndex: 4, hint: 2)
-        sut.setHint(faceIndex: 5, hint: 1)
-        sut.setHint(faceIndex: 9, hint: 2)
-        sut.setHint(faceIndex: 10, hint: 5)
-        sut.setHint(faceIndex: 12, hint: 2)
-        sut.setHint(faceIndex: 15, hint: 1)
-        sut.setHint(faceIndex: 16, hint: 1)
-        sut.setHint(faceIndex: 18, hint: 3)
-        sut.setHint(faceIndex: 22, hint: 2)
-        sut.setHint(faceIndex: 26, hint: 2)
-        sut.setHint(faceIndex: 27, hint: 2)
-        sut.setHint(faceIndex: 28, hint: 1)
-        sut.setHint(faceIndex: 29, hint: 3)
-        sut.setHint(faceIndex: 30, hint: 3)
-        sut.setHint(faceIndex: 32, hint: 3)
+        let gen = LoopyGreatHexagonGridGenerator(width: 3, height: 3)
+        gen.loadHints(from: "51b2a21b5b2a1a13c2b2a2133a3")
         
-        let solver = Solver(grid: sut.generate())
+        let solver = Solver(grid: gen.generate())
         
         let result = solver.solve()
         
@@ -330,46 +314,10 @@ class SolverTests: XCTestCase {
         // Game is this one:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#5x4t5:53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d
         let gen = LoopyGreatHexagonGridGenerator(width: 5, height: 4)
-        // TODO: Make loadHints work for this
-//        gen.loadHints(from: "53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d")
-        gen.setHint(faceIndex: 0, hint: 5)
-        gen.setHint(faceIndex: 1, hint: 3)
-        gen.setHint(faceIndex: 4, hint: 2)
-        gen.setHint(faceIndex: 5, hint: 2)
-        gen.setHint(faceIndex: 10, hint: 5)
-        gen.setHint(faceIndex: 13, hint: 2)
-        gen.setHint(faceIndex: 15, hint: 2)
-        gen.setHint(faceIndex: 17, hint: 2)
-        gen.setHint(faceIndex: 19, hint: 2)
-        gen.setHint(faceIndex: 21, hint: 2)
-        gen.setHint(faceIndex: 22, hint: 5)
-        gen.setHint(faceIndex: 29, hint: 2)
-        gen.setHint(faceIndex: 33, hint: 2)
-        gen.setHint(faceIndex: 34, hint: 1)
-        gen.setHint(faceIndex: 35, hint: 2)
-        gen.setHint(faceIndex: 36, hint: 2)
-        gen.setHint(faceIndex: 37, hint: 2)
-        gen.setHint(faceIndex: 38, hint: 1)
-        gen.setHint(faceIndex: 39, hint: 2)
-        gen.setHint(faceIndex: 44, hint: 2)
-        gen.setHint(faceIndex: 48, hint: 5)
-        gen.setHint(faceIndex: 50, hint: 1)
-        gen.setHint(faceIndex: 52, hint: 4)
-        gen.setHint(faceIndex: 53, hint: 1)
-        gen.setHint(faceIndex: 57, hint: 2)
-        gen.setHint(faceIndex: 60, hint: 2)
-        gen.setHint(faceIndex: 63, hint: 3)
-        gen.setHint(faceIndex: 68, hint: 3)
-        gen.setHint(faceIndex: 69, hint: 2)
-        gen.setHint(faceIndex: 70, hint: 0)
-        gen.setHint(faceIndex: 71, hint: 1)
-        gen.setHint(faceIndex: 74, hint: 1)
-        gen.setHint(faceIndex: 78, hint: 5)
-        gen.setHint(faceIndex: 80, hint: 4)
-        gen.setHint(faceIndex: 83, hint: 2)
+        gen.loadHints(from: "53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d")
         
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 26
+        solver.maxNumberOfGuesses = 58
         
         let result = solver.solve()
         
@@ -411,6 +359,23 @@ class SolverTests: XCTestCase {
         
         XCTAssertEqual(result, .solved)
         let printer = LoopyGridPrinter(bufferWidth: 64, bufferHeight: 43)
+        printer.printGrid(grid: solver.grid)
+    }
+    
+    func testSolveHardHoneycomb11x11() {
+        // Attempt solving a honeycomb game grid.
+        // Game is this one:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#11x11t2:5d4a3a2a4a4c5g34d204a45314d433a2a543a2b5344c4545b5b4a3a4c4b44c34a4a53b3a334a4a3a23a5a5b45543
+        let gen = LoopyHoneycombGridGenerator(width: 11, height: 11)
+        gen.loadHints(from: "5d4a3a2a4a4c5g34d204a45314d433a2a543a2b5344c4545b5b4a3a4c4b44c34a4a53b3a334a4a3a23a5a5b45543")
+        
+        let solver = Solver(grid: gen.generate())
+        solver.maxNumberOfGuesses = 55
+        
+        let result = solver.solve()
+        
+        XCTAssertEqual(result, .solved)
+        let printer = LoopyGridPrinter(bufferWidth: 70, bufferHeight: 48)
         printer.printGrid(grid: solver.grid)
     }
 }
