@@ -3,6 +3,8 @@ import Foundation
 /// Helper for printing grids and other 2D shapes made of ASCII characters to the
 /// console using ASCII text.
 open class ConsolePrintBuffer {
+    public var target: ConsolePrintTarget
+    
     private var buffer: [ConsoleCharacter] = []
     
     /// Used when diffing print
@@ -16,7 +18,17 @@ open class ConsolePrintBuffer {
     /// text, green for added text, and white for unchanged)
     public var diffingPrint = false
     
+    public init(target: ConsolePrintTarget, bufferWidth: Int, bufferHeight: Int) {
+        self.target = target
+        self.bufferWidth = bufferWidth
+        self.bufferHeight = bufferHeight
+        
+        // Initialize buffer string
+        resetBuffer()
+    }
+    
     public init(bufferWidth: Int, bufferHeight: Int) {
+        self.target = StandardOutputConsolePrintTarget()
         self.bufferWidth = bufferWidth
         self.bufferHeight = bufferHeight
         
@@ -173,15 +185,6 @@ open class ConsolePrintBuffer {
         }
     }
     
-    private func line(index: Int) -> String {
-        let offset = index * bufferWidth
-        let offsetNext = (index + 1) * bufferWidth
-        
-        let offNext = offsetNext - 1
-        
-        return buffer[offset..<offNext].map { $0.string() }.joined()
-    }
-    
     private func calculateDiffPrint(old: String, new: String) -> String {
         // Debug means Xcode console. Xcode console means no ANSI color output!
         #if Xcode
@@ -237,9 +240,9 @@ open class ConsolePrintBuffer {
         if !_storingDiff {
             // Calc diff
             if let last = lastPrintBuffer {
-                Swift.print(calculateDiffPrint(old: last, new: newBuffer))
+                target.print(calculateDiffPrint(old: last, new: newBuffer))
             } else {
-                Swift.print(newBuffer)
+                target.print(newBuffer)
             }
         }
         
@@ -248,7 +251,9 @@ open class ConsolePrintBuffer {
     
     private func getPrintBuffer(trimming: Bool = true) -> String {
         if !trimming {
-            return buffer.map { $0.string() }.joined()
+            return buffer
+                .map { $0.string(colorized: target.supportsTerminalColors) }
+                .joined()
         }
         
         var maxY = 0
@@ -271,6 +276,17 @@ open class ConsolePrintBuffer {
             acc += l + "\n"
         }
         return acc
+    }
+    
+    private func line(index: Int) -> String {
+        let offset = index * bufferWidth
+        let offsetNext = (index + 1) * bufferWidth
+        
+        let offNext = offsetNext - 1
+        
+        return buffer[offset..<offNext]
+            .map { $0.string(colorized: target.supportsTerminalColors) }
+            .joined()
     }
     
     /// Joins dashes and vertical bars into box drawing ASCII chars
@@ -364,8 +380,8 @@ open class ConsolePrintBuffer {
             self.color = color
         }
         
-        func string() -> String {
-            if let color = color {
+        func string(colorized: Bool) -> String {
+            if colorized, let color = color {
                 return String(character).terminalColorize(color)
             }
             
