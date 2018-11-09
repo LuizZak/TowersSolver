@@ -17,6 +17,7 @@ class LoopyGreatHexagonGridGeneratorTests: XCTestCase {
     func testFaceCount() {
         let makeCount = LoopyGreatHexagonGridGenerator.faceCountForGrid
         
+        // Basic tests
         XCTAssertEqual(makeCount(0, 0), 0)
         XCTAssertEqual(makeCount(1, 0), 0)
         XCTAssertEqual(makeCount(1, 1), 1)
@@ -27,5 +28,19 @@ class LoopyGreatHexagonGridGeneratorTests: XCTestCase {
         XCTAssertEqual(makeCount(2, 3), 19)
         XCTAssertEqual(makeCount(4, 3), 47)
         XCTAssertEqual(makeCount(4, 5), 87)
+        
+        // Wide-range tests
+        var sizes: [Int] = []
+        
+        for h in 4..<10 {
+            for w in 4..<10 {
+                sizes.append(makeCount(w, h))
+            }
+        }
+        
+        XCTAssertEqual(sizes, [67, 87, 107, 127, 147, 167, 87, 113, 139, 165,
+                               191, 217, 107, 139, 171, 203, 235, 267, 127,
+                               165, 203, 241, 279, 317, 147, 191, 235, 279,
+                               323, 367, 167, 217, 267, 317, 367, 417])
     }
 }

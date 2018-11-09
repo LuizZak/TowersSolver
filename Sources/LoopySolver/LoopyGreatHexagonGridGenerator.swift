@@ -23,29 +23,22 @@ public class LoopyGreatHexagonGridGenerator: BaseLoopyGridGenerator {
     }
     
     static func faceCountForGrid(width: Int, height: Int) -> Int {
-        var facesCount = 0
+        // To help with type resolution bellow
+        let nonzero: (Int) -> Int = { max(0, $0) }
+        
+        var facesCount: Int =
+            width * height
+                // triangle bellow left
+                + nonzero(nonzero(width - 1) * (height - 1))
+                // square bellow hexagon
+                + nonzero(height - 1) * width
+                // triangle bellow right
+                + nonzero(nonzero(width - 1) * (height - 1))
         
         for y in 0..<height {
             for x in 0..<width {
-                facesCount += 1
-                
                 /* square below left */
                 if ((x > 0) && (((x % 2) == 0) || (y < height - 1))) {
-                    facesCount += 1
-                }
-                
-                /* Triangle below left */
-                if ((x > 0) && (y < height - 1)) {
-                    facesCount += 1
-                }
-                
-                /* square below hexagon */
-                if (y < height - 1) {
-                    facesCount += 1
-                }
-                
-                /* Triangle below right */
-                if ((x < width - 1) && (y < height - 1)) {
                     facesCount += 1
                 }
                 
