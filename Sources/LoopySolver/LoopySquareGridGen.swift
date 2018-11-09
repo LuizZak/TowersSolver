@@ -38,24 +38,16 @@ public class LoopySquareGridGen: BaseLoopyGridGenerator {
     public override func generate() -> LoopyGrid {
         var grid = LoopyGrid()
         
-        for y in 0...height {
-            for x in 0...width {
-                grid.addVertex(Vertex(x: x, y: y))
-            }
-        }
-        
-        let stride = width + 1
-        
         for y in 0..<height {
             for x in 0..<width {
-                let v1 = y * stride + x
-                let v2 = y * stride + x + 1
-                let v3 = (y + 1) * stride + x + 1
-                let v4 = (y + 1) * stride + x
-                
                 let hint = hintForFace(atX: x, y: y)
                 
-                grid.createFace(withVertexIndices: [v1, v2, v3, v4], hint: hint)
+                grid.createFace(withVertexIndices: [
+                    grid.addOrGetVertex(x: x, y: y),
+                    grid.addOrGetVertex(x: x + 1, y: y),
+                    grid.addOrGetVertex(x: x + 1, y: y + 1),
+                    grid.addOrGetVertex(x: x, y: y + 1)
+                ], hint: hint)
             }
         }
         

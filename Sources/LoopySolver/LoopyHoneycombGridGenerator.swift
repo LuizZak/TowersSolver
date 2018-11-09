@@ -29,10 +29,7 @@ public class LoopyHoneycombGridGenerator: BaseLoopyGridGenerator {
             for x in 0..<width {
                 // face centre
                 let cx = 3 * a * x
-                var cy = 2 * b * y
-                if x % 2 == 1 {
-                    cy += b
-                }
+                let cy = 2 * b * y + (x % 2) * b
                 
                 grid.createFace(withVertexIndices: [
                     grid.addOrGetVertex(x: cx - a, y: cy - b),
