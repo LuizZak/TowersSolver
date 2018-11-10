@@ -4,7 +4,7 @@ import XCTest
 class LoopyGreatHexagonGridGeneratorTests: XCTestCase {
     
     func testGenerate() {
-        let sut = LoopyGreatHexagonGridGenerator(width: 3, height: 3)
+        let sut = LoopyGreatHexagonGridGenerator(width: 4, height: 4)
         sut.setHint(faceIndex: 0, hint: 2)
         sut.setHint(faceIndex: 7, hint: 3)
         sut.setHint(faceIndex: 9, hint: 2)
@@ -15,6 +15,11 @@ class LoopyGreatHexagonGridGeneratorTests: XCTestCase {
     }
     
     func testFaceCount() {
+        let expectedCountIterations = [
+            67, 87, 107, 127, 147, 167, 87, 113, 139, 165, 191, 217, 107, 139,
+            171, 203, 235, 267, 127, 165, 203, 241, 279, 317, 147, 191, 235, 279,
+            323, 367, 167, 217, 267, 317, 367, 417
+        ]
         let makeCount = LoopyGreatHexagonGridGenerator.faceCountForGrid
         
         // Basic tests
@@ -30,17 +35,19 @@ class LoopyGreatHexagonGridGeneratorTests: XCTestCase {
         XCTAssertEqual(makeCount(4, 5), 87)
         
         // Wide-range tests
-        var sizes: [Int] = []
-        
-        for h in 4..<10 {
+        var sizeIterator = expectedCountIterations.makeIterator()
+        outerLoop: for h in 4..<10 {
             for w in 4..<10 {
-                sizes.append(makeCount(w, h))
+                guard let expected = sizeIterator.next() else {
+                    XCTFail("Ran out of sizes to compare before end of iterations")
+                    break outerLoop
+                }
+                let size = makeCount(w, h)
+                
+                if size != expected {
+                    XCTFail("Expected \(w)x\(h) to be \(expected), but found \(size): \(size - expected) difference")
+                }
             }
         }
-        
-        XCTAssertEqual(sizes, [67, 87, 107, 127, 147, 167, 87, 113, 139, 165,
-                               191, 217, 107, 139, 171, 203, 235, 267, 127,
-                               165, 203, 241, 279, 317, 147, 191, 235, 279,
-                               323, 367, 167, 217, 267, 317, 367, 417])
     }
 }
