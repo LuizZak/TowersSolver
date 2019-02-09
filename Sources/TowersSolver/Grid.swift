@@ -209,13 +209,13 @@ public enum Cell: Equatable {
 public extension Sequence where Iterator.Element == Cell {
     
     /// Returns `true` if all towers in this sequence have a solution assigned.
-    public func areSolved() -> Bool {
+    func areSolved() -> Bool {
         return !contains(where: { !$0.hasSolution })
     }
     
     /// For each cell in this sequence, returns the height associated with its
     /// solution. Places 0 on indexes of cells that where not solved yet.
-    public func solutionHeights() -> [Int] {
+    func solutionHeights() -> [Int] {
         return map { cell in cell.solution ?? 0 }
     }
 }

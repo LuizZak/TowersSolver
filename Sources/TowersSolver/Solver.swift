@@ -496,7 +496,7 @@ public extension Solver {
     /// Runs as many solving steps as possible before either solving the whole
     /// grid, or stopping after not being able to make any more attempts.
     @discardableResult
-    public func solve() -> Bool {
+    func solve() -> Bool {
         if resetGrid {
             // Fill in hints- these are required and are the basis for solving the
             // cells of the grid.
@@ -639,7 +639,7 @@ public extension Solver {
     /// Performs a single step of the solver.
     /// Returns if no more steps can be performed (either because the game is won
     /// or because the solver failed to solve the puzzle successfully).
-    public func step() -> Bool {
+    func step() -> Bool {
         
         // Check if any cell features empty cells (this means we ran out of
         // possibilities for one or more cells)
@@ -681,7 +681,7 @@ public extension Solver {
     /// with the visibility of the rows and columns, and each row/column has the
     /// precise count of tower heights (or doesn't have repeats, in case they are
     /// not fully solved yet.)
-    public func isConsistent() -> Bool {
+    func isConsistent() -> Bool {
         // Using `throw` to skip working on all lines, instead of simply returning
         // within `runStepAcrossLines` bellow, which would skip to the next line
         // and do the work again for that line.
@@ -742,7 +742,7 @@ public extension Solver {
     /// Empty grids (after proper pre-hint filling steps) usually mean no solutions
     /// are possible at this point because a cell cannot be filled with any valid
     /// value without duplicating a column/row.
-    public func hasEmptySolutionCells() -> Bool {
+    func hasEmptySolutionCells() -> Bool {
         return grid.cells.contains(where: { (cell) -> Bool in
             switch cell {
             case .empty:

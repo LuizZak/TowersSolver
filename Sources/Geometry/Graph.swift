@@ -99,13 +99,13 @@ public protocol Graph {
 // MARK: - Default Implementations
 public extension Graph {
     @inlinable
-    public func vertexIndex(_ vertex: Vertex) -> Int? {
-        return vertices.index(of: vertex)
+    func vertexIndex(_ vertex: Vertex) -> Int? {
+        return vertices.firstIndex(of: vertex)
     }
     
     @inlinable
-    public func vertexIndex(x: Vertex.Coordinate, y: Vertex.Coordinate) -> Int? {
-        return vertices.index { v -> Bool in
+    func vertexIndex(x: Vertex.Coordinate, y: Vertex.Coordinate) -> Int? {
+        return vertices.firstIndex { v -> Bool in
             v.x == x && v.y == y
         }
     }
@@ -113,7 +113,7 @@ public extension Graph {
 
 public extension Graph {
     @inlinable
-    public func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>] {
+    func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>] {
         let edges = self.edges(forFace: face)
         
         var edgesSet: Set<EdgeId> = []
@@ -133,12 +133,12 @@ public extension Graph {
     }
     
     @inlinable
-    public func singlePathEdges(fromEdge edge: EdgeId) -> Set<EdgeId> {
+    func singlePathEdges(fromEdge edge: EdgeId) -> Set<EdgeId> {
         return singlePathEdges(fromEdge: edge, includeTest: { _ in true })
     }
     
     @inlinable
-    public func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> Set<EdgeId> {
+    func singlePathEdges(fromEdge edge: EdgeId, includeTest: (EdgeId) -> Bool) -> Set<EdgeId> {
         var stack: [(pivot: EdgeId, previous: EdgeId?)] = []
         
         stack = [(edge, nil)]
@@ -195,7 +195,7 @@ public extension Graph {
     /// Returns `true` iff each edge on a given list is directly connected to the
     /// next, forming a singular chain.
     @inlinable
-    public func isUniqueSegment<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
+    func isUniqueSegment<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
         if edges.count == 0 {
             return false
         }
@@ -231,7 +231,7 @@ public extension Graph {
     /// Returns `true` iff all edges in a given list are connected, and they form
     /// a loop (i.e. all edges connected start-to-end).
     @inlinable
-    public func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
+    func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
         // Minimal number of edges connected to form a loop must be 3.
         if edges.count < 3 {
             return false

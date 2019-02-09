@@ -15,7 +15,7 @@ public class GridPrinter: ConsolePrintBuffer {
 
 public extension GridPrinter {
     
-    public func printGrid(grid: Grid) {
+    func printGrid(grid: Grid) {
         resetBuffer()
         
         // For visual hint
@@ -82,7 +82,7 @@ public extension GridPrinter {
         print()
     }
     
-    public static func printGrid(grid: Grid) {
+    static func printGrid(grid: Grid) {
         let printer = GridPrinter(bufferWidth: 80, bufferHeight: 35)
         printer.printGrid(grid: grid)
     }

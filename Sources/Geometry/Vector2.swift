@@ -54,42 +54,42 @@ extension Vector2: Comparable where T: Comparable {
 // MARK: - Basic operators
 public extension Vector2 where T: Numeric {
     @inlinable
-    public static func +(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    static func +(lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
     }
     
     @inlinable
-    public static func +=(lhs: inout Vector2, rhs: Vector2) {
+    static func +=(lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs + rhs
     }
     
     @inlinable
-    public static func -(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    static func -(lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
     }
     
     @inlinable
-    public static func -=(lhs: inout Vector2, rhs: Vector2) {
+    static func -=(lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs - rhs
     }
     
     @inlinable
-    public static func *(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    static func *(lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x * rhs.x, y: lhs.y * rhs.y)
     }
     
     @inlinable
-    public static func *=(lhs: inout Vector2, rhs: Vector2) {
+    static func *=(lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs * rhs
     }
     
     @inlinable
-    public static func *(lhs: Vector2, rhs: T) -> Vector2 {
+    static func *(lhs: Vector2, rhs: T) -> Vector2 {
         return Vector2(x: lhs.x * rhs, y: lhs.y * rhs)
     }
     
     @inlinable
-    public static func *=(lhs: inout Vector2, rhs: T) {
+    static func *=(lhs: inout Vector2, rhs: T) {
         lhs = lhs * rhs
     }
 }
@@ -97,13 +97,13 @@ public extension Vector2 where T: Numeric {
 // MARK: - Signed operators
 public extension Vector2 where T: SignedNumeric {
     @inlinable
-    public static prefix func -(lhs: Vector2) -> Vector2 {
+    static prefix func -(lhs: Vector2) -> Vector2 {
         return Vector2(x: -lhs.x, y: -lhs.y)
     }
     
     /// Returns a perpendicular vector to this Vector2
     @inlinable
-    public func perpendicular() -> Vector2 {
+    func perpendicular() -> Vector2 {
         return Vector2(x: -y, y: x)
     }
 }
@@ -111,32 +111,32 @@ public extension Vector2 where T: SignedNumeric {
 // MARK: - Binary Integers
 public extension Vector2 where T: BinaryInteger {
     @inlinable
-    public static var zero: Vector2 {
+    static var zero: Vector2 {
         return Vector2(x: T(), y: T())
     }
     
     @inlinable
-    public static var one: Vector2 {
+    static var one: Vector2 {
         return Vector2(x: T(1), y: T(1))
     }
     
     @inlinable
-    public static func /(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    static func /(lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
     }
     
     @inlinable
-    public static func /=(lhs: inout Vector2, rhs: Vector2) {
+    static func /=(lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs / rhs
     }
     
     @inlinable
-    public static func /(lhs: Vector2, rhs: T) -> Vector2 {
+    static func /(lhs: Vector2, rhs: T) -> Vector2 {
         return Vector2(x: lhs.x / rhs, y: lhs.y / rhs)
     }
     
     @inlinable
-    public static func /=(lhs: inout Vector2, rhs: T) {
+    static func /=(lhs: inout Vector2, rhs: T) {
         lhs = lhs / rhs
     }
 }
@@ -144,37 +144,37 @@ public extension Vector2 where T: BinaryInteger {
 // MARK: - Floating Point Numbers
 public extension Vector2 where T: FloatingPoint {
     @inlinable
-    public static var zero: Vector2 {
+    static var zero: Vector2 {
         return Vector2(x: T(0), y: T(0))
     }
     
     @inlinable
-    public static var one: Vector2 {
+    static var one: Vector2 {
         return Vector2(x: T(1), y: T(1))
     }
     
     @inlinable
-    public init(x: Int, y: Int) {
+    init(x: Int, y: Int) {
         self.init(x: T(x), y: T(y))
     }
     
     @inlinable
-    public static func /(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    static func /(lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
     }
     
     @inlinable
-    public static func /=(lhs: inout Vector2, rhs: Vector2) {
+    static func /=(lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs / rhs
     }
     
     @inlinable
-    public static func /(lhs: Vector2, rhs: T) -> Vector2 {
+    static func /(lhs: Vector2, rhs: T) -> Vector2 {
         return Vector2(x: lhs.x / rhs, y: lhs.y / rhs)
     }
     
     @inlinable
-    public static func /=(lhs: inout Vector2, rhs: T) {
+    static func /=(lhs: inout Vector2, rhs: T) {
         lhs = lhs / rhs
     }
 }

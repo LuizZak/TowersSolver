@@ -107,7 +107,7 @@ public protocol QuadTreePointValue: QuadTreeValue {
 }
 
 public extension QuadTreePointValue {
-    public var bounds: RectangleOf<NumberType> {
+    var bounds: RectangleOf<NumberType> {
         return RectangleOf<NumberType>(minimum: vector, maximum: vector)
     }
 }

@@ -3,7 +3,7 @@ public extension IntervalProtocol {
     ///
     /// Unlike intersection, overlap only accounts for overlappings that result
     /// in a > 0 resulting overlap interval
-    public func overlaps<I: IntervalProtocol>(_ other: I) -> Bool where I.Bounds == Bounds {
+    func overlaps<I: IntervalProtocol>(_ other: I) -> Bool where I.Bounds == Bounds {
         return start < other.end && other.start < end
     }
     
@@ -12,7 +12,7 @@ public extension IntervalProtocol {
     /// Unlike overlapping, intersection takes into account ends of intervals
     /// meeting when they otherwise do not have a positive shared overlapping
     /// interval.
-    public func intersects<I: IntervalProtocol>(_ other: I) -> Bool where I.Bounds == Bounds {
+    func intersects<I: IntervalProtocol>(_ other: I) -> Bool where I.Bounds == Bounds {
         return start <= other.end && other.start <= end
     }
 }
@@ -21,7 +21,7 @@ public extension ConstructibleIntervalProtocol {
     /// Returns the overlap with a given interval.
     ///
     /// Returns `nil`, in case no overlap is found.
-    public func overlap<I: IntervalProtocol>(_ other: I) -> Self? where I.Bounds == Bounds {
+    func overlap<I: IntervalProtocol>(_ other: I) -> Self? where I.Bounds == Bounds {
         if end <= other.start || other.end <= start {
             return nil
         }
@@ -34,7 +34,7 @@ public extension ConstructibleIntervalProtocol {
     
     /// Returns the union of this interval with another, such that the resulting
     /// interval is the minimal interval length capable of containing both intervals.
-    public func union<I: IntervalProtocol>(_ other: I) -> Self where I.Bounds == Bounds {
+    func union<I: IntervalProtocol>(_ other: I) -> Self where I.Bounds == Bounds {
         let low = min(start, other.start)
         let high = max(end, other.end)
         
@@ -48,7 +48,7 @@ public extension Sequence where Element: ConstructibleIntervalProtocol {
     ///
     /// Effectively simplifies long interwinded interval lists with many overlapping
     /// intervals into single, longer segments that cover the same interval ranges.
-    public func compactIntervals() -> [Element] {
+    func compactIntervals() -> [Element] {
         // Sort intervals first
         let arranged = sorted { $0.start < $1.start }
         

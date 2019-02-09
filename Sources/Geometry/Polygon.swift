@@ -35,7 +35,7 @@ public struct Polygon<T: Numeric & Comparable & Hashable> {
 public extension Polygon where T: FloatingPoint {
     
     /// Returns whether a global point is inside this body
-    public func contains(_ pt: Vector) -> Bool {
+    func contains(_ pt: Vector) -> Bool {
         guard vertices.count > 2, var v1 = vertices.last else {
             return false
         }

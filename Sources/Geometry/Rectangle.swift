@@ -52,11 +52,9 @@ public struct RectangleOf<T: Numeric & Hashable & Comparable>: Hashable {
         }
     }
     
-    public var hashValue: Int {
-        var hash = 13
-        hash = (hash * 7) + minimum.hashValue
-        hash = (hash * 7) + maximum.hashValue
-        return hash
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(minimum)
+        hasher.combine(minimum)
     }
     
     public static func ==(lhs: RectangleOf, rhs: RectangleOf) -> Bool {

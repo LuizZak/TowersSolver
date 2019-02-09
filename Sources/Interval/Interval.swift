@@ -34,10 +34,8 @@ public struct Interval<Bounds: Comparable>: ConstructibleIntervalProtocol {
 }
 
 extension Interval: Hashable where Bounds: Hashable {
-    public var hashValue: Int {
-        var hash = 3
-        hash = hash * 7 + start.hashValue
-        hash = hash * 7 + end.hashValue
-        return hash
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(start)
+        hasher.combine(end)
     }
 }
