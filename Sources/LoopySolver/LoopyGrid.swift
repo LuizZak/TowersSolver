@@ -513,13 +513,13 @@ public struct LoopyGrid: Equatable, Graph {
         let edgeId = Edge.Id(edges.count)
         
         for el in _edgesPerVertex[start] {
-            _edgesConnectedToEdge[el, default: []].append(edgeId)
+            _backing._edgesConnectedToEdge[el, default: []].append(edgeId)
         }
         for el in _edgesPerVertex[end] {
-            _edgesConnectedToEdge[el, default: []].append(edgeId)
+            _backing._edgesConnectedToEdge[el, default: []].append(edgeId)
         }
         
-        _edgesConnectedToEdge[edgeId, default: []]
+        _backing._edgesConnectedToEdge[edgeId, default: []]
             .append(contentsOf:
                 _edgesPerVertex[start]
                     + _edgesPerVertex[end])
