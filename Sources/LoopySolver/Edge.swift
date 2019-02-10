@@ -80,7 +80,7 @@ public struct Edge: Equatable, EdgeProtocol {
     /// - marked: Edge is marked as part of the solution.
     /// - disabled: Edge is disabled. Used for marking an edge as definitely not
     /// part of the solution.
-    public enum State {
+    public enum State: CustomStringConvertible {
         case normal
         case marked
         case disabled
@@ -90,15 +90,19 @@ public struct Edge: Equatable, EdgeProtocol {
         public var isEnabled: Bool {
             return self != .disabled
         }
+        
+        public var description: String {
+            switch self {
+            case .normal:
+                return "n"
+            case .marked:
+                return "m"
+            case .disabled:
+                return "d"
+            }
+        }
     }
 }
-
-//extension Int: EdgeReferenceConvertible {
-//    @inlinable
-//    public var edgeIndex: Int {
-//        return self
-//    }
-//}
 
 extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
     @inlinable

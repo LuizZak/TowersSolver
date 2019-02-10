@@ -300,9 +300,16 @@ public final class Solver {
             vertEntries.append(VertEntry(edges: edgesToPlay, priority: priority))
         }
         
-        // Sort entries by number of faces the play would affect to increase chances
-        // we find a definite outcome of valid/invalid from the play
-        for entry in vertEntries.sorted(by: { $0.priority > $1.priority }) {
+        // Sort entries by number of faces the play would affect to increase
+        // chances we find a definite outcome of valid/invalid from the play
+        //
+        // Attempt to make the sort as stable as possible to make execution more
+        // predictable, aiding in debugging if something goes awry
+        vertEntries.stableSort(by: { (v1, v2) in
+            return v1.priority > v2.priority
+        })
+        
+        for entry in vertEntries {
             plays.append(contentsOf: entry.edges)
         }
         
