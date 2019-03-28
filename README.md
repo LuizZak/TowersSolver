@@ -59,7 +59,7 @@ But other puzzle combinations can be fed by changing the initial grid in `main.s
 
 ## Building and Running
 
-Requires: Xcode 9.3 & Swift 4.1
+Requires: Xcode 10.2 & Swift 5.0
 
 - Clone the project and run `$ swift build`
 - Run the resulting App that was built, optionally opting-in running in interactive mode (which I recommend, cause it's cool to see the solver's thought process).
