@@ -616,8 +616,8 @@ public extension LoopyGrid {
     /// Sets the state of the given edges on this loopy grid.
     @inlinable
     mutating func setEdges<S: Sequence>(state: Edge.State,
-                                               forEdges edges: S,
-                                               where predicate: (Edge) -> Bool) where S.Element == EdgeId {
+                                        forEdges edges: S,
+                                        where predicate: (Edge) -> Bool) where S.Element == EdgeId {
         
         for edge in edges {
             withEdge(edge) {
@@ -662,7 +662,7 @@ public extension LoopyGrid {
     /// Returns the shared vertices between two faces.
     @inlinable
     func sharedVertices(between first: FaceReferenceConvertible,
-                               _ second: FaceReferenceConvertible) -> [Int] {
+                        _ second: FaceReferenceConvertible) -> [Int] {
         let first = faces[first.id.value]
         let second = faces[second.id.value]
         
@@ -717,7 +717,7 @@ public extension LoopyGrid {
     /// Comparison ignores order of vertices between edges.
     @inlinable
     func edgesMatchVertices(_ first: EdgeReferenceConvertible,
-                                   _ second: EdgeReferenceConvertible) -> Bool {
+                            _ second: EdgeReferenceConvertible) -> Bool {
         let first = first.edgeIndex
         let second = second.edgeIndex
         
@@ -794,7 +794,7 @@ public extension LoopyGrid {
     /// If the two faces do not share an edge, nil is returned, instead.
     @inlinable
     func sharedEdge(between first: FaceReferenceConvertible,
-                           _ second: FaceReferenceConvertible) -> Edge.Id? {
+                    _ second: FaceReferenceConvertible) -> Edge.Id? {
         
         let face1 = faces[first.id.value]
         let face2 = faces[second.id.value]
@@ -876,7 +876,7 @@ public extension LoopyGrid {
     /// Returns `true` if two given faces share a common edge.
     @inlinable
     func facesShareEdge(_ face1: FaceReferenceConvertible,
-                               _ face2: FaceReferenceConvertible) -> Bool {
+                        _ face2: FaceReferenceConvertible) -> Bool {
         
         let face1 = faces[face1.id.value]
         let face2 = faces[face2.id.value]
