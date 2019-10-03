@@ -308,7 +308,7 @@ open class ConsolePrintBuffer {
             }
         }
         
-        var substitutions: [Sides: Character] = [
+        let substitutions: [Sides: Character] = [
             [.left]:   "─",
             [.right]:  "─",
             [.top]:    "│",
