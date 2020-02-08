@@ -743,7 +743,7 @@ public extension Solver {
     /// are possible at this point because a cell cannot be filled with any valid
     /// value without duplicating a column/row.
     func hasEmptySolutionCells() -> Bool {
-        return grid.cells.contains(where: { (cell) -> Bool in
+        return grid.cells.contains { (cell) -> Bool in
             switch cell {
             case .empty:
                 return true
@@ -752,6 +752,6 @@ public extension Solver {
             default:
                 return false
             }
-        })
+        }
     }
 }

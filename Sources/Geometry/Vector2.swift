@@ -183,6 +183,7 @@ public extension Vector2 where T: FloatingPoint {
 
 /// Returns the minimal vector across two vectors.
 /// The returned Vector2 has the smallest x,y coordinates of both vectors.
+@inlinable
 public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
     var res = a
     
@@ -194,6 +195,7 @@ public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
 
 /// Returns the minimal vector across two vectors.
 /// The returned Vector2 has the largest x,y coordinates of both vectors.
+@inlinable
 public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
     var res = a
     
@@ -206,6 +208,7 @@ public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
 /// Returns the minimal vector across the given vectors.
 /// The returned Vector2 has the smallest x,y coordinates found on the vectors
 /// list.
+@inlinable
 public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T> {
     return rem.reduce(min(a, b), min)
 }
@@ -213,6 +216,7 @@ public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<
 /// Returns the maximal vector across the given vectors.
 /// The returned Vector2 has the largest x,y coordinates found on the vectors
 /// list.
+@inlinable
 public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T> {
     return rem.reduce(max(a, b), max)
 }
