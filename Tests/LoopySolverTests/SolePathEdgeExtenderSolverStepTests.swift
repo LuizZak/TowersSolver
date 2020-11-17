@@ -186,6 +186,5 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(7), [.marked, .disabled, .marked, .disabled])
         // 3, 3
         XCTAssertEqual(edgeStatesForFace(8), [.disabled, .marked, .marked, .disabled])
-        LoopyGridPrinter(bufferWidth: 14, bufferHeight: 7).printGrid(grid: result)
     }
 }

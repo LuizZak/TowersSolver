@@ -284,7 +284,7 @@ class LoopyGridPrinterTests: XCTestCase {
 
 private extension LoopyGridPrinterTests {
     
-    func assertPrintEquals(_ expected: String, line: Int = #line) {
+    func assertPrintEquals(_ expected: String, line: UInt = #line) {
         // Strip trailing whitespace (except newlines) and lines which are only
         // whitespace (including newline)
         let actual = target.buffer
@@ -302,8 +302,9 @@ private extension LoopyGridPrinterTests {
             .joined(separator: "\n")
         
         if actual != expected {
-            recordFailure(withDescription: "\(actual)\n\nis not equal to expected\n\n\(expected)",
-                          inFile: #file, atLine: line, expected: true)
+            XCTFail("\(actual)\n\nis not equal to expected\n\n\(expected)",
+                    file: #filePath,
+                    line: line)
         }
     }
 }

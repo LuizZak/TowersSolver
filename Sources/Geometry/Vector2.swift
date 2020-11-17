@@ -6,14 +6,14 @@ public typealias IntPoint = Vector2<Int>
 
 /// A protocol for vector types
 public protocol VectorType {
-    associatedtype Coordinate
+    associatedtype Coordinate: Comparable
     
     var x: Coordinate { get }
     var y: Coordinate { get }
 }
 
 /// Represents a vertex that has up to 4 cardinal connections to other vertices.
-public struct Vector2<T>: VectorType {
+public struct Vector2<T: Comparable>: VectorType {
     public var x: T
     public var y: T
     
@@ -22,14 +22,7 @@ public struct Vector2<T>: VectorType {
         self.x = x
         self.y = y
     }
-}
-
-// MARK: - Equatable / Hashable
-extension Vector2: Equatable where T: Equatable { }
-extension Vector2: Hashable where T: Hashable { }
-
-// MARK: - Comparison
-extension Vector2: Comparable where T: Comparable {
+    
     @inlinable
     public static func <(lhs: Vector2, rhs: Vector2) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y
@@ -50,6 +43,10 @@ extension Vector2: Comparable where T: Comparable {
         return lhs.x >= rhs.x && lhs.y >= rhs.y
     }
 }
+
+// MARK: - Equatable / Hashable
+extension Vector2: Equatable where T: Equatable { }
+extension Vector2: Hashable where T: Hashable { }
 
 // MARK: - Basic operators
 public extension Vector2 where T: Numeric {

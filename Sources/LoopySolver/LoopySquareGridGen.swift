@@ -1,5 +1,3 @@
-import Geometry
-
 /// Grid generator that generates loopy grid with regular square grid patterns.
 public class LoopySquareGridGen: BaseLoopyGridGenerator {
     public let width: Int
