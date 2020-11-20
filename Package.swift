@@ -17,6 +17,7 @@ let package = Package(
         .target(name: "Geometry", dependencies: ["Commons"]),
         .target(name: "TowersSolver", dependencies: ["Console", "Geometry"]),
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
+        .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "App", dependencies: ["TowersSolver"]),
         // Tests
         .testTarget(
@@ -43,6 +44,11 @@ let package = Package(
             name: "LoopySolverTests",
             dependencies: ["LoopySolver"],
             path: "Tests/LoopySolverTests"
+        ),
+        .testTarget(
+            name: "NetSolverTests",
+            dependencies: ["NetSolver"],
+            path: "Tests/NetSolverTests"
         )
     ],
     swiftLanguageVersions: [.v5]
