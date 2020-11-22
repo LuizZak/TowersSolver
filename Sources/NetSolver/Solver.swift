@@ -2,3 +2,7 @@
 public final class Solver {
     
 }
+
+extension Solver {
+    
+}

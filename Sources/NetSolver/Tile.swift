@@ -1,15 +1,36 @@
 /// A Net tile
 public struct Tile {
-    public var orientation: Orientation
     public var kind: Kind
+    public var orientation: Orientation
     
-    public init(orientation: Orientation, kind: Kind) {
-        self.orientation = orientation
+    /// Whether this tile has been marked as locked by the solver, indicating
+    /// that it has been solved.
+    public var isLocked: Bool
+    
+    public init(kind: Kind, orientation: Orientation, isLocked: Bool = false) {
         self.kind = kind
+        self.orientation = orientation
+        self.isLocked = isLocked
     }
 }
 
 public extension Tile {
+    /// Represents the type of a Net tile.
+    ///
+    /// - `I`: The straight line piece, connecting two opposing edges.
+    /// - `L`: The corner piece, connecting two adjacent edges.
+    /// - `T`: The 'T' piece, connecting three edges.
+    /// - `endPiece`: The square piece with only one connected edge, representing
+    /// a 'deadend'.
+    ///
+    /// - seealso: `Orientation`
+    enum Kind {
+        case I
+        case L
+        case T
+        case endPiece
+    }
+    
     /// Represents the orientation of a Net tile.
     ///
     /// - For I pieces, north and south represent a vertical orientation, while
@@ -19,30 +40,14 @@ public extension Tile {
     /// clockwise;
     /// - For T pieces, north has the left, top and right sides connected, with
     /// east, south and west rotating the tile 90 degrees;
-    /// - For square pieces, the orientation represent the side of the tile with
+    /// - For end pieces, the orientation represent the side of the tile with
     /// the connection exposed.
     ///
     /// - seealso: `Kind`
-    enum Orientation {
+    enum Orientation: CaseIterable {
         case north
         case east
         case south
         case west
-    }
-    
-    /// Represents the type of a Net tile.
-    ///
-    /// - `I`: The straight line piece, connecting two opposing edges.
-    /// - `L`: The corner piece, connecting two adjacent edges.
-    /// - `T`: The 'T' piece, connecting three edges.
-    /// - `square`: The square piece with only one connected edge, representing
-    /// a 'deadend'.
-    ///
-    /// - seealso: `Orientation`
-    enum Kind {
-        case I
-        case L
-        case T
-        case square
     }
 }

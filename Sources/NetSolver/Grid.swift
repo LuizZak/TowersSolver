@@ -29,7 +29,7 @@ public struct Grid {
         tiles.removeAll()
         
         for _ in 0..<columns {
-            let row = Array(repeating: Tile(orientation: .north, kind: .I), count: rows)
+            let row = Array(repeating: Tile(kind: .I, orientation: .north), count: rows)
             
             tiles.append(row)
         }
