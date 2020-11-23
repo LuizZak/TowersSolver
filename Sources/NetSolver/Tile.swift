@@ -20,15 +20,15 @@ public extension Tile {
     /// - `I`: The straight line piece, connecting two opposing edges.
     /// - `L`: The corner piece, connecting two adjacent edges.
     /// - `T`: The 'T' piece, connecting three edges.
-    /// - `endPiece`: The square piece with only one connected edge, representing
-    /// a 'deadend'.
+    /// - `endPoint`: The square piece with only one connected edge, representing
+    /// a dead end.
     ///
     /// - seealso: `Orientation`
     enum Kind {
         case I
         case L
         case T
-        case endPiece
+        case endPoint
     }
     
     /// Represents the orientation of a Net tile.

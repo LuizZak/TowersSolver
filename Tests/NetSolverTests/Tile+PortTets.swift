@@ -36,13 +36,13 @@ class Tile_PortTets: XCTestCase {
     }
     
     func testPortsEndPiece() {
-        assertPortsForTile(Tile(kind: .endPiece, orientation: .north),
+        assertPortsForTile(Tile(kind: .endPoint, orientation: .north),
                            match: [.top])
-        assertPortsForTile(Tile(kind: .endPiece, orientation: .east),
+        assertPortsForTile(Tile(kind: .endPoint, orientation: .east),
                            match: [.right])
-        assertPortsForTile(Tile(kind: .endPiece, orientation: .south),
+        assertPortsForTile(Tile(kind: .endPoint, orientation: .south),
                            match: [.bottom])
-        assertPortsForTile(Tile(kind: .endPiece, orientation: .west),
+        assertPortsForTile(Tile(kind: .endPoint, orientation: .west),
                            match: [.left])
     }
     
@@ -80,13 +80,13 @@ class Tile_PortTets: XCTestCase {
     }
     
     func testPortsForTilePiece() {
-        assertPortsForTile(kind: .endPiece, orientation: .north,
+        assertPortsForTile(kind: .endPoint, orientation: .north,
                            match: [.top])
-        assertPortsForTile(kind: .endPiece, orientation: .east,
+        assertPortsForTile(kind: .endPoint, orientation: .east,
                            match: [.right])
-        assertPortsForTile(kind: .endPiece, orientation: .south,
+        assertPortsForTile(kind: .endPoint, orientation: .south,
                            match: [.bottom])
-        assertPortsForTile(kind: .endPiece, orientation: .west,
+        assertPortsForTile(kind: .endPoint, orientation: .west,
                            match: [.left])
     }
 }

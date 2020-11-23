@@ -23,7 +23,7 @@ extension Tile {
         case .T:
             return [edgePort.leftRotated, edgePort, edgePort.rightRotated]
         // End piece
-        case .endPiece:
+        case .endPoint:
             return [edgePort]
         }
     }

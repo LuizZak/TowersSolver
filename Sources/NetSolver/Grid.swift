@@ -10,14 +10,14 @@ public struct Grid {
     ///
     /// - Parameters:
     ///   - rows: The number of horizontal rows on the grid. Must be greater than
-    ///   1.
+    ///   0.
     ///   - columns: The number of vertical columns on the grid. Must be greater
-    ///   than 1.
+    ///   than 0.
     ///
-    /// - precondition: `rows > 1 && columns > 1`
+    /// - precondition: `rows > 0 && columns > 0`
     public init(rows: Int, columns: Int) {
-        precondition(rows > 1, "Must have more than one row")
-        precondition(columns > 1, "Must have more than one column")
+        precondition(rows > 0, "Must have at least one row")
+        precondition(columns > 0, "Must have at least one column")
         
         self.rows = rows
         self.columns = columns

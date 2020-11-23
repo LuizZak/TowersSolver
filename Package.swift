@@ -7,7 +7,8 @@ let package = Package(
     name: "TowersSolver",
     products: [
         .executable(name: "App", targets: ["App"]),
-        .library(name: "LoopySolver", targets: ["LoopySolver"])
+        .library(name: "LoopySolver", targets: ["LoopySolver"]),
+        .library(name: "NetSolver", targets: ["NetSolver"])
     ],
     dependencies: [],
     targets: [
