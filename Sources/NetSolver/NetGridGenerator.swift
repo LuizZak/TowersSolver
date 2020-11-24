@@ -16,10 +16,6 @@ public class NetGridGenerator {
         self.columns = columns
     }
     
-    private func tileFromEncoded(_ value: Int) -> Tile {
-        
-    }
-    
     public func loadGameState(_ state: String) {
         var index = state.startIndex
         
@@ -35,9 +31,9 @@ public class NetGridGenerator {
                 case ascii(for: "0")...ascii(for: "9"):
                     charInt = char - ascii(for: "0")
                 case ascii(for: "a")...ascii(for: "f"):
-                    charInt = char - ascii(for: "a")
+                    charInt = char - ascii(for: "a") + 10
                 case ascii(for: "A")...ascii(for: "F"):
-                    charInt = char - ascii(for: "A")
+                    charInt = char - ascii(for: "A") + 10
                 default:
                     continue
                 }
@@ -75,5 +71,23 @@ public class NetGridGenerator {
             }
         }
         */
+    }
+}
+
+extension NetGridGenerator {
+    static func tileForEncoded(_ value: Int) -> Tile? {
+        /* Direction and other bitfields */
+        let r = 0x01
+        let u = 0x02
+        let l = 0x04
+        let d = 0x08
+        let locked = 0x10
+        let active = 0x20
+        
+        if value == 0 {
+            return nil
+        }
+        
+        return nil
     }
 }

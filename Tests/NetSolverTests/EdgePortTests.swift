@@ -29,4 +29,11 @@ class EdgePortTests: XCTestCase {
         XCTAssertEqual(Tile.Orientation.south.asEdgePort, .bottom)
         XCTAssertEqual(Tile.Orientation.west.asEdgePort, .left)
     }
+    
+    func testAsOrientation() {
+        XCTAssertEqual(EdgePort.top.asOrientation, .north)
+        XCTAssertEqual(EdgePort.right.asOrientation, .east)
+        XCTAssertEqual(EdgePort.bottom.asOrientation, .south)
+        XCTAssertEqual(EdgePort.left.asOrientation, .west)
+    }
 }

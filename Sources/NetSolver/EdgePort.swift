@@ -6,6 +6,12 @@ public enum EdgePort: Int {
     case left
 }
 
+extension EdgePort: Comparable {
+    public static func < (lhs: EdgePort, rhs: EdgePort) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
+}
+
 public extension EdgePort {
     /// Returns the opposite edge for this edge port, that is, inverting top
     /// to bottom/left to right and vice-versa
@@ -37,6 +43,22 @@ public extension EdgePort {
         case .right:  return .bottom
         case .bottom: return .left
         case .left:   return .top
+        }
+    }
+}
+
+public extension EdgePort {
+    /// Returns the equivalent orientation for this edge port
+    var asOrientation: Tile.Orientation {
+        switch self {
+        case .top:
+            return .north
+        case .right:
+            return .east
+        case .bottom:
+            return .south
+        case .left:
+            return .west
         }
     }
 }
