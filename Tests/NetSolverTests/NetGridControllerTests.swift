@@ -10,7 +10,7 @@ class NetGridControllerTests: XCTestCase {
         grid.tiles[0][3].orientation = .west
         let controller = NetGridController(grid: grid)
         
-        XCTAssertEqual(controller.orientations(forRow: 0), [.north, .east, .south, .west])
+        XCTAssertEqual(controller.tileOrientations(forRow: 0), [.north, .east, .south, .west])
     }
     
     func testShuffle() {
@@ -22,10 +22,10 @@ class NetGridControllerTests: XCTestCase {
         
         controller.shuffle(using: &rng)
         
-        XCTAssertEqual(controller.orientations(forRow: 0), [.north, .north, .east, .south])
-        XCTAssertEqual(controller.orientations(forRow: 1), [.south, .west, .west, .west])
-        XCTAssertEqual(controller.orientations(forRow: 2), [.east, .east, .south, .east])
-        XCTAssertEqual(controller.orientations(forRow: 3), [.north, .west, .north, .north])
+        XCTAssertEqual(controller.tileOrientations(forRow: 0), [.north, .north, .east, .south])
+        XCTAssertEqual(controller.tileOrientations(forRow: 1), [.south, .west, .west, .west])
+        XCTAssertEqual(controller.tileOrientations(forRow: 2), [.east, .east, .south, .east])
+        XCTAssertEqual(controller.tileOrientations(forRow: 3), [.north, .west, .north, .north])
     }
     
     func testShuffleRotateLockedTilesFalse() {
@@ -36,8 +36,8 @@ class NetGridControllerTests: XCTestCase {
         
         controller.shuffle(rotateLockedTiles: false)
         
-        XCTAssertEqual(controller.orientations(forRow: 0)[0], .north)
-        XCTAssertEqual(controller.orientations(forRow: 3)[3], .north)
+        XCTAssertEqual(controller.tileOrientations(forRow: 0)[0], .north)
+        XCTAssertEqual(controller.tileOrientations(forRow: 3)[3], .north)
     }
     
     func testShuffleRotateLockedTilesTrue() {
@@ -49,9 +49,9 @@ class NetGridControllerTests: XCTestCase {
         
         controller.shuffle(using: &rng, rotateLockedTiles: true)
         
-        XCTAssertEqual(controller.orientations(forRow: 0), [.west, .west, .south, .west])
-        XCTAssertEqual(controller.orientations(forRow: 1), [.north, .north, .north, .south])
-        XCTAssertEqual(controller.orientations(forRow: 2), [.south, .east, .west, .west])
-        XCTAssertEqual(controller.orientations(forRow: 3), [.west, .east, .north, .south])
+        XCTAssertEqual(controller.tileOrientations(forRow: 0), [.west, .west, .south, .west])
+        XCTAssertEqual(controller.tileOrientations(forRow: 1), [.north, .north, .north, .south])
+        XCTAssertEqual(controller.tileOrientations(forRow: 2), [.south, .east, .west, .west])
+        XCTAssertEqual(controller.tileOrientations(forRow: 3), [.west, .east, .north, .south])
     }
 }

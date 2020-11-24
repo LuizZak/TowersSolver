@@ -12,11 +12,18 @@ public class NetGridController {
         self.grid = grid
     }
     
-    /// Returns the orientation for all tiles on a given row.
+    /// Returns the orientations for all tiles on a given row.
     /// 
     /// - precondition: `row >= 0 && row < rows`
-    public func orientations(forRow row: Int) -> [Tile.Orientation] {
-        return grid.tiles[row].map { $0.orientation }
+    public func tileOrientations(forRow row: Int) -> [Tile.Orientation] {
+        return grid.tiles[row].map(\.orientation)
+    }
+    
+    /// Returns the kinds for all tiles on a given row.
+    ///
+    /// - precondition: `row >= 0 && row < rows`
+    public func tileKinds(forRow row: Int) -> [Tile.Kind] {
+        return grid.tiles[row].map(\.kind)
     }
     
     /// Shuffle the rotation of the tiles, optionally specifying whether to

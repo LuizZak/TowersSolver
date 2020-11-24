@@ -30,7 +30,7 @@ extension Tile {
     /// Returns a tile with a kind and orientation that matches the input ports.
     /// If the array of ports contains either zero, or greater than three indices
     /// the result is nil.
-    static func tileForPorts(_ ports: [EdgePort]) -> Tile? {
+    static func fromPorts(_ ports: [EdgePort]) -> Tile? {
         // Remove duplicates and sort result to simplify conversion
         let normalizedPorts = Set(ports).sorted()
         
