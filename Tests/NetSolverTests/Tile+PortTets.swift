@@ -131,6 +131,11 @@ class Tile_PortTets: XCTestCase {
         try assertTileForPorts([.left, .bottom, .right], matchesKind: .T, orientation: .south)
         try assertTileForPorts([.top, .left, .bottom], matchesKind: .T, orientation: .west)
     }
+    
+    func testTileForPorts_failCases() {
+        assertTileForPortsNil([])
+        assertTileForPortsNil([.top, .left, .right, .bottom])
+    }
 }
 
 // MARK: - Assertion functions
@@ -163,5 +168,11 @@ private extension Tile_PortTets {
         
         XCTAssertEqual(tile.kind, kind, line: line)
         XCTAssertEqual(tile.orientation, orientation, line: line)
+    }
+    
+    func assertTileForPortsNil(_ ports: [EdgePort],
+                               line: UInt = #line){
+        
+        XCTAssertNil(Tile.tileForPorts(ports), line: line)
     }
 }
