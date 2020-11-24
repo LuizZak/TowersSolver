@@ -12,16 +12,38 @@ class NetGridPrinterTests: XCTestCase {
     }
     
     func testPrintGrid5x5() {
-        var rng = MersenneTwister(seed: 58196234)
-        let grid = Grid(rows: 5, columns: 5)
-        let controller = NetGridController(grid: grid)
-        controller.shuffle(using: &rng)
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#5x5:4d63229e74cebbc553e521822
+        let gen = NetGridGenerator(rows: 5, columns: 5)
+        gen.loadFromGameID("4d63229e74cebbc553e521822")
         let sut = NetGridPrinter(bufferWidth: 42, bufferHeight: 22)
         sut.target = target
-        sut.printGrid(grid: grid)
+        sut.printGrid(grid: gen.grid)
         
         XCTAssertEqual(target.buffer, """
-            
+            ╭───────┬───────┬───┬───┬───┬───┬───┬───╮
+            │       │       │   │   │   │   │   │   │
+            ├───■   ├───┬───┼───╯   │   ╰───┤   ■   │
+            │       │   │   │       │       │       │
+            ├───┬───┼───┴───┼───┬───┼───┬───┼───────┤
+            │   │   │       │   │   │   │   │       │
+            │   ■   │   ╭───┼───┤   ├───┴───┼───■   │
+            │       │   │   │   │   │       │       │
+            ├───────┼───┼───┼───┼───┼───┬───┼───────┤
+            │       │   │   │   │   │   │   │       │
+            ├───╮   ├───┤   │   ├───┤   ├───┼───╮   │
+            │   │   │   │   │   │   │   │   │   │   │
+            ├───┴───┼───┴───┼───┼───┼───┼───┼───┴───┤
+            │       │       │   │   │   │   │       │
+            ├───────┼───────┤   ╰───┼───┤   ├───────┤
+            │       │       │       │   │   │       │
+            ├───┬───┼───────┼───────┼───┼───┼───┬───┤
+            │   │   │       │       │   │   │   │   │
+            │   ■   │   ■───┤   ■   │   ■   │   ■   │
+            │       │       │   │   │       │       │
+            ╰───────┴───────┴───┴───┴───────┴───────╯
+
+
             """)
     }
 }
