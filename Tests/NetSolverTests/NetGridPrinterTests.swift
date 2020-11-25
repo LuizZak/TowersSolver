@@ -48,7 +48,7 @@ class NetGridPrinterTests: XCTestCase {
     }
 }
 
-private class TestConsolePrintTarget: ConsolePrintTarget {
+internal class TestConsolePrintTarget: ConsolePrintTarget {
     let supportsTerminalColors = false
     
     var buffer: String = ""

@@ -80,7 +80,7 @@ public class NetGridGenerator {
                 }
                 
                 if let tile = NetGridGenerator.tileFromEncoded(charInt) {
-                    grid.tiles[y][x] = tile
+                    grid[row: y, column: x] = tile
                 }
             }
         }

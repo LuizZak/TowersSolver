@@ -88,4 +88,44 @@ class Tile_OrientationTests: XCTestCase {
         XCTAssertTrue(
             Set(Tile.orientationsForKind(kind: .endPoint, excludingPorts: [.top, .left, .right, .bottom])).isEmpty)
     }
+    
+    func testLeftRotated() {
+        XCTAssertEqual(Tile.Orientation.north.leftRotated, .west)
+        XCTAssertEqual(Tile.Orientation.east.leftRotated, .north)
+        XCTAssertEqual(Tile.Orientation.south.leftRotated, .east)
+        XCTAssertEqual(Tile.Orientation.west.leftRotated, .south)
+    }
+    
+    func testRightRotated() {
+        XCTAssertEqual(Tile.Orientation.north.rightRotated, .east)
+        XCTAssertEqual(Tile.Orientation.east.rightRotated, .south)
+        XCTAssertEqual(Tile.Orientation.south.rightRotated, .west)
+        XCTAssertEqual(Tile.Orientation.west.rightRotated, .north)
+    }
+    
+    func testRotateLeft() {
+        var sut = Tile.Orientation.north
+        
+        sut.rotateLeft()
+        XCTAssertEqual(sut, .west)
+        sut.rotateLeft()
+        XCTAssertEqual(sut, .south)
+        sut.rotateLeft()
+        XCTAssertEqual(sut, .east)
+        sut.rotateLeft()
+        XCTAssertEqual(sut, .north)
+    }
+    
+    func testRotateRight() {
+        var sut = Tile.Orientation.north
+        
+        sut.rotateRight()
+        XCTAssertEqual(sut, .east)
+        sut.rotateRight()
+        XCTAssertEqual(sut, .south)
+        sut.rotateRight()
+        XCTAssertEqual(sut, .west)
+        sut.rotateRight()
+        XCTAssertEqual(sut, .north)
+    }
 }

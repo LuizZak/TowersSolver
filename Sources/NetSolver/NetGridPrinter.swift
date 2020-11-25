@@ -1,6 +1,16 @@
 import Console
 
 public class NetGridPrinter: ConsolePrintBuffer {
+    public override init(bufferWidth: Int, bufferHeight: Int) {
+        super.init(bufferWidth: bufferWidth, bufferHeight: bufferHeight)
+    }
+    
+    /// Initializes a grid printer with a buffer capable of rendering a grid of
+    /// given size where each cell has 8 characters of width and 4 of height.
+    public init(bufferForGridWidth width: Int, height: Int) {
+        super.init(bufferWidth: width * 8 + 2, bufferHeight: height * 4 + 2)
+    }
+    
     public func printGrid(grid: Grid) {
         resetBuffer()
         let availableWidth = bufferWidth - 2
@@ -13,7 +23,7 @@ public class NetGridPrinter: ConsolePrintBuffer {
         
         for y in 0..<grid.rows {
             for x in 0..<grid.columns {
-                printTile(grid.tiles[y][x],
+                printTile(grid[row: y, column: x],
                           x: x * cellWidth, y: y * cellHeight,
                           width: cellWidth, height: cellHeight)
             }

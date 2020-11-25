@@ -8,9 +8,9 @@ class NetGridControllerTests: XCTestCase {
         grid.tiles[0][1].orientation = .east
         grid.tiles[0][2].orientation = .south
         grid.tiles[0][3].orientation = .west
-        let controller = NetGridController(grid: grid)
+        let sut = NetGridController(grid: grid)
         
-        XCTAssertEqual(controller.tileOrientations(forRow: 0), [.north, .east, .south, .west])
+        XCTAssertEqual(sut.tileOrientations(forRow: 0), [.north, .east, .south, .west])
     }
     
     func testShuffle() {
@@ -18,26 +18,26 @@ class NetGridControllerTests: XCTestCase {
         var grid = Grid(rows: 4, columns: 4)
         grid.tiles[0][0].isLocked = true
         grid.tiles[3][3].isLocked = true
-        let controller = NetGridController(grid: grid)
+        let sut = NetGridController(grid: grid)
         
-        controller.shuffle(using: &rng)
+        sut.shuffle(using: &rng)
         
-        XCTAssertEqual(controller.tileOrientations(forRow: 0), [.north, .north, .east, .south])
-        XCTAssertEqual(controller.tileOrientations(forRow: 1), [.south, .west, .west, .west])
-        XCTAssertEqual(controller.tileOrientations(forRow: 2), [.east, .east, .south, .east])
-        XCTAssertEqual(controller.tileOrientations(forRow: 3), [.north, .west, .north, .north])
+        XCTAssertEqual(sut.tileOrientations(forRow: 0), [.north, .north, .east, .south])
+        XCTAssertEqual(sut.tileOrientations(forRow: 1), [.south, .west, .west, .west])
+        XCTAssertEqual(sut.tileOrientations(forRow: 2), [.east, .east, .south, .east])
+        XCTAssertEqual(sut.tileOrientations(forRow: 3), [.north, .west, .north, .north])
     }
     
     func testShuffleRotateLockedTilesFalse() {
         var grid = Grid(rows: 4, columns: 4)
         grid.tiles[0][0].isLocked = true
         grid.tiles[3][3].isLocked = true
-        let controller = NetGridController(grid: grid)
+        let sut = NetGridController(grid: grid)
         
-        controller.shuffle(rotateLockedTiles: false)
+        sut.shuffle(rotateLockedTiles: false)
         
-        XCTAssertEqual(controller.tileOrientations(forRow: 0)[0], .north)
-        XCTAssertEqual(controller.tileOrientations(forRow: 3)[3], .north)
+        XCTAssertEqual(sut.tileOrientations(forRow: 0)[0], .north)
+        XCTAssertEqual(sut.tileOrientations(forRow: 3)[3], .north)
     }
     
     func testShuffleRotateLockedTilesTrue() {
@@ -45,13 +45,117 @@ class NetGridControllerTests: XCTestCase {
         var grid = Grid(rows: 4, columns: 4)
         grid.tiles[0][0].isLocked = true
         grid.tiles[3][3].isLocked = true
-        let controller = NetGridController(grid: grid)
+        let sut = NetGridController(grid: grid)
         
-        controller.shuffle(using: &rng, rotateLockedTiles: true)
+        sut.shuffle(using: &rng, rotateLockedTiles: true)
         
-        XCTAssertEqual(controller.tileOrientations(forRow: 0), [.west, .west, .south, .west])
-        XCTAssertEqual(controller.tileOrientations(forRow: 1), [.north, .north, .north, .south])
-        XCTAssertEqual(controller.tileOrientations(forRow: 2), [.south, .east, .west, .west])
-        XCTAssertEqual(controller.tileOrientations(forRow: 3), [.west, .east, .north, .south])
+        XCTAssertEqual(sut.tileOrientations(forRow: 0), [.west, .west, .south, .west])
+        XCTAssertEqual(sut.tileOrientations(forRow: 1), [.north, .north, .north, .south])
+        XCTAssertEqual(sut.tileOrientations(forRow: 2), [.south, .east, .west, .west])
+        XCTAssertEqual(sut.tileOrientations(forRow: 3), [.west, .east, .north, .south])
+    }
+    
+    func testCanRotateTile() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertTrue(sut.canRotateTile(atColumn: 0, row: 0))
+    }
+    
+    func testCanRotateTile_isLockedTile() {
+        var grid = Grid(rows: 1, columns: 1)
+        grid[row: 0, column: 0].isLocked = true
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertFalse(sut.canRotateTile(atColumn: 0, row: 0))
+    }
+    
+    func testRotateTile_clockwise() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = NetGridController(grid: grid)
+        
+        sut.rotateTile(atColumn: 0, row: 0, direction: .clockwise)
+        
+        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .east)
+    }
+    
+    func testRotateTile_counterClockwise() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = NetGridController(grid: grid)
+        
+        sut.rotateTile(atColumn: 0, row: 0, direction: .counterClockwise)
+        
+        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .west)
+    }
+    
+    func testRotateTile_ignoreLockedTile_true() {
+        var grid = Grid(rows: 1, columns: 1)
+        grid[row: 0, column: 0].isLocked = true
+        let sut = NetGridController(grid: grid)
+        
+        sut.rotateTile(atColumn: 0, row: 0, direction: .clockwise, ignoreIfLocked: true)
+        
+        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .north)
+    }
+    
+    func testRotateTile_ignoreLockedTile_false() {
+        var grid = Grid(rows: 1, columns: 1)
+        grid[row: 0, column: 0].isLocked = true
+        let sut = NetGridController(grid: grid)
+        
+        sut.rotateTile(atColumn: 0, row: 0, direction: .clockwise, ignoreIfLocked: false)
+        
+        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .east)
+    }
+    
+    func testSetTileOrientation() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = NetGridController(grid: grid)
+        
+        sut.setTileOrientation(atColumn: 0, row: 0, orientation: .south)
+        
+        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .south)
+    }
+    
+    func testGameId() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:48225b3556d73a64
+        let gridGen = NetGridGenerator(rows: 4, columns: 4)
+        gridGen.loadFromGameID("48225b3556d73a64")
+        let sut = NetGridController(grid: gridGen.grid)
+        
+        XCTAssertEqual(sut.gameId(), "4x4:48225b3556d73a64")
+    }
+    
+    func testGameId_wrappingTrue() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:48225b3556d73a64
+        let gridGen = NetGridGenerator(rows: 4, columns: 4)
+        gridGen.loadFromGameID("48225b3556d73a64")
+        var grid = gridGen.grid
+        grid.wrapping = true
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertEqual(sut.gameId(), "4x4w:48225b3556d73a64")
+    }
+    
+    func testIsSolved_4x4_unsolved() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:48225b3556d73a64
+        let gridGen = NetGridGenerator(rows: 4, columns: 4)
+        gridGen.loadFromGameID("48225b3556d73a64")
+        let sut = NetGridController(grid: gridGen.grid)
+        
+        XCTAssertFalse(sut.isSolved)
+    }
+    
+    func testIsSolved_4x4_solved() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:8888ab6aa3de3562
+        let gridGen = NetGridGenerator(rows: 4, columns: 4)
+        gridGen.loadFromGameID("8888ab6aa3de3562")
+        let sut = NetGridController(grid: gridGen.grid)
+        
+        XCTAssertTrue(sut.isSolved)
     }
 }
