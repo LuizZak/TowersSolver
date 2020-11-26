@@ -5,7 +5,7 @@ public struct Grid {
     
     /// Whether the grid wraps around so tiles can connect with tiles on the
     /// opposite end of the grid.
-    internal(set) public var wrapping: Bool = false
+    internal(set) public var wrapping: Bool
     
     /// The number of horizontal rows on this grid
     public let rows: Int
@@ -47,6 +47,7 @@ public struct Grid {
         
         self.rows = rows
         self.columns = columns
+        self.wrapping = wrapping
         
         initGrid()
     }
@@ -59,5 +60,29 @@ public struct Grid {
             
             tiles.append(row)
         }
+    }
+    
+    /// Returns a list of edges that are barred for a tile at a given column/row
+    /// combination.
+    public func barriersForTile(atColumn column: Int, row: Int) -> [EdgePort] {
+        var result: Set<EdgePort> = []
+        
+        // Detect barriers for tiles at edges of the grid
+        if !wrapping {
+            if column == 0 {
+                result.insert(.left)
+            }
+            if row == 0 {
+                result.insert(.top)
+            }
+            if column == columns - 1 {
+                result.insert(.right)
+            }
+            if row == rows - 1 {
+                result.insert(.bottom)
+            }
+        }
+        
+        return Array(result)
     }
 }

@@ -16,35 +16,3 @@ public final class Solver {
 extension Solver {
     
 }
-
-private class SolverInvocation: NetSolverDelegate {
-    var steps: [NetSolverStep] = []
-    
-    /// Apply all currently enqueued solver steps
-    func apply(on grid: Grid) -> SolverInvocationResult {
-        var grid = grid
-        
-        while !steps.isEmpty {
-            let step = steps.removeFirst()
-            
-            grid = step.apply(on: grid, delegate: self)
-        }
-        
-        return SolverInvocationResult(state: .unsolved, grid: grid)
-    }
-    
-    func enqueue(_ step: NetSolverStep) {
-        steps.append(step)
-    }
-    
-    struct SolverInvocationResult {
-        var state: ResultState
-        var grid: Grid
-    }
-    
-    enum ResultState {
-        case solved
-        case unsolved
-        case invalid
-    }
-}
