@@ -62,12 +62,39 @@ public struct Grid {
         }
     }
     
-    public func iterateTiles(_ callback: (_ tile: Tile, _ column: Int, _ row: Int) -> Void) {
-        for row in 0..<rows {
-            for column in 0..<columns {
-                callback(self[row: row, column: column], column, row)
+    /// Returns the column/row that results from moving from a given column/row
+    /// at a specified orientation.
+    ///
+    /// Querying tiles at the edge of the grid with a direction that is out-of-bounds,
+    /// the column or row are wrapped around to the opposite side of the grid.
+    public func columnRowByMoving(column: Int, row: Int, orientation: Tile.Orientation) -> (column: Int, row: Int) {
+        var column = column
+        var row = row
+        
+        switch orientation {
+        case .north:
+            row -= 1
+            if row < 0 {
+                row = rows - 1
+            }
+        case .west:
+            column -= 1
+            if column < 0 {
+                column = columns - 1
+            }
+        case .south:
+            row += 1
+            if row >= rows {
+                row = 0
+            }
+        case .east:
+            column += 1
+            if column >= columns {
+                column = 0
             }
         }
+        
+        return (column, row)
     }
     
     /// Returns a set of edges that are barred for a tile at a given column/row
@@ -75,7 +102,8 @@ public struct Grid {
     public func barriersForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
         var result: Set<EdgePort> = []
         
-        // Detect barriers for tiles at edges of the grid
+        // Report barriers for tiles that are surrounding the edges of the grid
+        // if this grid is non-wrapping
         if !wrapping {
             if column == 0 {
                 result.insert(.left)

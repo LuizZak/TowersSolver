@@ -6,6 +6,8 @@ class MockNetSolverDelegate: NetSolverDelegate {
     var didCallEnqueue: [NetSolverStep] = []
     var didCallMarkIsInvalid = false
     
+    var mock_unavailablePortsForTile: (_ column: Int, _ row: Int) -> Set<EdgePort> = { (_, _) in [] }
+    
     var metadata: GridMetadata
     
     init() {
@@ -26,5 +28,9 @@ class MockNetSolverDelegate: NetSolverDelegate {
         precondition(_didPrepare, "Invoke mock_prepare(forGrid:) before using \(MockNetSolverDelegate.self)")
         
         didCallEnqueue.append(step)
+    }
+    
+    func unavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+        return mock_unavailablePortsForTile(column, row)
     }
 }

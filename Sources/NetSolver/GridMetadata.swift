@@ -31,18 +31,18 @@ struct GridMetadata {
         return metadata[row][column]
     }
     
-    /// Returns a set of ports which are guaranteed to be available as a result
-    /// of combination of available ports across all allowed available orientations
-    /// for a tile at a specified column/row combination.
+    /// Returns a set of outgoing ports which are guaranteed to be available as
+    /// a result of combination of available ports across all allowed available
+    /// orientations for a tile at a specified column/row combination.
     ///
     /// - seeAlso: guaranteedUnavailablePorts(column:row:)
     func guaranteedAvailablePorts(column: Int, row: Int) -> Set<EdgePort> {
         return metadata(atColumn: column, row: row).guaranteedAvailable
     }
     
-    /// Returns a set of ports which are guaranteed to not be available as a
-    /// result of combination of unavailable ports across all allowed orientations
-    /// for a tile at a specified column/row combination.
+    /// Returns a set of outgoing ports which are guaranteed to not be available
+    /// as a result of combination of unavailable ports across all allowed
+    /// orientations for a tile at a specified column/row combination.
     ///
     /// - seeAlso: guaranteedAvailablePorts(column:row:)
     func guaranteedUnavailablePorts(column: Int, row: Int) -> Set<EdgePort> {

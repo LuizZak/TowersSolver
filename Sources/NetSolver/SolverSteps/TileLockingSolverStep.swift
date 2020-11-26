@@ -12,6 +12,14 @@ struct TileLockingStep: NetSolverStep, Equatable {
     }
     
     func apply(on grid: Grid, delegate: NetSolverDelegate) -> Grid {
+        // If current tile is already locked at provided orientation, skip the
+        // rest of locking propagation
+        if grid[row: row, column: column].isLocked
+            && grid[row: row, column: column].orientation == orientation {
+            
+            return grid
+        }
+        
         var grid = grid
         
         grid[row: row, column: column].orientation = orientation
