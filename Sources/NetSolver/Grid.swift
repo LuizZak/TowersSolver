@@ -62,9 +62,9 @@ public struct Grid {
         }
     }
     
-    /// Returns a list of edges that are barred for a tile at a given column/row
+    /// Returns a set of edges that are barred for a tile at a given column/row
     /// combination.
-    public func barriersForTile(atColumn column: Int, row: Int) -> [EdgePort] {
+    public func barriersForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
         var result: Set<EdgePort> = []
         
         // Detect barriers for tiles at edges of the grid
@@ -83,6 +83,6 @@ public struct Grid {
             }
         }
         
-        return Array(result)
+        return result
     }
 }
