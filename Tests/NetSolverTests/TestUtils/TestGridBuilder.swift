@@ -44,6 +44,18 @@ class TestGridBuilder {
         return self
     }
     
+    func lockTile(atColumn column: Int, row: Int) -> TestGridBuilder {
+        generator.grid[row: row, column: column].isLocked = true
+        
+        return self
+    }
+    
+    func unlockTile(atColumn column: Int, row: Int) -> TestGridBuilder {
+        generator.grid[row: row, column: column].isLocked = false
+        
+        return self
+    }
+    
     func build() -> Grid {
         generator.grid
     }
