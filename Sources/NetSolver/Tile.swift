@@ -44,10 +44,23 @@ public extension Tile {
     /// the connection exposed.
     ///
     /// - seealso: `Kind`
-    enum Orientation: CaseIterable {
+    enum Orientation: Int, CaseIterable, CustomStringConvertible {
         case north
         case east
         case south
         case west
+        
+        public var description: String {
+            switch self {
+            case .north:
+                return "north"
+            case .east:
+                return "east"
+            case .south:
+                return "south"
+            case .west:
+                return "west"
+            }
+        }
     }
 }

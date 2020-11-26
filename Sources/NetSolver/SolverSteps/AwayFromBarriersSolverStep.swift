@@ -1,11 +1,44 @@
 /// Solver step which rotates tiles away from barriers, as well as the map edge,
 /// in case the grid is non-wrapping.
 /// Only locks and rotates tiles in case
-struct AwayFromBarriersSolverStep: NetSolverStep {
+struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
     var column: Int
     var row: Int
     
     func apply(on grid: Grid, delegate: NetSolverDelegate) -> Grid {
+        let tile = grid[row: row, column: column]
+        let barriers = grid.barriersForTile(atColumn: column, row: row)
+        
+        let availableOrientations = tile.orientations(excludingPorts: barriers)
+        
+        // If no ports are available, mark this grid as invalid
+        guard !availableOrientations.isEmpty else {
+            delegate.markIsInvalid()
+            return grid
+        }
+        
+        // Check if only one orientation is available
+        if availableOrientations.count == 1, let orientation = availableOrientations.first {
+            delegate.enqueueLock(atColumn: column, row: row, orientation: orientation)
+            return grid
+        }
+        
+        // If the available orientations all coincide with the same ports
+        // being made available (like line pieces that are equivalent across
+        // 180 rotations), mark any of the orientations as correct, picking
+        // by precedence: north > east > south > west among the available
+        // orientations.
+        let portsSet = Set(availableOrientations.map {
+            Tile.portsForTile(kind: tile.kind, orientation: $0)
+        })
+        
+        // If ports set contains one element, it indicates all orientations provide
+        // the same set of ports, and are thus equivalent.
+        if portsSet.count == 1, let orientation = availableOrientations.min(by: { $0.rawValue < $1.rawValue }) {
+            delegate.enqueueLock(atColumn: column, row: row, orientation: orientation)
+            return grid
+        }
+        
         return grid
     }
 }

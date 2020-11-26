@@ -7,7 +7,7 @@ extension Tile {
     ///   kind are not available
     /// - Returns: A list of orientations where this tile does not offer the
     /// provided ports
-    func orientations(kind: Kind, excludingPorts excludedPorts: Set<EdgePort>) -> Set<Orientation> {
+    func orientations(excludingPorts excludedPorts: Set<EdgePort>) -> Set<Orientation> {
         return Self.orientationsForKind(kind: kind, excludingPorts: excludedPorts)
     }
     

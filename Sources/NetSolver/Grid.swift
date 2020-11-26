@@ -1,6 +1,6 @@
 /// A Net game grid
 public struct Grid {
-    /// Matrix of tiles, nested in [y][x] fashion
+    /// Matrix of tiles, stored as [rows][columns]
     internal(set) public var tiles: [[Tile]] = []
     
     /// Whether the grid wraps around so tiles can connect with tiles on the
@@ -59,6 +59,14 @@ public struct Grid {
             let row = Array(repeating: Tile(kind: .I, orientation: .north), count: rows)
             
             tiles.append(row)
+        }
+    }
+    
+    public func iterateTiles(_ callback: (_ tile: Tile, _ column: Int, _ row: Int) -> Void) {
+        for row in 0..<rows {
+            for column in 0..<columns {
+                callback(self[row: row, column: column], column, row)
+            }
         }
     }
     

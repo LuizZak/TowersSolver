@@ -1,14 +1,14 @@
 extension Tile {
-    /// Returns the list of edge ports that are available for this tile
-    var ports: [EdgePort] {
+    /// Returns the set of edge ports that are available for this tile
+    var ports: Set<EdgePort> {
         return Self.portsForTile(kind: kind, orientation: orientation)
     }
 }
     
 extension Tile {
-    /// Returns the list of edge ports that are available for a given combination
+    /// Returns the set of edge ports that are available for a given combination
     /// of tile kind and orientation
-    static func portsForTile(kind: Tile.Kind, orientation: Tile.Orientation) -> [EdgePort] {
+    static func portsForTile(kind: Tile.Kind, orientation: Tile.Orientation) -> Set<EdgePort> {
         let edgePort = orientation.asEdgePort
         
         switch kind {
@@ -30,9 +30,9 @@ extension Tile {
     /// Returns a tile with a kind and orientation that matches the input ports.
     /// If the array of ports contains either zero, or greater than three indices
     /// the result is nil.
-    static func fromPorts(_ ports: [EdgePort]) -> Tile? {
+    static func fromPorts(_ ports: Set<EdgePort>) -> Tile? {
         // Remove duplicates and sort result to simplify conversion
-        let normalizedPorts = Set(ports).sorted()
+        let normalizedPorts = ports.sorted()
         
         let kind: Tile.Kind
         let orientation: Tile.Orientation

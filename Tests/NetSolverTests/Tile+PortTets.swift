@@ -159,7 +159,7 @@ private extension Tile_PortTets {
         XCTAssertEqual(Set(ports), expected, line: line)
     }
     
-    func assertTileFromPorts(_ ports: [EdgePort],
+    func assertTileFromPorts(_ ports: Set<EdgePort>,
                              matchesKind kind: Tile.Kind,
                              orientation: Tile.Orientation,
                              line: UInt = #line) throws {
@@ -170,7 +170,7 @@ private extension Tile_PortTets {
         XCTAssertEqual(tile.orientation, orientation, line: line)
     }
     
-    func assertTileFromPortsIsNil(_ ports: [EdgePort],
+    func assertTileFromPortsIsNil(_ ports: Set<EdgePort>,
                                   line: UInt = #line){
         
         XCTAssertNil(Tile.fromPorts(ports), line: line)

@@ -4,10 +4,10 @@ private func ascii(for char: UnicodeScalar) -> Int {
 
 /// Generator for Net game grids.
 public class NetGridGenerator {
-    let rows: Int
-    let columns: Int
+    public let rows: Int
+    public let columns: Int
     
-    private(set) public var grid: Grid
+    internal(set) public var grid: Grid
     
     public init(rows: Int, columns: Int) {
         self.rows = rows
@@ -105,20 +105,20 @@ extension NetGridGenerator {
         return tile
     }
     
-    static func edgePortsFromEncoded(_ value: Int) -> [EdgePort] {
-        var ports: [EdgePort] = []
+    static func edgePortsFromEncoded(_ value: Int) -> Set<EdgePort> {
+        var ports: Set<EdgePort> = []
         
         if value & EncodedTileConstants.rightBitcode != 0 {
-            ports.append(.right)
+            ports.insert(.right)
         }
         if value & EncodedTileConstants.upBitcode != 0 {
-            ports.append(.top)
+            ports.insert(.top)
         }
         if value & EncodedTileConstants.leftBitcode != 0 {
-            ports.append(.left)
+            ports.insert(.left)
         }
         if value & EncodedTileConstants.downBitcode != 0 {
-            ports.append(.bottom)
+            ports.insert(.bottom)
         }
         
         return ports
