@@ -29,13 +29,11 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
         }
         
         // If the available orientations all coincide with the same ports
-        // being made available (like line pieces that are equivalent across
-        // 180 rotations), mark any of the orientations as correct, picking
+        // being made available (like line pieces which are equivalent across
+        // 180º rotations), mark any of the orientations as correct, picking
         // by precedence: north > east > south > west among the available
         // orientations.
-        let portsSet = Set(availableOrientations.map {
-            Tile.portsForTile(kind: tile.kind, orientation: $0)
-        })
+        let portsSet = availableOrientations.normalizedByPortSet(onTileKind: tile.kind)
         
         // If ports set contains one element, it indicates all orientations provide
         // the same set of ports, and are thus equivalent.

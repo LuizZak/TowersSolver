@@ -95,4 +95,19 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         
         XCTAssertEqual(result, [.markImpossibleOrientations(column: 1, row: 1, [.north, .east])])
     }
+    
+    func testApply_availableOrientationsAreEquivalent_lockTile() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTileKind(1, 1, kind: .I)
+            .build()
+        mockDelegate.mock_prepare(forGrid: grid)
+        mockDelegate.mock_requiredPortsForTile = { (_, _) in
+            return [.left]
+        }
+        let sut = GeneralTileCheckSolverStep(column: 1, row: 1)
+        
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+        
+        XCTAssertEqual(result, [.lockOrientation(column: 1, row: 1, orientation: .east)])
+    }
 }

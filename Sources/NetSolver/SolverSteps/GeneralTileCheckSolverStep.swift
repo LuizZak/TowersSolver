@@ -16,7 +16,10 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
             return []
         }
         
-        let orientations = delegate.possibleOrientationsForTile(atColumn: column, row: row)
+        let orientations =
+            delegate
+            .possibleOrientationsForTile(atColumn: column, row: row)
+            .normalizedByPortSet(onTileKind: tile.kind)
         
         let required = delegate.requiredPortsForTile(atColumn: column, row: row)
         let unavailableOutgoing =
@@ -37,6 +40,7 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
                 Tile.portsForTile(kind: tile.kind, orientation: $0)
                     .isSuperset(of: required)
             }
+        
         
         if satisfyingOrientations.count == 1, let first = satisfyingOrientations.first {
             return [

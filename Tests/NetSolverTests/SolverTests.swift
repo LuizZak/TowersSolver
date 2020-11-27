@@ -1,7 +1,7 @@
 import XCTest
 import NetSolver
 
-class NetSolverTests: XCTestCase {
+class SolverTests: XCTestCase {
     func testSolve_4x4_trivial() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:48225b3556d73a64
@@ -33,10 +33,40 @@ class NetSolverTests: XCTestCase {
         XCTAssertEqual(controller.tileOrientations(forRow: 3),
                        [.north, .east, .west, .north])
         
+        printGrid(sut.grid)
+    }
+    
+    func testSolve_5x5_trivial() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#5x5:85b2225e8bc17be6be5546284
+        let gridGen = NetGridGenerator(rows: 5, columns: 5)
+        gridGen.loadFromGameID("85b2225e8bc17be6be5546284")
+        let sut = Solver(grid: gridGen.grid)
+        
+        XCTAssertTrue(sut.solve())
+        
+        printGrid(sut.grid)
+    }
+    
+    func testSolve_7x7_trivial() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#7x7:84387c8c5e8b859ade369c88dab9c5bb18b86be4878647b41
+        let gridGen = NetGridGenerator(rows: 7, columns: 7)
+        gridGen.loadFromGameID("84387c8c5e8b859ade369c88dab9c5bb18b86be4878647b41")
+        let sut = Solver(grid: gridGen.grid)
+        
+        XCTAssertTrue(sut.solve())
+        
+        printGrid(sut.grid)
+    }
+}
+
+private extension SolverTests {
+    func printGrid(_ grid: Grid) {
         let target = TestConsolePrintTarget()
-        let gridPrinter = NetGridPrinter(bufferForGridWidth: 4, height: 4)
+        let gridPrinter = NetGridPrinter(bufferForGridWidth: grid.columns, height: grid.rows)
         gridPrinter.target = target
-        gridPrinter.printGrid(grid: sut.grid)
+        gridPrinter.printGrid(grid: grid)
         
         print(target.buffer)
     }

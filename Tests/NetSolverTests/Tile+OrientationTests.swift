@@ -128,4 +128,34 @@ class Tile_OrientationTests: XCTestCase {
         sut.rotateRight()
         XCTAssertEqual(sut, .north)
     }
+    
+    func testNormalizedByPortSetOnTileKind_lineTile() {
+        let set = Set(Tile.Orientation.allCases)
+        
+        XCTAssertEqual(set.normalizedByPortSet(onTileKind: .I), [.north, .east])
+    }
+    
+    func testNormalizedByPortSetOnTileKind_lineTile_southWest() {
+        let set: Set<Tile.Orientation> = [.south, .west]
+        
+        XCTAssertEqual(set.normalizedByPortSet(onTileKind: .I), [.south, .west])
+    }
+    
+    func testNormalizedByPortSetOnTileKind_cornerTile() {
+        let set = Set(Tile.Orientation.allCases)
+        
+        XCTAssertEqual(set.normalizedByPortSet(onTileKind: .L), [.north, .east, .south, .west])
+    }
+    
+    func testNormalizedByPortSetOnTileKind_tripleTile() {
+        let set = Set(Tile.Orientation.allCases)
+        
+        XCTAssertEqual(set.normalizedByPortSet(onTileKind: .T), [.north, .east, .south, .west])
+    }
+    
+    func testNormalizedByPortSetOnTileKind_endPoint() {
+        let set = Set(Tile.Orientation.allCases)
+        
+        XCTAssertEqual(set.normalizedByPortSet(onTileKind: .endPoint), [.north, .east, .south, .west])
+    }
 }

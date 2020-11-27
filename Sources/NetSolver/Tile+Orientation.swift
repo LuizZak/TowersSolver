@@ -61,3 +61,32 @@ extension Tile.Orientation {
         self = self.rightRotated
     }
 }
+
+extension Set where Element == Tile.Orientation {
+    /// From this set of orientations, returns a normalized set where no two
+    /// orientations result in the same set of ports being available, when the
+    /// orientations are used to rotate a tile of a given kind.
+    ///
+    /// A preference for picking north/east over south/west is present, in case
+    /// they represent the same set of ports.
+    func normalizedByPortSet(onTileKind kind: Tile.Kind) -> Set<Tile.Orientation> {
+        var presentPortSets: Set<Set<EdgePort>> = []
+        
+        // Pair up orientations with their respective ports
+        var portsSetPair = self.map {
+            (orientation: $0, portSet: Tile.portsForTile(kind: kind, orientation: $0))
+        }
+        portsSetPair.sort(by: { $0.0.rawValue < $1.0.rawValue })
+        
+        var resultOrientations: Set<Tile.Orientation> = []
+        
+        // For each orientation -> port set, insert into the resulting set only
+        // if no previous orientation provided the same set of ports.
+        for pair in portsSetPair where !presentPortSets.contains(pair.portSet) {
+            presentPortSets.insert(pair.portSet)
+            resultOrientations.insert(pair.orientation)
+        }
+        
+        return resultOrientations
+    }
+}

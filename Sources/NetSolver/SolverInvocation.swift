@@ -11,12 +11,7 @@ class SolverInvocation {
     
     /// Apply all currently enqueued solver steps
     func apply() -> SolverInvocationResult {
-        while !steps.isEmpty && isValid {
-            let step = steps.removeFirst()
-            
-            let actions = step.apply(on: grid, delegate: self)
-            grid = performGridActions(actions, grid: grid)
-        }
+        performSolverSteps()
         
         let state: ResultState
         
@@ -27,6 +22,15 @@ class SolverInvocation {
         }
         
         return SolverInvocationResult(state: state, grid: grid)
+    }
+    
+    func performSolverSteps() {
+        while !steps.isEmpty && isValid {
+            let step = steps.removeFirst()
+            
+            let actions = step.apply(on: grid, delegate: self)
+            grid = performGridActions(actions, grid: grid)
+        }
     }
     
     func performGridActions(_ actions: [GridAction], grid: Grid) -> Grid {

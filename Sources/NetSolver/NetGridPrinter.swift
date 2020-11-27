@@ -34,6 +34,11 @@ public class NetGridPrinter: ConsolePrintBuffer {
     }
     
     private func printTile(_ tile: Tile, x: Int, y: Int, width: Int, height: Int) {
+        // Print a "*" at the top-left of locked tiles
+        if tile.isLocked {
+            put("*", x: x + 1, y: y + 1)
+        }
+        
         let centerX = x + width / 2
         let centerY = y + height / 2
         
