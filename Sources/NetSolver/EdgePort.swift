@@ -1,5 +1,5 @@
 /// Represents an edge port, where a line can connect to.
-public enum EdgePort: Int {
+public enum EdgePort: Int, CaseIterable {
     case top
     case right
     case bottom

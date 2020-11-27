@@ -7,6 +7,10 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
     
     func apply(on grid: Grid, delegate: NetSolverDelegate) -> Grid {
         let tile = grid[row: row, column: column]
+        if tile.isLocked {
+            return grid
+        }
+        
         let barriers = grid.barriersForTile(atColumn: column, row: row)
         
         let availableOrientations = tile.orientations(excludingPorts: barriers)

@@ -45,51 +45,51 @@ class GridTests: XCTestCase {
         XCTAssertTrue(grid.barriersForTile(atColumn: 2, row: 2).isEmpty)
     }
     
-    func testColumnRowByMoving_north() {
+    func testColumnRowByMoving_top() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, orientation: .north) == (1, 0))
+        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, direction: .top) == (1, 0))
     }
     
-    func testColumnRowByMoving_north_wrapping() {
+    func testColumnRowByMoving_top_wrapping() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 1, row: 0, orientation: .north) == (1, grid.rows - 1))
+        XCTAssert(grid.columnRowByMoving(column: 1, row: 0, direction: .top) == (1, grid.rows - 1))
     }
     
-    func testColumnRowByMoving_west() {
+    func testColumnRowByMoving_left() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, orientation: .west) == (0, 1))
+        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, direction: .left) == (0, 1))
     }
     
-    func testColumnRowByMoving_west_wrapping() {
+    func testColumnRowByMoving_left_wrapping() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 0, row: 1, orientation: .west) == (grid.columns - 1, 1))
+        XCTAssert(grid.columnRowByMoving(column: 0, row: 1, direction: .left) == (grid.columns - 1, 1))
     }
     
-    func testColumnRowByMoving_east() {
+    func testColumnRowByMoving_right() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, orientation: .east) == (2, 1))
+        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, direction: .right) == (2, 1))
     }
     
-    func testColumnRowByMoving_east_wrapping() {
+    func testColumnRowByMoving_right_wrapping() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 2, row: 1, orientation: .east) == (0, 1))
+        XCTAssert(grid.columnRowByMoving(column: 2, row: 1, direction: .right) == (0, 1))
     }
     
-    func testColumnRowByMoving_south() {
+    func testColumnRowByMoving_bottom() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, orientation: .south) == (1, 2))
+        XCTAssert(grid.columnRowByMoving(column: 1, row: 1, direction: .bottom) == (1, 2))
     }
     
-    func testColumnRowByMoving_south_wrapping() {
+    func testColumnRowByMoving_bottom_wrapping() {
         let grid = Grid(rows: 3, columns: 3)
         
-        XCTAssert(grid.columnRowByMoving(column: 1, row: 2, orientation: .south) == (1, 0))
+        XCTAssert(grid.columnRowByMoving(column: 1, row: 2, direction: .bottom) == (1, 0))
     }
 }

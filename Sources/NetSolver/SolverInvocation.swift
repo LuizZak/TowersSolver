@@ -2,7 +2,7 @@ class SolverInvocation {
     var steps: [NetSolverStep] = []
     var grid: Grid
     var metadata: GridMetadata
-    var isValid = false
+    var isValid = true
     
     init(grid: Grid) {
         self.grid = grid
@@ -55,12 +55,12 @@ extension SolverInvocation: NetSolverDelegate {
         
         // Check surrounding tiles for guaranteed unavailabilities and tiles that
         // are locked while facing away the requested tile
-        let surrounding = Tile.Orientation.allCases.filter { orientation in
-            let neighborCoordinates = grid.columnRowByMoving(column: column, row: row, orientation: orientation)
+        let surrounding = EdgePort.allCases.filter { edgePort in
+            let neighborCoordinates = grid.columnRowByMoving(column: column, row: row, direction: edgePort)
             
             // Edge port that points from the neighbor tile back to the queried
             // tile
-            let backEdgePort = orientation.asEdgePort.opposite
+            let backEdgePort = edgePort.opposite
             
             // Check locked tiles that face away from the tile
             let neighbor = grid[row: neighborCoordinates.row, column: neighborCoordinates.column]
@@ -73,7 +73,7 @@ extension SolverInvocation: NetSolverDelegate {
             }
             
             return false
-        }.map(\.asEdgePort)
+        }
         
         unavailable.formUnion(surrounding)
         

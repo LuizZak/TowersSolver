@@ -55,39 +55,57 @@ public struct Grid {
     private mutating func initGrid() {
         tiles.removeAll()
         
-        for _ in 0..<columns {
-            let row = Array(repeating: Tile(kind: .I, orientation: .north), count: rows)
+        for _ in 0..<rows {
+            let row = Array(repeating: Tile(kind: .I, orientation: .north), count: columns)
             
             tiles.append(row)
         }
     }
     
+    /// Returns a list of the four tiles surrounding a tile at a given column/row,
+    /// along with the corresponding direction of the tile as an edge port from
+    /// the center tile.
+    public func surroundingTiles(column: Int, row: Int) -> [(tile: Tile, edge: EdgePort)] {
+        func fetch(_ edgePort: EdgePort) -> (Tile, EdgePort) {
+            let (c, r) = columnRowByMoving(column: column, row: row, direction: edgePort)
+            
+            return (self[row: r, column: c], edgePort)
+        }
+        
+        return [
+            fetch(.top),
+            fetch(.right),
+            fetch(.bottom),
+            fetch(.left)
+        ]
+    }
+    
     /// Returns the column/row that results from moving from a given column/row
-    /// at a specified orientation.
+    /// at a specified edge port.
     ///
     /// Querying tiles at the edge of the grid with a direction that is out-of-bounds,
     /// the column or row are wrapped around to the opposite side of the grid.
-    public func columnRowByMoving(column: Int, row: Int, orientation: Tile.Orientation) -> (column: Int, row: Int) {
+    public func columnRowByMoving(column: Int, row: Int, direction: EdgePort) -> (column: Int, row: Int) {
         var column = column
         var row = row
         
-        switch orientation {
-        case .north:
+        switch direction {
+        case .top:
             row -= 1
             if row < 0 {
                 row = rows - 1
             }
-        case .west:
+        case .left:
             column -= 1
             if column < 0 {
                 column = columns - 1
             }
-        case .south:
+        case .bottom:
             row += 1
             if row >= rows {
                 row = 0
             }
-        case .east:
+        case .right:
             column += 1
             if column >= columns {
                 column = 0
@@ -99,6 +117,8 @@ public struct Grid {
     
     /// Returns a set of edges that are barred for a tile at a given column/row
     /// combination.
+    ///
+    /// Includes barriers for outer edge tiles for non-wrapping grids.
     public func barriersForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
         var result: Set<EdgePort> = []
         

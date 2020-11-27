@@ -57,8 +57,8 @@ public extension Sequence {
         return count
     }
     
-    /// Returns if number of objects in this array that return true when passed
-    /// through a given predicate matches an expected count.
+    /// Returns if the number of objects in this array that return true when
+    /// passed through a given predicate matches an expected count.
     @inlinable
     func count(_ count: Int, where predicate: (Iterator.Element) throws -> Bool) rethrows -> Bool {
         var _count = 0

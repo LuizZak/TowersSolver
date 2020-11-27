@@ -56,6 +56,12 @@ class TestGridBuilder {
         return self
     }
     
+    func setWrapping(_ wrapping: Bool) -> TestGridBuilder {
+        generator.grid.wrapping = wrapping
+        
+        return self
+    }
+    
     func build() -> Grid {
         generator.grid
     }
