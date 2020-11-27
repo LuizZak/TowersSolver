@@ -9,9 +9,9 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 0, row: 0)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueued(TileLockingStep(column: 0, row: 0, orientation: .east))
+        XCTAssertEqual(result, [.lockOrientation(column: 0, row: 0, orientation: .east)])
     }
     
     func testApply_nonWrappingGrid_lineTile_atTopEdge() {
@@ -24,9 +24,9 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 1, row: 0)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueued(TileLockingStep(column: 1, row: 0, orientation: .east))
+        XCTAssertEqual(result, [.lockOrientation(column: 1, row: 0, orientation: .east)])
     }
     
     func testApply_nonWrappingGrid_lineTile_atLeftEdge() {
@@ -39,9 +39,9 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 0, row: 1)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueued(TileLockingStep(column: 0, row: 1, orientation: .north))
+        XCTAssertEqual(result, [.lockOrientation(column: 0, row: 1, orientation: .north)])
     }
     
     func testApply_nonWrappingGrid_tripleTile_atTopEdge() {
@@ -54,9 +54,9 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 1, row: 0)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueued(TileLockingStep(column: 1, row: 0, orientation: .south))
+        XCTAssertEqual(result, [.lockOrientation(column: 1, row: 0, orientation: .south)])
     }
     
     func testApply_nonWrappingGrid_endPoint_atTopEdge_doesNotChangeTileOrientation() {
@@ -70,8 +70,8 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 1, row: 0)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueuedNone()
+        XCTAssertTrue(result.isEmpty)
     }
 }

@@ -5,10 +5,10 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
     var column: Int
     var row: Int
     
-    func apply(on grid: Grid, delegate: NetSolverDelegate) -> Grid {
+    func apply(on grid: Grid, delegate: NetSolverDelegate) -> [GridAction] {
         let tile = grid[row: row, column: column]
         if tile.isLocked {
-            return grid
+            return []
         }
         
         let barriers = grid.barriersForTile(atColumn: column, row: row)
@@ -18,13 +18,14 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
         // If no ports are available, mark this grid as invalid
         guard !availableOrientations.isEmpty else {
             delegate.markIsInvalid()
-            return grid
+            return []
         }
         
         // Check if only one orientation is available
         if availableOrientations.count == 1, let orientation = availableOrientations.first {
-            delegate.enqueueLock(atColumn: column, row: row, orientation: orientation)
-            return grid
+            return [
+                .lockOrientation(column: column, row: row, orientation: orientation)
+            ]
         }
         
         // If the available orientations all coincide with the same ports
@@ -39,10 +40,11 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
         // If ports set contains one element, it indicates all orientations provide
         // the same set of ports, and are thus equivalent.
         if portsSet.count == 1, let orientation = availableOrientations.min(by: { $0.rawValue < $1.rawValue }) {
-            delegate.enqueueLock(atColumn: column, row: row, orientation: orientation)
-            return grid
+            return [
+                .lockOrientation(column: column, row: row, orientation: orientation)
+            ]
         }
         
-        return grid
+        return []
     }
 }

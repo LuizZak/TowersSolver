@@ -14,7 +14,8 @@ class SolverInvocation {
         while !steps.isEmpty && isValid {
             let step = steps.removeFirst()
             
-            grid = step.apply(on: grid, delegate: self)
+            let actions = step.apply(on: grid, delegate: self)
+            grid = performGridActions(actions, grid: grid)
         }
         
         let state: ResultState
@@ -26,6 +27,20 @@ class SolverInvocation {
         }
         
         return SolverInvocationResult(state: state, grid: grid)
+    }
+    
+    func performGridActions(_ actions: [GridAction], grid: Grid) -> Grid {
+        var grid = grid
+        
+        for action in actions {
+            grid = performGridAction(action, grid: grid)
+        }
+        
+        return grid
+    }
+    
+    func performGridAction(_ action: GridAction, grid: Grid) -> Grid {
+        return grid
     }
     
     struct SolverInvocationResult {

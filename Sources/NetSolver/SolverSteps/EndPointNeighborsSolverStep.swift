@@ -5,10 +5,10 @@ struct EndPointNeighborsSolverStep: NetSolverStep {
     var column: Int
     var row: Int
     
-    func apply(on grid: Grid, delegate: NetSolverDelegate) -> Grid {
+    func apply(on grid: Grid, delegate: NetSolverDelegate) -> [GridAction] {
         let tile = grid[row: row, column: column]
         if tile.isLocked {
-            return grid
+            return []
         }
         
         let available = Set(EdgePort.allCases).subtracting(delegate.unavailablePortsForTile(atColumn: column, row: row))
@@ -18,9 +18,11 @@ struct EndPointNeighborsSolverStep: NetSolverStep {
         let surrounding = grid.surroundingTiles(column: column, row: row)
         let nonEndPoints = surrounding.filter { available.contains($0.edge) && $0.tile.kind != .endPoint }
         if nonEndPoints.count == 1 {
-            delegate.enqueueLock(atColumn: column, row: row, orientation: nonEndPoints[0].edge.asOrientation)
+            return [
+                .lockOrientation(column: column, row: row, orientation: nonEndPoints[0].edge.asOrientation)
+            ]
         }
         
-        return grid
+        return []
     }
 }

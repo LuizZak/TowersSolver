@@ -11,9 +11,9 @@ class EndPointNeighborsSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = EndPointNeighborsSolverStep(column: 2, row: 0)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueued(TileLockingStep(column: 2, row: 0, orientation: .south))
+        XCTAssertEqual(result, [.lockOrientation(column: 2, row: 0, orientation: .south)])
     }
     
     func testApply_wrapping_onEdge_surroundedByEndPoints() {
@@ -26,8 +26,8 @@ class EndPointNeighborsSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = EndPointNeighborsSolverStep(column: 2, row: 0)
         
-        _ = sut.apply(on: grid, delegate: mockDelegate)
+        let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        assertEnqueuedNone()
+        XCTAssertTrue(result.isEmpty)
     }
 }

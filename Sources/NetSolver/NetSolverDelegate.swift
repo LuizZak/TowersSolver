@@ -17,17 +17,3 @@ protocol NetSolverDelegate {
     /// which has no connecting ports available to the tile at the given column/row.
     func unavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
 }
-
-extension NetSolverDelegate {
-    /// Enqueues a tile locking operation for a tile at a given column/row,
-    /// with a given final orientation.
-    ///
-    /// Equivalent to:
-    ///
-    /// ```
-    /// self.enqueue(TileLockingStep(column: column, row: row, orientation: orientation))
-    /// ```
-    func enqueueLock(atColumn column: Int, row: Int, orientation: Tile.Orientation) {
-        enqueue(TileLockingStep(column: column, row: row, orientation: orientation))
-    }
-}

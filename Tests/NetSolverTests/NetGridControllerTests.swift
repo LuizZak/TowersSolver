@@ -3,7 +3,7 @@ import XCTest
 
 class NetGridControllerTests: XCTestCase {
     func testOrientationsForRow() {
-        var grid = Grid(rows: 4, columns: 1)
+        var grid = Grid(rows: 1, columns: 4)
         grid.tiles[0][0].orientation = .north
         grid.tiles[0][1].orientation = .east
         grid.tiles[0][2].orientation = .south
