@@ -9,11 +9,33 @@ protocol NetSolverDelegate {
     /// Enqueues a given solver step so it can be performed later.
     func enqueue(_ step: NetSolverStep)
     
-    /// Returns a set of edges that are unavailable for a tile at a given column/row
+    /// Returns a set of ports that are required to be available for a tile at a
+    /// given column/row combination.
+    ///
+    /// Ports that are required to be available are influenced by neighboring
+    /// tiles that are either locked or have orientation restrictions which force
+    /// the port pointing to the tile to always be required.
+    func requiredIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
+    
+    /// Returns a set of ports that are unavailable for a tile at a given column/row
     /// combination.
     ///
     /// Ports can be unavailable in case a barrier is currently present between
     /// a surrounding tile, or if a surrounding tile is locked in an orientation
     /// which has no connecting ports available to the tile at the given column/row.
-    func unavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
+    func unavailableIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
+    
+    /// Returns the set of outgoing ports which are guaranteed to be available
+    /// for a tile at a given column/row combination.
+    ///
+    /// Guaranteed outgoing ports include ones that where marked on the metadata,
+    /// or outgoing ports for locked tiles.
+    func guaranteedOutgoingAvailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
+    
+    /// Returns the set of outgoing ports which are guaranteed to be unavailable
+    /// for a tile at a given column/row combination.
+    ///
+    /// Guaranteed outgoing ports include ones that where marked on the metadata,
+    /// or missing outgoing ports for locked tiles.
+    func guaranteedOutgoingUnavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
 }

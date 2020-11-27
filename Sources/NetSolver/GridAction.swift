@@ -2,14 +2,13 @@
 enum GridAction: Equatable {
     /// Locks orientation of a tile at a given column/row
     case lockOrientation(column: Int, row: Int, orientation: Tile.Orientation)
-    /// Adds one or more guaranteed available ports to a tile at a given column/row
-    case addGuaranteedAvailable(column: Int, row: Int, Set<EdgePort>)
-    /// Removes one or more guaranteed available ports to a tile at a given column/row
-    case removeGuaranteedAvailable(column: Int, row: Int, Set<EdgePort>)
-    /// Adds one or more guaranteed unavailable ports to a tile at a given column/row
-    case addGuaranteedUnavailable(column: Int, row: Int, Set<EdgePort>)
-    /// Removes one or more guaranteed unavailable ports to a tile at a given column/row
-    case removeGuaranteedUnavailable(column: Int, row: Int, Set<EdgePort>)
+    
+    /// Marks that a tile at a given column/row to have none of the provided
+    /// ports as ingoing
+    case markUnavailableIngoing(column: Int, row: Int, Set<EdgePort>)
+    
+    /// Marks a set of orientations as not possible for a tile at a given column/row
+    case markImpossibleOrientations(column: Int, row: Int, Set<Tile.Orientation>)
 }
 
 

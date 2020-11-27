@@ -40,6 +40,26 @@ class SolverInvocation {
     }
     
     func performGridAction(_ action: GridAction, grid: Grid) -> Grid {
+        var grid = grid
+        
+        switch action {
+        case let .lockOrientation(column, row, orientation):
+            grid[row: row, column: column].isLocked = true
+            grid[row: row, column: column].orientation = orientation
+            
+        case let .markUnavailableIngoing(column, row, ports):
+            // Figure out which orientations require the ports mentioned and
+            // remove them from the allowed set
+            let available = grid[row: row, column: column].orientations(excludingPorts: ports)
+            
+            metadata.setPossibleOrientations(column: column, row: row, orientations: available)
+            
+        case let .markImpossibleOrientations(column, row, orientations):
+            let available = metadata.possibleOrientations(column: column, row: row)
+            
+            metadata.setPossibleOrientations(column: column, row: row, orientations: available.subtracting(orientations))
+        }
+        
         return grid
     }
     
@@ -64,7 +84,46 @@ extension SolverInvocation: NetSolverDelegate {
         steps.append(step)
     }
     
-    func unavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+    func requiredIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+        var ports: Set<EdgePort> = []
+        
+        // Check surrounding tiles for guaranteed available ports and tiles that
+        // are locked while facing torwards the requested tile
+        let surrounding = EdgePort.allCases.filter { edgePort in
+            let neighborCoordinates = grid.columnRowByMoving(column: column, row: row, direction: edgePort)
+            
+            // Edge port that points from the neighbor tile back to the queried
+            // tile
+            let backEdgePort = edgePort.opposite
+            
+            // Check locked tiles that face torwards from the tile
+            let neighbor = grid[row: neighborCoordinates.row, column: neighborCoordinates.column]
+            if neighbor.isLocked && neighbor.ports.contains(backEdgePort) {
+                return true
+            }
+            // Check guaranteed available back ports from available orientations
+            let neighborOrientations
+                = metadata.possibleOrientations(column: neighborCoordinates.column,
+                                                row: neighborCoordinates.row)
+            let neighborCommonAvailable
+                = neighbor.commonAvailablePorts(orientations: neighborOrientations)
+            
+            if neighborCommonAvailable.contains(backEdgePort) {
+                return true
+            }
+            
+            return false
+        }
+
+        ports.formUnion(surrounding)
+        
+        // Subtract barriers
+        ports.subtract(grid.barriersForTile(atColumn: column, row: row))
+        
+        return ports
+    }
+    
+    func unavailableIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
         // Start with barriers
         var unavailable = grid.barriersForTile(atColumn: column, row: row)
         
@@ -83,7 +142,9 @@ extension SolverInvocation: NetSolverDelegate {
                 return true
             }
             // Check guaranteed unavailable back ports from available orientations
-            if metadata.guaranteedUnavailablePorts(column: neighborCoordinates.column, row: neighborCoordinates.row).contains(backEdgePort) {
+            let neighborOrientations = metadata.possibleOrientations(column: neighborCoordinates.column, row: neighborCoordinates.row)
+            let unavailable = neighbor.commonUnavailablePorts(orientations: neighborOrientations)
+            if unavailable.contains(backEdgePort) {
                 return true
             }
             
@@ -93,5 +154,25 @@ extension SolverInvocation: NetSolverDelegate {
         unavailable.formUnion(surrounding)
         
         return unavailable
+    }
+    
+    func guaranteedOutgoingAvailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+        let tile = grid[row: row, column: column]
+        if tile.isLocked {
+            return tile.ports
+        }
+        
+        let orientations = metadata.possibleOrientations(column: column, row: row)
+        return tile.commonAvailablePorts(orientations: orientations)
+    }
+    
+    func guaranteedOutgoingUnavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+        let tile = grid[row: row, column: column]
+        if tile.isLocked {
+            return tile.ports.symmetricDifference(EdgePort.allCases)
+        }
+        
+        let orientations = metadata.possibleOrientations(column: column, row: row)
+        return tile.commonUnavailablePorts(orientations: orientations)
     }
 }

@@ -3,6 +3,24 @@ extension Tile {
     var ports: Set<EdgePort> {
         return Self.portsForTile(kind: kind, orientation: orientation)
     }
+    
+    /// Returns all available ports that are common across the given orientations
+    /// for this tile kind
+    func commonAvailablePorts(orientations: Set<Tile.Orientation>) -> Set<EdgePort> {
+        let portsSet = orientations.map { orientation -> Set<EdgePort> in
+            Tile.portsForTile(kind: kind, orientation: orientation)
+        }
+        return portsSet.reduce(Set(EdgePort.allCases), { $0.intersection($1) })
+    }
+    
+    /// Returns all unavailable ports that are common across the given orientations
+    /// for this tile kind
+    func commonUnavailablePorts(orientations: Set<Tile.Orientation>) -> Set<EdgePort> {
+        let portsSet = orientations.map { orientation -> Set<EdgePort> in
+            Tile.portsForTile(kind: kind, orientation: orientation)
+        }
+        return portsSet.reduce(Set(EdgePort.allCases), { $0.subtracting($1) })
+    }
 }
     
 extension Tile {

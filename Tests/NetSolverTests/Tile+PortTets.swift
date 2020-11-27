@@ -136,6 +136,38 @@ class Tile_PortTets: XCTestCase {
         assertTileFromPortsIsNil([])
         assertTileFromPortsIsNil([.top, .left, .right, .bottom])
     }
+    
+    func testCommonAvailablePorts_cornerTile_northWest() {
+        let sut = Tile(kind: .L, orientation: .north)
+        
+        let common = sut.commonAvailablePorts(orientations: [.west, .north])
+        
+        XCTAssertEqual(common, [.top])
+    }
+    
+    func testCommonAvailablePorts_cornerTile_westEast() {
+        let sut = Tile(kind: .L, orientation: .north)
+        
+        let common = sut.commonAvailablePorts(orientations: [.west, .east])
+        
+        XCTAssertEqual(common, [])
+    }
+    
+    func testCommonUnavailablePorts_cornerTile_northWest() {
+        let sut = Tile(kind: .L, orientation: .north)
+        
+        let common = sut.commonUnavailablePorts(orientations: [.west, .north])
+        
+        XCTAssertEqual(common, [.bottom])
+    }
+    
+    func testCommonUnavailablePorts_cornerTile_westEast() {
+        let sut = Tile(kind: .L, orientation: .north)
+        
+        let common = sut.commonUnavailablePorts(orientations: [.west, .east])
+        
+        XCTAssertEqual(common, [])
+    }
 }
 
 // MARK: - Assertion functions

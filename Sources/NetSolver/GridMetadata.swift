@@ -6,24 +6,25 @@ struct GridMetadata {
     /// Tile metadata, stored as [rows][columns]
     private var metadata: [[TileMetadata]]
     
-    init(rows: Int, columns: Int) {
-        self.rows = rows
-        self.columns = columns
-        
+    init(forGrid grid: Grid) {
+        rows = grid.rows
+        columns = grid.columns
         metadata = []
         
-        initMedatada()
+        initMedatada(grid: grid)
     }
     
-    init(forGrid grid: Grid) {
-        self.init(rows: grid.rows, columns: grid.columns)
-    }
-    
-    private mutating func initMedatada() {
+    private mutating func initMedatada(grid: Grid) {
         metadata.removeAll()
         
-        for _ in 0..<rows {
-            metadata.append(Array(repeating: TileMetadata(), count: columns))
+        for row in 0..<rows {
+            var r: [TileMetadata] = []
+            
+            for column in 0..<columns {
+                r.append(TileMetadata(tile: grid[row: row, column: column]))
+            }
+            
+            metadata.append(r)
         }
     }
     
@@ -31,30 +32,28 @@ struct GridMetadata {
         return metadata[row][column]
     }
     
-    /// Returns a set of outgoing ports which are guaranteed to be available as
-    /// a result of combination of available ports across all allowed available
-    /// orientations for a tile at a specified column/row combination.
-    ///
-    /// - seeAlso: guaranteedUnavailablePorts(column:row:)
-    func guaranteedAvailablePorts(column: Int, row: Int) -> Set<EdgePort> {
-        return metadata(atColumn: column, row: row).guaranteedAvailable
+    mutating func setPossibleOrientations(column: Int, row: Int, orientations: Set<Tile.Orientation>) {
+        metadata[row][column].possibleOrientations = orientations
     }
     
-    /// Returns a set of outgoing ports which are guaranteed to not be available
-    /// as a result of combination of unavailable ports across all allowed
-    /// orientations for a tile at a specified column/row combination.
-    ///
-    /// - seeAlso: guaranteedAvailablePorts(column:row:)
-    func guaranteedUnavailablePorts(column: Int, row: Int) -> Set<EdgePort> {
-        return metadata(atColumn: column, row: row).guaranteedUnavailable
+    /// Returns the list of possible orientations for a tile at a given column/row
+    /// combination.
+    func possibleOrientations(column: Int, row: Int) -> Set<Tile.Orientation> {
+        return metadata(atColumn: column, row: row).possibleOrientations
     }
 }
 
 private extension GridMetadata {
     /// Metadata for a tile on a grid
     struct TileMetadata {
-        var guaranteedAvailable: Set<EdgePort> = []
-        var guaranteedUnavailable: Set<EdgePort> = []
-        var allowedOrientations: Set<Tile.Orientation> = Set(Tile.Orientation.allCases)
+        /// Kind of tile
+        var kind: Tile.Kind
+        
+        /// Set of possible orientations for this tile
+        var possibleOrientations: Set<Tile.Orientation> = Set(Tile.Orientation.allCases)
+        
+        init(tile: Tile) {
+            kind = tile.kind
+        }
     }
 }
