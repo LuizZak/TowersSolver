@@ -2,6 +2,22 @@ import XCTest
 @testable import NetSolver
 
 class SolverInvcationTests: XCTestCase {
+    func testPossibleOrientationsForTile() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = SolverInvocation(grid: grid)
+        
+        sut.metadata.setPossibleOrientations(column: 0, row: 0, orientations: [.east, .south])
+        
+        XCTAssertEqual(sut.possibleOrientationsForTile(atColumn: 0, row: 0), [.east, .south])
+    }
+    
+    func testPossibleOrientationsForTile_startWithAllOrientations() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = SolverInvocation(grid: grid)
+        
+        XCTAssertEqual(sut.possibleOrientationsForTile(atColumn: 0, row: 0), Set(Tile.Orientation.allCases))
+    }
+    
     func testUnavailableIncomingPortsForTile_nonWrappingGrid() {
         let grid = TestGridBuilder(columns: 3, rows: 3)
             .build()
@@ -49,32 +65,32 @@ class SolverInvcationTests: XCTestCase {
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 1, row: 1), [.top])
     }
     
-    func testRequiredIngoingPortsForTile() {
+    func testRequiredPortsForTile() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .build()
         let sut = SolverInvocation(grid: grid)
         
-        XCTAssertEqual(sut.requiredIncomingPortsForTile(atColumn: 1, row: 0), [])
+        XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [])
     }
     
-    func testRequiredIngoingPortsForTile_neighborLockedTile() {
+    func testRequiredPortsForTile_neighborLockedTile() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .I, orientation: .east)
             .lockTile(atColumn: 0, row: 0)
             .build()
         let sut = SolverInvocation(grid: grid)
         
-        XCTAssertEqual(sut.requiredIncomingPortsForTile(atColumn: 1, row: 0), [.left])
+        XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [.left])
     }
     
-    func testRequiredIngoingPortsForTile_neighborRestrictedTile() {
+    func testRequiredPortsForTile_neighborRestrictedTile() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .L, orientation: .east)
             .build()
         let sut = SolverInvocation(grid: grid)
         sut.metadata.setPossibleOrientations(column: 0, row: 0, orientations: [.north, .east])
         
-        XCTAssertEqual(sut.requiredIncomingPortsForTile(atColumn: 1, row: 0), [.left])
+        XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [.left])
     }
     
     func testGuaranteedOutgoingAvailablePorts_lockedTile() {

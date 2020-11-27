@@ -7,6 +7,8 @@ class MockNetSolverDelegate: NetSolverDelegate {
     var didCallMarkIsInvalid = false
     
     var mock_unavailablePortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
+    var mock_requiredPortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
+    var mock_guaranteedOutgoingUnavailablePortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     
     var metadata: GridMetadata {
         baseSolverDelegate.metadata
@@ -36,12 +38,20 @@ class MockNetSolverDelegate: NetSolverDelegate {
         baseSolverDelegate.enqueue(step)
     }
     
-    func requiredIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
-        return baseSolverDelegate.requiredIncomingPortsForTile(atColumn: column, row: row)
+    func possibleOrientationsForTile(atColumn column: Int, row: Int) -> Set<Tile.Orientation> {
+        return baseSolverDelegate.possibleOrientationsForTile(atColumn: column, row: row)
+    }
+    
+    func requiredPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+        if let mocked = mock_requiredPortsForTile {
+            return mocked(column, row)
+        }
+        
+        return baseSolverDelegate.requiredPortsForTile(atColumn: column, row: row)
     }
     
     func unavailableIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
-        if let mocked =  mock_unavailablePortsForTile {
+        if let mocked = mock_unavailablePortsForTile {
             return mocked(column, row)
         }
         
@@ -53,6 +63,10 @@ class MockNetSolverDelegate: NetSolverDelegate {
     }
     
     func guaranteedOutgoingUnavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+        if let mocked = mock_guaranteedOutgoingUnavailablePortsForTile {
+            return mocked(column, row)
+        }
+        
         return baseSolverDelegate.guaranteedOutgoingUnavailablePortsForTile(atColumn: column, row: row)
     }
 }

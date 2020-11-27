@@ -10,5 +10,3 @@ enum GridAction: Equatable {
     /// Marks a set of orientations as not possible for a tile at a given column/row
     case markImpossibleOrientations(column: Int, row: Int, Set<Tile.Orientation>)
 }
-
-

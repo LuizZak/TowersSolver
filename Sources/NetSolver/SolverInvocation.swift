@@ -47,20 +47,42 @@ class SolverInvocation {
             grid[row: row, column: column].isLocked = true
             grid[row: row, column: column].orientation = orientation
             
+            propagateTileCheck(column: column, row: row)
+            
         case let .markUnavailableIngoing(column, row, ports):
             // Figure out which orientations require the ports mentioned and
             // remove them from the allowed set
+            let possible = metadata.possibleOrientations(column: column, row: row)
             let available = grid[row: row, column: column].orientations(excludingPorts: ports)
+            guard !available.isDisjoint(with: possible) else {
+                break
+            }
             
             metadata.setPossibleOrientations(column: column, row: row, orientations: available)
             
+            propagateTileCheck(column: column, row: row)
         case let .markImpossibleOrientations(column, row, orientations):
-            let available = metadata.possibleOrientations(column: column, row: row)
+            let possible = metadata.possibleOrientations(column: column, row: row)
+            guard !possible.isDisjoint(with: orientations) else {
+                break
+            }
             
-            metadata.setPossibleOrientations(column: column, row: row, orientations: available.subtracting(orientations))
+            metadata.setPossibleOrientations(column: column, row: row, orientations: possible.subtracting(orientations))
+            
+            propagateTileCheck(column: column, row: row)
         }
         
         return grid
+    }
+    
+    private func propagateTileCheck(column: Int, row: Int) {
+        enqueue(GeneralTileCheckSolverStep(column: column, row: row))
+        
+        EdgePort.allCases.forEach { port in
+            let neighbor = grid.columnRowByMoving(column: column, row: row, direction: port)
+            
+            enqueue(GeneralTileCheckSolverStep(column: neighbor.column, row: neighbor.row))
+        }
     }
     
     struct SolverInvocationResult {
@@ -84,7 +106,11 @@ extension SolverInvocation: NetSolverDelegate {
         steps.append(step)
     }
     
-    func requiredIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
+    func possibleOrientationsForTile(atColumn column: Int, row: Int) -> Set<Tile.Orientation> {
+        return metadata.possibleOrientations(column: column, row: row)
+    }
+    
+    func requiredPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
         var ports: Set<EdgePort> = []
         
         // Check surrounding tiles for guaranteed available ports and tiles that
