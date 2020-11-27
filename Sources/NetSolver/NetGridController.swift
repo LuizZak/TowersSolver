@@ -8,6 +8,14 @@ public class NetGridController {
         return grid.rows
     }
     
+    /// Returns `true` if the current grid state is invalid.
+    ///
+    /// Grid states are invalid if locked tiles form closed networks that do not
+    /// include the full grid and/or they form loops.
+    public var isInvalid: Bool {
+        return checkIsInvalid()
+    }
+    
     /// Returns whether the current grid is solved in a valid state.
     public var isSolved: Bool {
         return checkIsSolved()
@@ -141,6 +149,18 @@ public class NetGridController {
         return gameId
     }
     
+    private func checkIsInvalid() -> Bool {
+        let networks = Network.fromLockedTiles(onGrid: grid)
+        
+        if let closedNetwork = networks.first(where: { $0.isClosed(onGrid: grid) }) {
+            if !closedNetwork.isCompleteNetwork(ofGrid: grid) {
+                return false
+            }
+        }
+        
+        return networks.contains { $0.hasLoops(onGrid: grid) }
+    }
+    
     private func checkIsSolved() -> Bool {
         var tilesToCheck: [(x: Int, y: Int, incomingPort: EdgePort?)] = [(0, 0, nil)]
         var tilesChecked: [(x: Int, y: Int)] = []
@@ -170,23 +190,17 @@ public class NetGridController {
             
             let tile = grid[row: current.y, column: current.x]
             
+            let barriers = grid.barriersForTile(atColumn: current.x, row: current.y)
+            
             // Check in all four directions if a tile with a matching port
             // is connected with an available port on the tile
-            for port in tile.ports where port != current.incomingPort {
-                let next: (x: Int, y: Int)
+            for port in tile.ports where port != current.incomingPort && !barriers.contains(port) {
+                let next
+                    = grid.columnRowByMoving(column: current.x,
+                                             row: current.y,
+                                             direction: port)
                 
-                switch port {
-                case .top:
-                    next = (current.x, current.y - 1)
-                case .right:
-                    next = (current.x + 1, current.y)
-                case .bottom:
-                    next = (current.x, current.y + 1)
-                case .left:
-                    next = (current.x - 1, current.y)
-                }
-                
-                if checkTile(atX: next.x, y: next.y, port: port.opposite) {
+                if checkTile(atX: next.column, y: next.row, port: port.opposite) {
                     return false
                 }
             }

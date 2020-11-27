@@ -55,14 +55,18 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
             .orientations(excludingPorts: unavailableOutgoing)
             .symmetricDifference(orientations)
         
+        let availableOrientations =
+            Set(Tile.Orientation.allCases)
+            .normalizedByPortSet(onTileKind: tile.kind)
+        
         // If no orientations remain, mark as invalid
-        if toExclude == Set(Tile.Orientation.allCases) {
+        if toExclude == availableOrientations {
             delegate.markIsInvalid()
             return []
         }
         // If only one orientation remains, lock tile
-        if toExclude.count == Tile.Orientation.allCases.count - 1 {
-            let remaining = Set(Tile.Orientation.allCases).subtracting(toExclude)
+        if toExclude.count == availableOrientations.count - 1 {
+            let remaining = availableOrientations.subtracting(toExclude)
             
             if remaining.count == 1, let first = remaining.first {
                 return [

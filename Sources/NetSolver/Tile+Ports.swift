@@ -1,11 +1,15 @@
 extension Tile {
-    /// Returns the set of edge ports that are available for this tile
+    /// Returns the set of edge ports that are available for this tile in its
+    /// current orientation.
+    ///
+    /// - seeAlso: `kind`
+    /// - seeAlso: `orientation`
     var ports: Set<EdgePort> {
         return Self.portsForTile(kind: kind, orientation: orientation)
     }
     
     /// Returns all available ports that are common across the given orientations
-    /// for this tile kind
+    /// for this tile's kind
     func commonAvailablePorts(orientations: Set<Tile.Orientation>) -> Set<EdgePort> {
         let portsSet = orientations.map { orientation -> Set<EdgePort> in
             Tile.portsForTile(kind: kind, orientation: orientation)
@@ -14,7 +18,7 @@ extension Tile {
     }
     
     /// Returns all unavailable ports that are common across the given orientations
-    /// for this tile kind
+    /// for this tile's kind
     func commonUnavailablePorts(orientations: Set<Tile.Orientation>) -> Set<EdgePort> {
         let portsSet = orientations.map { orientation -> Set<EdgePort> in
             Tile.portsForTile(kind: kind, orientation: orientation)

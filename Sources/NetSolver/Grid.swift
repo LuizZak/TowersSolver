@@ -7,6 +7,11 @@ public struct Grid {
     /// opposite end of the grid.
     internal(set) public var wrapping: Bool
     
+    /// Returns the number of tiles on this grid
+    public var tileCount: Int {
+        return rows * columns
+    }
+    
     /// The number of horizontal rows on this grid
     public let rows: Int
     /// The number of vertical rows on this grid
@@ -83,8 +88,9 @@ public struct Grid {
     /// Returns the column/row that results from moving from a given column/row
     /// at a specified edge port.
     ///
-    /// Querying tiles at the edge of the grid with a direction that is out-of-bounds,
-    /// the column or row are wrapped around to the opposite side of the grid.
+    /// Querying tiles at the edge of the grid with a direction that points to
+    /// out-of-bounds, the resulting column or row are wrapped around to the
+    /// opposite side of the grid.
     public func columnRowByMoving(column: Int, row: Int, direction: EdgePort) -> (column: Int, row: Int) {
         var column = column
         var row = row

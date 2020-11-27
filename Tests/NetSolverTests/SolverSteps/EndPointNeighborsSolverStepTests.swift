@@ -28,6 +28,8 @@ class EndPointNeighborsSolverStepTests: BaseSolverStepTestClass {
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertTrue(result.isEmpty)
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 2, row: 0, [.east, .west])
+        ])
     }
 }
