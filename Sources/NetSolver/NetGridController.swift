@@ -161,6 +161,9 @@ public class NetGridController {
         return networks.contains { $0.hasLoops(onGrid: grid) }
     }
     
+    // TODO: Consider replacing implementation with simple a Network creation
+    // followed by a check on its structure, taking into consideration the
+    // performance penalty that that may encur.
     private func checkIsSolved() -> Bool {
         var tilesToCheck: [(x: Int, y: Int, incomingPort: EdgePort?)] = [(0, 0, nil)]
         var tilesChecked: [(x: Int, y: Int)] = []
