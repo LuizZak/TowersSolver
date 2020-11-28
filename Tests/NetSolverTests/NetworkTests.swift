@@ -292,6 +292,18 @@ class NetworkTests: XCTestCase {
         ])
     }
     
+    func testAttemptJoin_doNotJoinIfPortsDoNotConnect() throws {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .east)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(true)
+            .build()
+        let net1 = Network.fromCoordinates(onGrid: grid, [(0, 0)])
+        let net2 = Network.fromCoordinates(onGrid: grid, [(1, 0)])
+        
+        XCTAssertNil(net1.attemptJoin(other: net2, onGrid: grid))
+    }
+    
     func testFromCoordinates() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .endPoint, orientation: .east)

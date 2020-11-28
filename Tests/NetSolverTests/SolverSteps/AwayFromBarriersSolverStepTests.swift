@@ -74,4 +74,30 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         
         XCTAssertTrue(result.isEmpty)
     }
+    
+    func testApply_noAvailablePorts_markAsInvalid() {
+        // Create a grid with a line piece sitting on a corner, which cannot be
+        // solved if the grid is non-wrapping
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(0, 0, kind: .I, orientation: .north)
+            .build()
+        mockDelegate.mock_prepare(forGrid: grid)
+        let sut = AwayFromBarriersSolverStep(column: 0, row: 0)
+        
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+        
+        XCTAssertEqual(result, [.markAsInvalid])
+    }
+    
+    func testApply_ignoreLockedTiles() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(0, 0, kind: .I, orientation: .north, locked: true)
+            .build()
+        mockDelegate.mock_prepare(forGrid: grid)
+        let sut = AwayFromBarriersSolverStep(column: 0, row: 0)
+        
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+        
+        XCTAssertEqual(result, [])
+    }
 }

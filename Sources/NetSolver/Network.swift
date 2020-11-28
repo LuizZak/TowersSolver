@@ -68,9 +68,6 @@ struct Network {
             guard let tile = self.tile(forColumn: x, row: y) else {
                 return false
             }
-            guard x >= 0 && x < grid.columns && y >= 0 && y < grid.rows else {
-                return false
-            }
             
             // Check for loops
             guard !visited.contains(where: { ($0.column, $0.row) == (x, y) }) else {
@@ -162,7 +159,9 @@ struct Network {
                 }
                 
                 let neighbor = grid.columnRowByMoving(column: tile.column, row: tile.row, direction: port)
-                if other.hasTile(forColumn: neighbor.column, row: neighbor.row) {
+                let neighborTile = grid[row: neighbor.row, column: neighbor.column]
+                
+                if other.hasTile(forColumn: neighbor.column, row: neighbor.row) && neighborTile.ports.contains(port.opposite) {
                     return flushList()
                 }
             }
