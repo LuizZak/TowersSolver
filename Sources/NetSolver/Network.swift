@@ -4,6 +4,12 @@
 struct Network {
     var tiles: [Coordinate]
     
+    /// Returns `true` if this network contains a tile for a given column/row
+    /// combination.
+    func hasTile(forColumn column: Int, row: Int) -> Bool {
+        return tile(forColumn: column, row: row) != nil
+    }
+    
     /// Returns `true` if this network represents a closed network, where all
     /// tiles have ports that only connect to other tiles on this same network.
     /// The provided grid is used to perform grid wrapping.
@@ -15,7 +21,7 @@ struct Network {
                                            row: tile.row,
                                            direction: port)
                 
-                if !hasTile(atColumn: coord.column, row: coord.row) {
+                if !hasTile(forColumn: coord.column, row: coord.row) {
                     return false
                 }
             }
@@ -146,7 +152,7 @@ struct Network {
         }
         
         for tile in tiles {
-            if other.hasTile(atColumn: tile.column, row: tile.row) {
+            if other.hasTile(forColumn: tile.column, row: tile.row) {
                 return flushList()
             }
             
@@ -156,17 +162,13 @@ struct Network {
                 }
                 
                 let neighbor = grid.columnRowByMoving(column: tile.column, row: tile.row, direction: port)
-                if other.hasTile(atColumn: neighbor.column, row: neighbor.row) {
+                if other.hasTile(forColumn: neighbor.column, row: neighbor.row) {
                     return flushList()
                 }
             }
         }
         
         return nil
-    }
-    
-    private func hasTile(atColumn column: Int, row: Int) -> Bool {
-        return tile(forColumn: column, row: row) != nil
     }
     
     private func tile(forColumn column: Int, row: Int) -> Coordinate? {
@@ -189,7 +191,7 @@ struct Network {
         return result
     }
     
-    struct Coordinate: Equatable {
+    struct Coordinate: Hashable {
         var column: Int
         var row: Int
         var ports: Set<EdgePort>
@@ -227,5 +229,40 @@ extension Network {
         }
         
         return network.splitNetwork(onGrid: grid)
+    }
+    
+    /// Creates a network by spanning all connected tiles starting from a tile
+    /// at a given column/row combination.
+    ///
+    /// Barriers are taking into consideration when traversing the grid.
+    static func allConnectedStartingFrom(column: Int, row: Int, onGrid grid: Grid) -> Network {
+        var tiles: [Coordinate] = []
+        var queue: [(column: Int, row: Int)] = [(column, row)]
+        
+        while !queue.isEmpty {
+            let current = queue.removeLast()
+            
+            if tiles.contains(where: { ($0.column, $0.row) == current }) {
+                continue
+            }
+            
+            let tile = grid[row: current.row, column: current.column]
+            let barriers = grid.barriersForTile(atColumn: current.column, row: current.row)
+            
+            tiles.append(Coordinate(column: current.column, row: current.row, ports: tile.ports))
+            
+            for port in tile.ports where !barriers.contains(port) {
+                let neighbor = grid.columnRowByMoving(column: current.column,
+                                                      row: current.row,
+                                                      direction: port)
+                let neighborPorts = grid[row: neighbor.row, column: neighbor.column]
+                
+                if neighborPorts.ports.contains(port.opposite) {
+                    queue.append(neighbor)
+                }
+            }
+        }
+        
+        return Network(tiles: tiles)
     }
 }

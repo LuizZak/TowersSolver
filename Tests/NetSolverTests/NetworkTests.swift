@@ -2,6 +2,22 @@ import XCTest
 @testable import NetSolver
 
 class NetworkTests: XCTestCase {
+    func testHasTile() {
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [])
+        ])
+        
+        XCTAssertTrue(sut.hasTile(forColumn: 0, row: 0))
+    }
+    
+    func testHasTile_noMatchingTile() {
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [])
+        ])
+        
+        XCTAssertFalse(sut.hasTile(forColumn: 1, row: 0))
+    }
+    
     func testIsClosed_closedNetwork() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .endPoint, orientation: .east)
@@ -325,6 +341,66 @@ class NetworkTests: XCTestCase {
         ])
         XCTAssertEqual(result[1].tiles, [
             .init(column: 0, row: 2, ports: [.top, .bottom])
+        ])
+    }
+    
+    func testAllConnectedStartingFrom() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(0, 0, kind: .L, orientation: .east)
+            .setTile(0, 1, kind: .endPoint, orientation: .north)
+            .build()
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.right, .bottom]),
+            .init(column: 0, row: 1, ports: [.top])
+        ])
+    }
+    
+    func testAllConnectedStartingFrom_handlesLoops() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(0, 0, kind: .L, orientation: .east)
+            .setTile(1, 0, kind: .L, orientation: .south)
+            .setTile(0, 1, kind: .L, orientation: .north)
+            .setTile(1, 1, kind: .L, orientation: .west)
+            .build()
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onGrid: grid)
+        
+        XCTAssertEqual(Set(result.tiles), Set([
+            .init(column: 0, row: 0, ports: [.bottom, .right]),
+            .init(column: 0, row: 1, ports: [.top, .right]),
+            .init(column: 1, row: 0, ports: [.left, .bottom]),
+            .init(column: 1, row: 1, ports: [.top, .left])
+        ]))
+    }
+    
+    func testAllConnectedStartingFrom_nonWrapping() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .west)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .build()
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.left])
+        ])
+    }
+    
+    func testAllConnectedStartingFrom_wrapping() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .west)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(true)
+            .build()
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.left]),
+            .init(column: 1, row: 0, ports: [.right])
         ])
     }
 }

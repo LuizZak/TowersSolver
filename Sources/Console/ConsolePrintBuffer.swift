@@ -49,7 +49,9 @@ open class ConsolePrintBuffer {
         lastPrintBuffer = nil
     }
     
-    public func put(_ scalar: UnicodeScalar, color: ConsoleColor? = nil, x: Int,
+    public func put(_ scalar: UnicodeScalar,
+                    color: ConsoleColor? = nil,
+                    x: Int,
                     y: Int) {
         
         var offset = y * bufferWidth + x
@@ -137,18 +139,34 @@ open class ConsolePrintBuffer {
         buffer[index] = ConsoleCharacter(character: Character(char), color: color)
     }
     
-    private func get(_ x: Int, _ y: Int) -> Character {
+    private func coordToOffset(_ x: Int, _ y: Int) -> Int {
         var offset = y * bufferWidth + x
         
         if offset % bufferWidth == (bufferWidth - 1) {
             offset += 1
         }
         
+        return offset
+    }
+    
+    private func get(_ x: Int, _ y: Int) -> Character {
+        let offset = coordToOffset(x, y)
+        
         if offset >= buffer.count - 2 {
             return " "
         }
         
         return buffer[offset].character
+    }
+    
+    private func getColor(_ x: Int, _ y: Int) -> ConsoleColor? {
+        let offset = coordToOffset(x, y)
+        
+        if offset >= buffer.count - 2 {
+            return nil
+        }
+        
+        return buffer[offset].color
     }
     
     public func fillRect(char: Character, color: ConsoleColor? = nil,
@@ -169,19 +187,25 @@ open class ConsolePrintBuffer {
         putVerticalLine("|", x: x + w, y: y, h: h)
     }
     
-    public func putHorizontalLine(_ char: UnicodeScalar, color: ConsoleColor? = nil,
-                                  x: Int, y: Int, w: Int) {
+    public func putHorizontalLine(_ char: UnicodeScalar,
+                                  color: ConsoleColor? = nil,
+                                  x: Int,
+                                  y: Int,
+                                  w: Int) {
         
         for _x in x...x+w {
-            put(char, x: _x, y: y)
+            put(char, color: color, x: _x, y: y)
         }
     }
     
-    public func putVerticalLine(_ char: UnicodeScalar, color: ConsoleColor? = nil,
-                                x: Int, y: Int, h: Int) {
+    public func putVerticalLine(_ char: UnicodeScalar,
+                                color: ConsoleColor? = nil,
+                                x: Int,
+                                y: Int,
+                                h: Int) {
         
         for _y in y...y+h {
-            put(char, x: x, y: _y)
+            put(char, color: color, x: x, y: _y)
         }
     }
     
@@ -360,7 +384,9 @@ open class ConsolePrintBuffer {
                 }
                 
                 if let str = substitutions[sides] {
-                    putChar(str, x: x, y: y)
+                    let currentColor = getColor(x, y)
+                    
+                    putChar(str, color: currentColor, x: x, y: y)
                 }
             }
         }

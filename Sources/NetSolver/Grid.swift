@@ -17,6 +17,8 @@ public struct Grid {
     /// The number of vertical rows on this grid
     public let columns: Int
     
+    // TODO: Consider reverting indices order so it reads column x row as the rest
+    // of the APIs
     public subscript(row row: Int, column column: Int) -> Tile {
         get {
             return self[row: row][column]
