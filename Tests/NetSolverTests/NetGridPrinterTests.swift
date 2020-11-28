@@ -49,7 +49,13 @@ class NetGridPrinterTests: XCTestCase {
 }
 
 internal class TestConsolePrintTarget: ConsolePrintTarget {
-    let supportsTerminalColors = false
+    var supportsTerminalColors: Bool {
+        #if Xcode
+        return false
+        #else
+        return true
+        #endif
+    }
     
     var buffer: String = ""
     
@@ -59,4 +65,3 @@ internal class TestConsolePrintTarget: ConsolePrintTarget {
         Swift.print(total, terminator: terminator, to: &buffer)
     }
 }
-

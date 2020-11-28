@@ -58,7 +58,7 @@ public class NetGridPrinter: ConsolePrintBuffer {
         
         // Draw center box in case this tile is an endpoint
         if tile.kind == .endPoint {
-            put("■", x: centerX, y: centerY)
+            put("■", color: .cyan, x: centerX, y: centerY)
         }
         
         // Draw surrounding tile lines
