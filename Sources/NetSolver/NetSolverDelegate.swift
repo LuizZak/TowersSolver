@@ -3,9 +3,6 @@ protocol NetSolverDelegate {
     /// The metadata for the current solver grid.
     var metadata: GridMetadata { get }
     
-    /// Marks the current grid as an invalid game.
-    func markIsInvalid()
-    
     /// Enqueues a given solver step so it can be performed later.
     func enqueue(_ step: NetSolverStep)
     

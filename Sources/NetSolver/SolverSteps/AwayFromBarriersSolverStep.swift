@@ -17,8 +17,7 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
         
         // If no ports are available, mark this grid as invalid
         guard !availableOrientations.isEmpty else {
-            delegate.markIsInvalid()
-            return []
+            return [.markAsInvalid]
         }
         
         // Check if only one orientation is available

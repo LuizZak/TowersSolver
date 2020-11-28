@@ -29,8 +29,7 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
         // If required set has items in common with guaranteed unavailable set,
         // the grid is invalid.
         if !required.isDisjoint(with: unavailableOutgoing) {
-            delegate.markIsInvalid()
-            return []
+            return [.markAsInvalid]
         }
         
         // Detect cases where only a single orientation satisfies all required
@@ -61,8 +60,7 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
         
         // If no orientations remain, mark as invalid
         if toExclude == availableOrientations {
-            delegate.markIsInvalid()
-            return []
+            return [.markAsInvalid]
         }
         // If only one orientation remains, lock tile
         if toExclude.count == availableOrientations.count - 1 {

@@ -47,6 +47,9 @@ class SolverInvocation {
         var grid = grid
         
         switch action {
+        case .markAsInvalid:
+            markIsInvalid()
+        
         case let .lockOrientation(column, row, orientation):
             grid[row: row, column: column].isLocked = true
             grid[row: row, column: column].orientation = orientation

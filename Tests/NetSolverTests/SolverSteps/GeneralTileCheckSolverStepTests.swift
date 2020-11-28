@@ -16,8 +16,7 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [])
-        XCTAssertTrue(mockDelegate.didCallMarkIsInvalid)
+        XCTAssertEqual(result, [.markAsInvalid])
     }
     
     func testApply_unavailableIncomingMatchesAllButOneDirection_lockOrientation() {
@@ -47,8 +46,7 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [])
-        XCTAssertTrue(mockDelegate.didCallMarkIsInvalid)
+        XCTAssertEqual(result, [.markAsInvalid])
     }
     
     func testApply_requiredMatchesOnlyOneOrientation_lockOrientation() {
@@ -73,6 +71,9 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         mockDelegate.mock_requiredPortsForTile = { (_, _) in
             return [.right]
+        }
+        mockDelegate.mock_unavailablePortsForTile = { (_, _) in
+            return []
         }
         let sut = GeneralTileCheckSolverStep(column: 0, row: 0)
         
