@@ -1,6 +1,7 @@
 /// Solver for a Net game
 public final class Solver {
     private(set) public var grid: Grid
+    public var maxGuesses: Int = 5
     
     public init(grid: Grid) {
         self.grid = grid
@@ -10,6 +11,7 @@ public final class Solver {
     /// indicating whether the solve attempt succeeded.
     public func solve() -> Bool {
         let invocation = SolverInvocation(grid: grid)
+        invocation.maxGuesses = maxGuesses
         
         enqueueInitialSteps(on: invocation)
         

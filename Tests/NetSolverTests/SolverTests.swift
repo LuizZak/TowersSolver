@@ -59,6 +59,24 @@ class SolverTests: XCTestCase {
         
         printGrid(sut.grid)
     }
+    
+    func testSolve_13x11_complex() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#13x11:2e213351914861b57bb82e2a1587aca9dde5b7d268471a111e141151deb5c7e547b77dc7bd7752593d987344b31515124b613ee258daed7d8a3752de217171e2d92c978187881e1
+        let gridGen = NetGridGenerator(rows: 11, columns: 13)
+        gridGen.loadFromGameID("""
+            2e213351914861b57bb82e2a1587aca9dde5\
+            b7d268471a111e141151deb5c7e547b77dc7\
+            bd7752593d987344b31515124b613ee258da\
+            ed7d8a3752de217171e2d92c978187881e1
+            """)
+        let sut = Solver(grid: gridGen.grid)
+        sut.maxGuesses = 0
+        
+        XCTAssertTrue(sut.solve())
+        
+        printGrid(sut.grid)
+    }
 }
 
 private extension SolverTests {
