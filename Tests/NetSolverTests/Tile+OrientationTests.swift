@@ -158,4 +158,11 @@ class Tile_OrientationTests: XCTestCase {
         
         XCTAssertEqual(set.normalizedByPortSet(onTileKind: .endPoint), [.north, .east, .south, .west])
     }
+    
+    func testDescription() {
+        XCTAssertEqual(Tile.Orientation.north.description, "north")
+        XCTAssertEqual(Tile.Orientation.east.description, "east")
+        XCTAssertEqual(Tile.Orientation.south.description, "south")
+        XCTAssertEqual(Tile.Orientation.west.description, "west")
+    }
 }
