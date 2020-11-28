@@ -57,6 +57,9 @@ public class NetGridPrinter: ConsolePrintBuffer {
             put("*", x: x + 1, y: y + 1)
         }
         
+        // Draw surrounding tile lines
+        putRect(x: x, y: y, w: width, h: height)
+        
         let centerX = x + width / 2
         let centerY = y + height / 2
         
@@ -99,8 +102,5 @@ public class NetGridPrinter: ConsolePrintBuffer {
         if tile.kind == .endPoint || isCenter {
             put("■", color: .cyan, x: centerX, y: centerY)
         }
-        
-        // Draw surrounding tile lines
-        putRect(x: x, y: y, w: width, h: height)
     }
 }
