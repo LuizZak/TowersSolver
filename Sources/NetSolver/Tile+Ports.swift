@@ -53,7 +53,7 @@ extension Tile {
     /// If the array of ports contains either zero, or greater than three indices
     /// the result is nil.
     static func fromPorts(_ ports: Set<EdgePort>) -> Tile? {
-        // Remove duplicates and sort result to simplify conversion
+        // Sort incoming ports to simplify switching over the values
         let normalizedPorts = ports.sorted()
         
         let kind: Tile.Kind
