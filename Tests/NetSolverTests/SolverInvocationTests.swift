@@ -6,7 +6,7 @@ class SolverInvcationTests: XCTestCase {
         let grid = Grid(rows: 1, columns: 1)
         let sut = SolverInvocation(grid: grid)
         
-        sut.metadata.setPossibleOrientations(column: 0, row: 0, orientations: [.east, .south])
+        sut.metadata.setPossibleOrientations(column: 0, row: 0, [.east, .south])
         
         XCTAssertEqual(sut.possibleOrientationsForTile(atColumn: 0, row: 0), [.east, .south])
     }
@@ -60,7 +60,7 @@ class SolverInvcationTests: XCTestCase {
             .lockTile(atColumn: 2, row: 2)
             .build()
         let sut = SolverInvocation(grid: grid)
-        sut.metadata.setPossibleOrientations(column: 1, row: 0, orientations: [.west, .north])
+        sut.metadata.setPossibleOrientations(column: 1, row: 0, [.west, .north])
         
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 1, row: 1), [.top])
     }
@@ -88,7 +88,7 @@ class SolverInvcationTests: XCTestCase {
             .setTile(0, 0, kind: .L, orientation: .east)
             .build()
         let sut = SolverInvocation(grid: grid)
-        sut.metadata.setPossibleOrientations(column: 0, row: 0, orientations: [.north, .east])
+        sut.metadata.setPossibleOrientations(column: 0, row: 0, [.north, .east])
         
         XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [.left])
     }
@@ -124,7 +124,7 @@ class SolverInvcationTests: XCTestCase {
             .setTileKind(0, 0, kind: .L)
             .build()
         let sut = SolverInvocation(grid: grid)
-        sut.metadata.setPossibleOrientations(column: 0, row: 0, orientations: [.west, .north])
+        sut.metadata.setPossibleOrientations(column: 0, row: 0, [.west, .north])
         
         XCTAssertEqual(sut.guaranteedOutgoingAvailablePortsForTile(atColumn: 0, row: 0), [.top])
     }
@@ -136,7 +136,7 @@ class SolverInvcationTests: XCTestCase {
             .setTileKind(0, 0, kind: .L)
             .build()
         let sut = SolverInvocation(grid: grid)
-        sut.metadata.setPossibleOrientations(column: 0, row: 0, orientations: [.west, .north])
+        sut.metadata.setPossibleOrientations(column: 0, row: 0, [.west, .north])
         
         XCTAssertEqual(sut.guaranteedOutgoingUnavailablePortsForTile(atColumn: 0, row: 0), [.bottom])
     }

@@ -32,8 +32,12 @@ struct GridMetadata {
         return metadata[row][column]
     }
     
-    mutating func setPossibleOrientations(column: Int, row: Int, orientations: Set<Tile.Orientation>) {
+    mutating func setPossibleOrientations(column: Int, row: Int, _ orientations: Set<Tile.Orientation>) {
         metadata[row][column].possibleOrientations = orientations
+    }
+    
+    mutating func subtractPossibleOrientations(column: Int, row: Int, _ orientations: Set<Tile.Orientation>) {
+        metadata[row][column].possibleOrientations.subtract(orientations)
     }
     
     /// Returns the list of possible orientations for a tile at a given column/row

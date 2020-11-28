@@ -1,8 +1,11 @@
 class SolverInvocation {
+    private typealias GuessMove = (column: Int, row: Int, orientation: Tile.Orientation)
+    
     var steps: [NetSolverStep] = []
     var grid: Grid
     var metadata: GridMetadata
     var isValid = true
+    var maxGuesses: Int = 5
     
     init(grid: Grid) {
         self.grid = grid
@@ -11,17 +14,28 @@ class SolverInvocation {
     
     /// Apply all currently enqueued solver steps
     func apply() -> SolverInvocationResult {
-        performSolverSteps()
+        performFullSolverCycle()
         
         let state: ResultState
+        let controller = NetGridController(grid: grid)
         
-        if isValid {
-            state = NetGridController(grid: grid).isSolved ? .solved : .unsolved
+        if isValid && !controller.isInvalid {
+            state = controller.isSolved ? .solved : .unsolved
         } else {
             state = .invalid
         }
         
         return SolverInvocationResult(state: state, grid: grid)
+    }
+    
+    func performFullSolverCycle() {
+        performSolverSteps()
+        
+        if !NetGridController(grid: grid).isSolved {
+            if performGuessMoves() {
+                performFullSolverCycle()
+            }
+        }
     }
     
     func performSolverSteps() {
@@ -65,7 +79,7 @@ class SolverInvocation {
                 break
             }
             
-            metadata.setPossibleOrientations(column: column, row: row, orientations: available)
+            metadata.setPossibleOrientations(column: column, row: row, available)
             
             propagateTileCheck(column: column, row: row)
         case let .markImpossibleOrientations(column, row, orientations):
@@ -74,12 +88,51 @@ class SolverInvocation {
                 break
             }
             
-            metadata.setPossibleOrientations(column: column, row: row, orientations: possible.subtracting(orientations))
+            metadata.setPossibleOrientations(column: column, row: row, possible.subtracting(orientations))
             
             propagateTileCheck(column: column, row: row)
         }
         
         return grid
+    }
+    
+    func performGuessMoves() -> Bool {
+        guard maxGuesses > 0 else {
+            return false
+        }
+        
+        var guesses = generateGuessMoves()
+        
+        while maxGuesses > 0, let next = guesses.popLast() {
+            let subSolver = makeSubSolver(grid: self.grid)
+            subSolver.grid =
+                subSolver
+                .performGridAction(.lockOrientation(column: next.column, row: next.row, orientation: next.orientation),
+                                   grid: grid)
+            
+            maxGuesses -= 1
+            
+            let result = subSolver.apply()
+            switch result.state {
+            case .solved:
+                self.grid = result.grid
+                return false
+            
+            case .invalid:
+                grid = performGridAction(
+                    .markImpossibleOrientations(column: next.column,
+                                                row: next.row,
+                                                [next.orientation]),
+                    grid: grid
+                )
+                return true
+                
+            case .unsolved:
+                continue
+            }
+        }
+        
+        return false
     }
     
     private func propagateTileCheck(column: Int, row: Int) {
@@ -90,6 +143,39 @@ class SolverInvocation {
             
             enqueue(GeneralTileCheckSolverStep(column: neighbor.column, row: neighbor.row))
         }
+    }
+    
+    private func makeSubSolver(grid: Grid) -> SolverInvocation {
+        let solver = SolverInvocation(grid: grid)
+        solver.maxGuesses = maxGuesses - 1
+        solver.isValid = isValid
+        solver.metadata = metadata
+        
+        return solver
+    }
+    
+    private func generateGuessMoves() -> [GuessMove] {
+        var guesses: [GuessMove] = []
+        
+        for row in 0..<grid.rows {
+            for column in 0..<grid.columns {
+                let tile = grid[row: row, column: column]
+                guard !tile.isLocked else { continue }
+                
+                let required = requiredPortsForTile(atColumn: column, row: row)
+                
+                let reduced =
+                    tile
+                    .orientations(excludingPorts: unavailableIncomingPortsForTile(atColumn: column, row: row))
+                    .filter { required.isSubset(of: Tile.portsForTile(kind: tile.kind, orientation: $0)) }
+                
+                for orientation in metadata.possibleOrientations(column: column, row: row).intersection(reduced) {
+                    guesses.append((column: column, row: row, orientation: orientation))
+                }
+            }
+        }
+        
+        return guesses
     }
     
     struct SolverInvocationResult {
