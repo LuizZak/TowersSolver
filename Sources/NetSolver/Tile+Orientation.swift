@@ -1,4 +1,16 @@
 extension Tile {
+    /// Returns a list of orientations where this tile has the provided set of
+    /// ports available.
+    ///
+    /// - Parameters:
+    ///   - excludedPorts: Ports where resulting orientation of the specified
+    ///   kind are available
+    /// - Returns: A list of orientations where this tile offers the provided
+    /// ports
+    func orientations(includingPorts includedPorts: Set<EdgePort>) -> Set<Orientation> {
+        return Self.orientationsForKind(kind: kind, includingPorts: includedPorts)
+    }
+    
     /// Returns a list of orientations where this tile does not have the provided
     /// set of ports available.
     ///
@@ -9,6 +21,22 @@ extension Tile {
     /// provided ports
     func orientations(excludingPorts excludedPorts: Set<EdgePort>) -> Set<Orientation> {
         return Self.orientationsForKind(kind: kind, excludingPorts: excludedPorts)
+    }
+    
+    /// Returns a list of orientations where a specified kind of tile has the
+    /// provided set of ports available.
+    ///
+    /// - Parameters:
+    ///   - kind: The kind of the tile to test
+    ///   - includedPorts: Ports where resulting orientation of the specified
+    ///   kind are available
+    /// - Returns: A list of orientations where the tile kind offers the provided
+    /// ports
+    static func orientationsForKind(kind: Kind, includingPorts includedPorts: Set<EdgePort>) -> Set<Orientation> {
+        return Set(Orientation.allCases.filter { orientation -> Bool in
+            let tile = Tile(kind: kind, orientation: orientation)
+            return tile.ports.isSuperset(of: includedPorts)
+        })
     }
     
     /// Returns a list of orientations where a specified kind of tile does not

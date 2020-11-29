@@ -11,20 +11,25 @@ struct EndPointNeighborsSolverStep: NetSolverStep {
             return []
         }
         
-        let available = Set(EdgePort.allCases).subtracting(delegate.unavailableIncomingPortsForTile(atColumn: column, row: row))
+        let unavailable =
+            delegate
+            .unavailableIncomingPortsForTile(atColumn: column, row: row)
         
-        // If only one of the surrounding tiles is not an endpoint, lock the
-        // orientation of the tile to be that.
-        let surrounding = grid.surroundingTiles(column: column, row: row).filter({ available.contains($0.edge) })
-        let nonEndPoints = surrounding.filter { $0.tile.kind != .endPoint }
-        if nonEndPoints.count == 1 {
-            return [
-                .lockOrientation(column: column, row: row, orientation: nonEndPoints[0].edge.asOrientation)
-            ]
-        }
+        let available =
+            Set(EdgePort.allCases)
+            .subtracting(unavailable)
         
-        // Otherwise, restrict possible rotations
-        let endPointOrientations = surrounding.filter { $0.tile.kind == .endPoint }.map { $0.edge.asOrientation }
+        let surrounding =
+            grid
+            .surroundingTiles(column: column, row: row)
+            .filter { available.contains($0.edge) }
+        
+        // Restrict possible rotations away from neighboring end-points and barriers
+        let endPointOrientations =
+            surrounding
+            .filter { $0.tile.kind == .endPoint }
+            .map { $0.edge.asOrientation }
+        
         return [
             .markImpossibleOrientations(column: column, row: row, Set(endPointOrientations))
         ]

@@ -6,7 +6,7 @@ class MockNetSolverDelegate: NetSolverDelegate {
     var didCallEnqueue: [NetSolverStep] = []
     var didCallMarkIsInvalid = false
     
-    var mock_unavailablePortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
+    var mock_unavailableIncomingPortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     var mock_requiredPortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     var mock_guaranteedOutgoingUnavailablePortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     
@@ -51,7 +51,7 @@ class MockNetSolverDelegate: NetSolverDelegate {
     }
     
     func unavailableIncomingPortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
-        if let mocked = mock_unavailablePortsForTile {
+        if let mocked = mock_unavailableIncomingPortsForTile {
             return mocked(column, row)
         }
         

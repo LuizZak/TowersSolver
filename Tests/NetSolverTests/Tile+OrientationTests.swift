@@ -2,7 +2,95 @@ import XCTest
 @testable import NetSolver
 
 class Tile_OrientationTests: XCTestCase {
-    func testOrientationsForKindLine() {
+    func testOrientationsForKindIncludingPorts_lineTile() {
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .I, includingPorts: []),
+            [.north, .east, .south, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .I, includingPorts: [.top]),
+            [.north, .south])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .I, includingPorts: [.right]),
+            [.east, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .I, includingPorts: [.bottom]),
+            [.north, .south])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .I, includingPorts: [.left]),
+            [.east, .west])
+    }
+    
+    func testOrientationsForKindIncludingPorts_cornerTile() {
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: []),
+            [.north, .east, .south, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: [.top]),
+            [.north, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: [.right]),
+            [.north, .east])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: [.bottom]),
+            [.east, .south])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: [.left]),
+            [.south, .west])
+    }
+    
+    func testOrientationsForKindIncludingPorts_tripleTile() {
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .T, includingPorts: []),
+            [.north, .east, .south, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .T, includingPorts: [.top]),
+            [.west, .north, .east])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .T, includingPorts: [.right]),
+            [.north, .east, .south])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .T, includingPorts: [.bottom]),
+            [.east, .south, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .T, includingPorts: [.left]),
+            [.south, .west, .north])
+    }
+    
+    func testOrientationsForKindIncludingPorts_endPoint() {
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .endPoint, includingPorts: []),
+            [.north, .east, .south, .west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .endPoint, includingPorts: [.top]),
+            [.north])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .endPoint, includingPorts: [.right]),
+            [.east])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .endPoint, includingPorts: [.bottom]),
+            [.south])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .endPoint, includingPorts: [.left]),
+            [.west])
+    }
+    
+    func testOrientationsForKindIncludingPorts() {
+        XCTAssertTrue(
+            Tile.orientationsForKind(kind: .I, includingPorts: [.top, .left]).isEmpty)
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: [.top, .left]),
+            [.west])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .T, includingPorts: [.top, .left]),
+            [.west, .north])
+        XCTAssertEqual(
+            Tile.orientationsForKind(kind: .L, includingPorts: [.bottom]),
+            [.east, .south])
+        XCTAssertTrue(
+            Tile.orientationsForKind(kind: .endPoint, includingPorts: [.top, .left, .right, .bottom]).isEmpty)
+    }
+    
+    func testOrientationsForKindExcludingPorts_lineTile() {
         XCTAssertEqual(
             Tile.orientationsForKind(kind: .I, excludingPorts: []),
             [.north, .west, .east, .south])
@@ -20,7 +108,7 @@ class Tile_OrientationTests: XCTestCase {
             [.north, .south])
     }
     
-    func testOrientationsForKindCorner() {
+    func testOrientationsForKindExcludingPorts_cornerTile() {
         XCTAssertEqual(
             Tile.orientationsForKind(kind: .L, excludingPorts: []),
             [.north, .west, .east, .south])
@@ -38,7 +126,7 @@ class Tile_OrientationTests: XCTestCase {
             [.north, .east])
     }
     
-    func testOrientationsForKindT() {
+    func testOrientationsForKindExcludingPorts_tripleTile() {
         XCTAssertEqual(
             Tile.orientationsForKind(kind: .T, excludingPorts: []),
             [.north, .west, .east, .south])
@@ -56,7 +144,7 @@ class Tile_OrientationTests: XCTestCase {
             [.east])
     }
     
-    func testOrientationsForKindEndPiece() {
+    func testOrientationsForKindExcludingPorts_endPoint() {
         XCTAssertEqual(
             Tile.orientationsForKind(kind: .endPoint, excludingPorts: []),
             [.north, .west, .east, .south])
@@ -74,7 +162,7 @@ class Tile_OrientationTests: XCTestCase {
             [.south, .north, .east])
     }
     
-    func testOrientationsForKind() {
+    func testOrientationsForKindExcludingPorts() {
         XCTAssertTrue(
             Tile.orientationsForKind(kind: .I, excludingPorts: [.top, .left]).isEmpty)
         XCTAssertEqual(

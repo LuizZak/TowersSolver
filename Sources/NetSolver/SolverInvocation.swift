@@ -14,6 +14,8 @@ class SolverInvocation {
     
     /// Apply all currently enqueued solver steps
     func apply() -> SolverInvocationResult {
+        setupPossibleOrientationsSet()
+        
         performFullSolverCycle()
         
         let state: ResultState
@@ -26,6 +28,20 @@ class SolverInvocation {
         }
         
         return SolverInvocationResult(state: state, grid: grid)
+    }
+    
+    func setupPossibleOrientationsSet() {
+        for row in 0..<grid.rows {
+            for column in 0..<grid.columns {
+                let tile = grid[row: row, column: column]
+                
+                let orientationSet =
+                    Set(Tile.Orientation.allCases)
+                    .normalizedByPortSet(onTileKind: tile.kind)
+                
+                metadata.setPossibleOrientations(column: column, row: row, orientationSet)
+            }
+        }
     }
     
     func performFullSolverCycle() {
@@ -82,13 +98,30 @@ class SolverInvocation {
             metadata.setPossibleOrientations(column: column, row: row, available)
             
             propagateTileCheck(column: column, row: row)
+            
         case let .markImpossibleOrientations(column, row, orientations):
             let possible = metadata.possibleOrientations(column: column, row: row)
             guard !possible.isDisjoint(with: orientations) else {
                 break
             }
             
-            metadata.setPossibleOrientations(column: column, row: row, possible.subtracting(orientations))
+            let tile = grid[row: row, column: column]
+            let remaining =
+                possible
+                .subtracting(orientations)
+                .normalizedByPortSet(onTileKind: tile.kind)
+            
+            metadata.setPossibleOrientations(column: column, row: row, remaining)
+            
+            // Possible orientation set contains only one item - lock tile on the
+            // specified orientation
+            if remaining.count == 1, let first = remaining.first {
+                grid[row: row, column: column].isLocked = true
+                grid[row: row, column: column].orientation = first
+            } else if remaining.isEmpty {
+                // Possible orientation set is empty - mark grid as invalid
+                markIsInvalid()
+            }
             
             propagateTileCheck(column: column, row: row)
         }

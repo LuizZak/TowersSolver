@@ -19,34 +19,38 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         XCTAssertEqual(result, [.markAsInvalid])
     }
     
-    func testApply_unavailableIncomingMatchesAllButOneDirection_lockOrientation() {
+    func testApply_unavailableIncomingMatchesAllButOneDirection() {
         let grid = TestGridBuilder(columns: 1, rows: 1)
             .setTileKind(0, 0, kind: .L)
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
-        mockDelegate.mock_unavailablePortsForTile = { (_, _) in
+        mockDelegate.mock_unavailableIncomingPortsForTile = { (_, _) in
             return [.left, .bottom]
         }
         let sut = GeneralTileCheckSolverStep(column: 0, row: 0)
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [.lockOrientation(column: 0, row: 0, orientation: .north)])
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 0, row: 0, [.east, .south, .west])
+        ])
     }
     
-    func testApply_unavailableIncomingMatchesAllDirections_markAsInvalid() {
+    func testApply_unavailableIncomingMatchesAllDirections() {
         let grid = TestGridBuilder(columns: 1, rows: 1)
             .setTile(0, 0, kind: .I, orientation: .north)
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
-        mockDelegate.mock_unavailablePortsForTile = { (_, _) in
+        mockDelegate.mock_unavailableIncomingPortsForTile = { (_, _) in
             return [.left, .bottom]
         }
         let sut = GeneralTileCheckSolverStep(column: 0, row: 0)
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [.markAsInvalid])
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 0, row: 0, [.north, .east])
+        ])
     }
     
     func testApply_requiredMatchesOnlyOneOrientation_lockOrientation() {
@@ -61,10 +65,12 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [.lockOrientation(column: 1, row: 1, orientation: .east)])
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 1, row: 1, [.north, .south, .west])
+        ])
     }
     
-    func testApply_requiredMatchesMoreThanOneOrientation_doNothing() {
+    func testApply_requiredDiscardsUnavailableDirections() {
         let grid = TestGridBuilder(columns: 1, rows: 1)
             .setTile(0, 0, kind: .L, orientation: .north)
             .build()
@@ -72,14 +78,16 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_requiredPortsForTile = { (_, _) in
             return [.right]
         }
-        mockDelegate.mock_unavailablePortsForTile = { (_, _) in
+        mockDelegate.mock_unavailableIncomingPortsForTile = { (_, _) in
             return []
         }
         let sut = GeneralTileCheckSolverStep(column: 0, row: 0)
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [])
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 0, row: 0, [.south, .west])
+        ])
     }
     
     func testApply_markImpossibleOrientations() {
@@ -97,7 +105,7 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         XCTAssertEqual(result, [.markImpossibleOrientations(column: 1, row: 1, [.north, .east])])
     }
     
-    func testApply_availableOrientationsAreEquivalent_lockTile() {
+    func testApply_unavailableOrientationsAreEquivalent_disableOnlyOne() {
         let grid = TestGridBuilder(columns: 3, rows: 3)
             .setTileKind(1, 1, kind: .I)
             .build()
@@ -109,6 +117,8 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertEqual(result, [.lockOrientation(column: 1, row: 1, orientation: .east)])
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 1, row: 1, [.north])
+        ])
     }
 }

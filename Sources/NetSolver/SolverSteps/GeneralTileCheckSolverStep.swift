@@ -16,11 +16,6 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
             return []
         }
         
-        let orientations =
-            delegate
-            .possibleOrientationsForTile(atColumn: column, row: row)
-            .normalizedByPortSet(onTileKind: tile.kind)
-        
         let required = delegate.requiredPortsForTile(atColumn: column, row: row)
         let unavailableOutgoing =
             delegate.guaranteedOutgoingUnavailablePortsForTile(atColumn: column, row: row)
@@ -32,49 +27,20 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
             return [.markAsInvalid]
         }
         
-        // Detect cases where only a single orientation satisfies all required
-        // ports at the same time
-        let satisfyingOrientations =
-            orientations.filter {
-                Tile.portsForTile(kind: tile.kind, orientation: $0)
-                    .isSuperset(of: required)
-            }
-        
-        
-        if satisfyingOrientations.count == 1, let first = satisfyingOrientations.first {
-            return [
-                .lockOrientation(column: column, row: row, orientation: first)
-            ]
-        }
-        
-        // Remove from possible orientations set orientations that have ports
-        // that are unavailable
-        let toExclude =
-            tile
-            .orientations(excludingPorts: unavailableOutgoing)
-            .symmetricDifference(orientations)
-        
-        let availableOrientations =
+        let remainingSet =
+            tile.orientations(includingPorts: required)
+            .intersection(
+                tile.orientations(excludingPorts: unavailableOutgoing)
+            )
+            
+        let reversedRemaining =
             Set(Tile.Orientation.allCases)
+            .subtracting(remainingSet)
             .normalizedByPortSet(onTileKind: tile.kind)
         
-        // If no orientations remain, mark as invalid
-        if toExclude == availableOrientations {
-            return [.markAsInvalid]
-        }
-        // If only one orientation remains, lock tile
-        if toExclude.count == availableOrientations.count - 1 {
-            let remaining = availableOrientations.subtracting(toExclude)
-            
-            if remaining.count == 1, let first = remaining.first {
-                return [
-                    .lockOrientation(column: column, row: row, orientation: first)
-                ]
-            }
-        }
-        if !toExclude.isEmpty {
+        if !reversedRemaining.isEmpty {
             return [
-                .markImpossibleOrientations(column: column, row: row, toExclude)
+                .markImpossibleOrientations(column: column, row: row, reversedRemaining)
             ]
         }
         
