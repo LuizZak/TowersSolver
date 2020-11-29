@@ -18,8 +18,85 @@ class NetworkTests: XCTestCase {
         XCTAssertFalse(sut.hasTile(forColumn: 1, row: 0))
     }
     
-    func testIsClosed_closedNetwork() {
+    func testHasConnection() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .build()
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [.right])
+        ])
+        
+        XCTAssertTrue(sut.hasConnection(toColumn: 1, row: 0, port: .left, onGrid: grid))
+    }
+    
+    func testHasConnection_nonMatchingPort_returnsFalse() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .build()
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [.top])
+        ])
+        
+        XCTAssertFalse(sut.hasConnection(toColumn: 1, row: 0, port: .left, onGrid: grid))
+    }
+    
+    func testHasConnection_oppositeTiles_2x2_wrappingFalse_returnsFalse() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(false)
+            .build()
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [.left])
+        ])
+        
+        XCTAssertFalse(sut.hasConnection(toColumn: 1, row: 0, port: .right, onGrid: grid))
+    }
+    
+    func testHasConnection_oppositeTiles_3x3_wrappingFalse_returnsFalse() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(false)
+            .build()
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [.left])
+        ])
+        
+        XCTAssertFalse(sut.hasConnection(toColumn: 2, row: 0, port: .right, onGrid: grid))
+    }
+    
+    func testHasConnection_oppositeTiles_2x2_wrappingTrue_returnsTrue() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(true)
+            .build()
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [.left])
+        ])
+        
+        XCTAssertTrue(sut.hasConnection(toColumn: 1, row: 0, port: .right, onGrid: grid))
+    }
+    
+    func testHasConnection_oppositeTiles_3x3_wrappingTrue_returnsTrue() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(true)
+            .build()
+        let sut = Network(tiles: [
+            .init(column: 0, row: 0, ports: [.left])
+        ])
+        
+        XCTAssertTrue(sut.hasConnection(toColumn: 2, row: 0, port: .right, onGrid: grid))
+    }
+    
+    func testIsClosed_emptyNetwork() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = Network(tiles: [])
+        
+        XCTAssertTrue(sut.isClosed(onGrid: grid))
+    }
+    
+    func testIsClosed_closedNetwork() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
             .setTile(0, 0, kind: .endPoint, orientation: .east)
             .setTile(1, 0, kind: .endPoint, orientation: .west)
             .build()
@@ -32,7 +109,7 @@ class NetworkTests: XCTestCase {
     }
     
     func testIsClosed_nonClosedNetwork() {
-        let grid = TestGridBuilder(columns: 2, rows: 2)
+        let grid = TestGridBuilder(columns: 2, rows: 1)
             .setTile(0, 0, kind: .endPoint, orientation: .east)
             .setTile(1, 0, kind: .L, orientation: .west)
             .build()
@@ -42,6 +119,36 @@ class NetworkTests: XCTestCase {
         ])
         
         XCTAssertFalse(sut.isClosed(onGrid: grid))
+    }
+    
+    func testIsClosed_incompleteNetwork() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .east)
+            .setTile(1, 0, kind: .endPoint, orientation: .west)
+            .build()
+        let sut = Network.fromCoordinates(onGrid: grid, [
+            (0, 0)
+        ])
+        
+        XCTAssertFalse(sut.isClosed(onGrid: grid))
+    }
+    
+    func testIsClosed_stopsOnBarriers() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .west)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(false)
+            .build()
+        let sut = Network.fromGrid(grid)
+        
+        XCTAssertFalse(sut.isClosed(onGrid: grid))
+    }
+    
+    func testHasLoops_emptyNetwork() {
+        let grid = Grid(rows: 1, columns: 1)
+        let sut = Network(tiles: [])
+        
+        XCTAssertFalse(sut.hasLoops(onGrid: grid))
     }
     
     func testHasLoops_nonLoopedNetwork() {
@@ -134,7 +241,7 @@ class NetworkTests: XCTestCase {
             (1, 0),
             (0, 1)
         ])
-        sut.tiles.append(.init(column: 2, row: 1, ports: [.top]))
+        sut.tiles.insert(.init(column: 2, row: 1, ports: [.top]))
         
         XCTAssertFalse(sut.isCompleteNetwork(ofGrid: grid))
     }
@@ -152,12 +259,12 @@ class NetworkTests: XCTestCase {
         let result = sut.splitNetwork(onGrid: grid)
         
         XCTAssertEqual(result.count, 2)
-        XCTAssertEqual(result[0].tiles, [
+        XCTAssertEqual(1, result.count(where: { $0.tiles == [
             .init(column: 0, row: 0, ports: [.top])
-        ])
-        XCTAssertEqual(result[1].tiles, [
+        ]}))
+        XCTAssertEqual(1, result.count(where: { $0.tiles == [
             .init(column: 1, row: 0, ports: [.bottom])
-        ])
+        ]}))
     }
     
     func testSplitNetwork_connectedNetwork() {
@@ -190,12 +297,12 @@ class NetworkTests: XCTestCase {
         let result = sut.splitNetwork(onGrid: grid)
         
         XCTAssertEqual(result.count, 2)
-        XCTAssertEqual(result[0].tiles, [
+        XCTAssertEqual(1, result.count(where: { $0.tiles == [
             .init(column: 0, row: 0, ports: [.left])
-        ])
-        XCTAssertEqual(result[1].tiles, [
+        ]}))
+        XCTAssertEqual(1, result.count(where: { $0.tiles == [
             .init(column: 1, row: 0, ports: [.right])
-        ])
+        ]}))
     }
     
     func testSplitNetwork_connectedNetwork_wrapping() {
@@ -280,14 +387,14 @@ class NetworkTests: XCTestCase {
             .setTile(0, 1, kind: .endPoint, orientation: .west)
             .setWrapping(true)
             .build()
-        let net1 = Network.fromCoordinates(onGrid: grid, [(0, 0), (1, 0)])
+        let net1 = Network.fromCoordinates(onGrid: grid, [(1, 0), (0, 0)])
         let net2 = Network.fromCoordinates(onGrid: grid, [(1, 0), (0, 1)])
         
         let result = try XCTUnwrap(net1.attemptJoin(other: net2, onGrid: grid))
         
         XCTAssertEqual(result.tiles, [
-            .init(column: 0, row: 0, ports: [.top]),
             .init(column: 1, row: 0, ports: [.bottom]),
+            .init(column: 0, row: 0, ports: [.top]),
             .init(column: 0, row: 1, ports: [.left]),
         ])
     }
@@ -348,12 +455,12 @@ class NetworkTests: XCTestCase {
         let result = Network.fromLockedTiles(onGrid: grid)
         
         XCTAssertEqual(result.count, 2)
-        XCTAssertEqual(result[0].tiles, [
+        XCTAssertEqual(1, result.count(where: { $0.tiles == [
             .init(column: 0, row: 0, ports: [.bottom, .right])
-        ])
-        XCTAssertEqual(result[1].tiles, [
+        ]}))
+        XCTAssertEqual(1, result.count(where: { $0.tiles == [
             .init(column: 0, row: 2, ports: [.top, .bottom])
-        ])
+        ]}))
     }
     
     func testAllConnectedStartingFrom() {
@@ -380,12 +487,12 @@ class NetworkTests: XCTestCase {
         
         let result = Network.allConnectedStartingFrom(column: 0, row: 0, onGrid: grid)
         
-        XCTAssertEqual(Set(result.tiles), Set([
+        XCTAssertEqual(result.tiles, [
             .init(column: 0, row: 0, ports: [.bottom, .right]),
-            .init(column: 0, row: 1, ports: [.top, .right]),
             .init(column: 1, row: 0, ports: [.left, .bottom]),
+            .init(column: 0, row: 1, ports: [.top, .right]),
             .init(column: 1, row: 1, ports: [.top, .left])
-        ]))
+        ])
     }
     
     func testAllConnectedStartingFrom_nonWrapping() {
@@ -414,5 +521,100 @@ class NetworkTests: XCTestCase {
             .init(column: 0, row: 0, ports: [.left]),
             .init(column: 1, row: 0, ports: [.right])
         ])
+    }
+    
+    func testAllConnectedStartingFromOnNetwork() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(0, 0, kind: .L, orientation: .east)
+            .setTile(0, 1, kind: .endPoint, orientation: .north)
+            .build()
+        let network = Network.fromCoordinates(onGrid: grid, [
+            (0, 0)
+        ])
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onNetwork: network, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.right, .bottom])
+        ])
+    }
+    
+    func testAllConnectedStartingFromOnNetwork_stopOnGaps() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(0, 0, kind: .I, orientation: .east)
+            .setTile(1, 0, kind: .I, orientation: .east)
+            .setTile(2, 0, kind: .L, orientation: .east)
+            .build()
+        let network = Network.fromCoordinates(onGrid: grid, [
+            (0, 0),
+            (2, 0)
+        ])
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onNetwork: network, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.left, .right])
+        ])
+    }
+    
+    func testAllConnectedStartingFromOnNetwork_handlesLoops() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(0, 0, kind: .L, orientation: .east)
+            .setTile(1, 0, kind: .L, orientation: .south)
+            .setTile(0, 1, kind: .L, orientation: .north)
+            .setTile(1, 1, kind: .L, orientation: .west)
+            .build()
+        let network = Network.fromGrid(grid)
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onNetwork: network, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.bottom, .right]),
+            .init(column: 1, row: 0, ports: [.left, .bottom]),
+            .init(column: 0, row: 1, ports: [.top, .right]),
+            .init(column: 1, row: 1, ports: [.top, .left])
+        ])
+    }
+    
+    func testAllConnectedStartingFromOnNetwork_nonWrapping() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .west)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .build()
+        let network = Network.fromGrid(grid)
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onNetwork: network, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.left])
+        ])
+    }
+    
+    func testAllConnectedStartingFromOnNetwork_wrapping() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .west)
+            .setTile(1, 0, kind: .endPoint, orientation: .east)
+            .setWrapping(true)
+            .build()
+        let network = Network.fromGrid(grid)
+        
+        let result = Network.allConnectedStartingFrom(column: 0, row: 0, onNetwork: network, onGrid: grid)
+        
+        XCTAssertEqual(result.tiles, [
+            .init(column: 0, row: 0, ports: [.left]),
+            .init(column: 1, row: 0, ports: [.right])
+        ])
+    }
+    
+    func testHashOfCoordinatesMatchByColumnRowOnly() {
+        let coord1 = Network.Coordinate(column: 0, row: 0, ports: [.left])
+        let coord2 = Network.Coordinate(column: 0, row: 0, ports: [.right])
+        let coord3 = Network.Coordinate(column: 1, row: 0, ports: [.left])
+        let coord4 = Network.Coordinate(column: 1, row: 0, ports: [.right])
+        
+        XCTAssertEqual(coord1.hashValue, coord2.hashValue)
+        XCTAssertEqual(coord3.hashValue, coord4.hashValue)
+        XCTAssertNotEqual(coord1.hashValue, coord3.hashValue)
+        XCTAssertNotEqual(coord2.hashValue, coord4.hashValue)
     }
 }

@@ -136,13 +136,25 @@ class SolverInvocation {
     }
     
     private func propagateTileCheck(column: Int, row: Int) {
-        enqueue(GeneralTileCheckSolverStep(column: column, row: row))
+        guard !grid[row: row, column: column].isLocked else {
+            return
+        }
+        
+        enqueueGeneralTileCheck(column: column, row: row)
         
         EdgePort.allCases.forEach { port in
             let neighbor = grid.columnRowByMoving(column: column, row: row, direction: port)
             
-            enqueue(GeneralTileCheckSolverStep(column: neighbor.column, row: neighbor.row))
+            enqueueGeneralTileCheck(column: neighbor.column, row: neighbor.row)
         }
+    }
+    
+    private func enqueueGeneralTileCheck(column: Int, row: Int) {
+        guard !grid[row: row, column: column].isLocked else {
+            return
+        }
+        
+        enqueue(GeneralTileCheckSolverStep(column: column, row: row))
     }
     
     private func makeSubSolver(grid: Grid) -> SolverInvocation {

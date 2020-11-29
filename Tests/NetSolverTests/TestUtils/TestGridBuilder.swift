@@ -55,6 +55,16 @@ class TestGridBuilder {
         return self
     }
     
+    func setAllTilesLocked(_ locked: Bool) -> TestGridBuilder {
+        for row in 0..<generator.rows {
+            for column in 0..<generator.columns {
+                generator.grid[row: row, column: column].isLocked = locked
+            }
+        }
+        
+        return self
+    }
+    
     func lockTile(atColumn column: Int, row: Int) -> TestGridBuilder {
         return setTileLocked(column, row, true)
     }

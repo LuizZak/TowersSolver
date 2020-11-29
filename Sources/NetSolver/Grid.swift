@@ -69,6 +69,48 @@ public struct Grid {
         }
     }
     
+    /// Returns `true` if the given column/row combination represents a valid
+    /// tile in this grid.
+    public func isWithinBounds(column: Int, row: Int) -> Bool {
+        return column >= 0 && row >= 0 && column < columns && row < rows
+    }
+    
+    /// Returns whether two tiles are neighbors on the grid.
+    /// Tiles are neighbors if they share an edge, or are located at opposite
+    /// ends of the grid, in case the grid is wrapping.
+    public func areNeighbors(atColumn1 column1: Int, row1: Int, column2: Int, row2: Int) -> Bool {
+        guard isWithinBounds(column: column1, row: row1),
+              isWithinBounds(column: column2, row: row2) else {
+            return false
+        }
+        
+        // Order the coordinates to make comparisons easier
+        let columnLeft = min(column1, column2)
+        let columnRight = max(column1, column2)
+        
+        let rowTop = min(row1, row2)
+        let rowBottom = max(row1, row2)
+        
+        if columnLeft == columnRight {
+            if rowBottom == rowTop + 1 {
+                return true
+            }
+            if wrapping && rowTop == 0 && rowBottom == (rows - 1) {
+                return true
+            }
+        }
+        if rowTop == rowBottom {
+            if columnRight == columnLeft + 1 {
+                return true
+            }
+            if wrapping && columnLeft == 0 && columnRight == (columns - 1) {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
     /// Returns a list of the four tiles surrounding a tile at a given column/row,
     /// along with the corresponding direction of the tile as an edge port from
     /// the center tile.

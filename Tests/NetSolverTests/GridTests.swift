@@ -2,6 +2,53 @@ import XCTest
 @testable import NetSolver
 
 class GridTests: XCTestCase {
+    func testIsWithinBounds() {
+        let grid = Grid(rows: 3, columns: 2)
+        
+        XCTAssertTrue(grid.isWithinBounds(column: 0, row: 0))
+        XCTAssertTrue(grid.isWithinBounds(column: 1, row: 0))
+        XCTAssertTrue(grid.isWithinBounds(column: 0, row: 1))
+        XCTAssertTrue(grid.isWithinBounds(column: 1, row: 1))
+        XCTAssertTrue(grid.isWithinBounds(column: 0, row: 2))
+        XCTAssertTrue(grid.isWithinBounds(column: 1, row: 2))
+    }
+    
+    func testIsWithinBounds_returnsFalseForOutOfBounds() {
+        let grid = Grid(rows: 3, columns: 2)
+        
+        XCTAssertFalse(grid.isWithinBounds(column: -1, row: 0))
+        XCTAssertFalse(grid.isWithinBounds(column: 0, row: -1))
+        XCTAssertFalse(grid.isWithinBounds(column: 2, row: 0))
+        XCTAssertFalse(grid.isWithinBounds(column: 0, row: 3))
+    }
+    
+    func testAreNeighbors() {
+        let grid = Grid(rows: 3, columns: 3)
+        
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 1, row2: 0))
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 2, row2: 1))
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 1, row2: 2))
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 0, row2: 1))
+    }
+    
+    func testAreNeighbors_oppositeTiles_wrappingGrid() {
+        let grid = Grid(rows: 3, columns: 3, wrapping: true)
+        
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 0, row1: 0, column2: 2, row2: 0))
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 0, row1: 0, column2: 0, row2: 2))
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 2, row1: 0, column2: 0, row2: 0))
+        XCTAssertTrue(grid.areNeighbors(atColumn1: 0, row1: 2, column2: 0, row2: 0))
+    }
+    
+    func testAreNeighbors_oppositeTiles_nonWrappingGrid() {
+        let grid = Grid(rows: 3, columns: 3, wrapping: false)
+        
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 0, row1: 0, column2: 2, row2: 0))
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 0, row1: 0, column2: 0, row2: 2))
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 2, row1: 0, column2: 0, row2: 0))
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 0, row1: 2, column2: 0, row2: 0))
+    }
+    
     func testBarriersForTile_1x1_nonWrapping() {
         let grid = Grid(rows: 1, columns: 1, wrapping: false)
         

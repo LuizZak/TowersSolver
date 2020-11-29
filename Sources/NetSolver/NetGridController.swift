@@ -138,10 +138,6 @@ public class NetGridController {
                     }
                 }
                 
-                if grid[row: y, column: x].isLocked {
-                    tile |= EncodedTileConstants.lockedBitcode
-                }
-                
                 gameId.append(String(tile, radix: 16))
             }
         }
@@ -150,11 +146,39 @@ public class NetGridController {
     }
     
     private func checkIsInvalid() -> Bool {
+        // Detect locked tiles facing barriers or other locked tiles that have no
+        // connecting ports between them
+        for row in 0..<rows {
+            for column in 0..<columns {
+                let tile = grid[row: row, column: column]
+                guard tile.isLocked else {
+                    continue
+                }
+                
+                let barriers = grid.barriersForTile(atColumn: column, row: row)
+                
+                for port in tile.ports {
+                    if barriers.contains(port) {
+                        return true
+                    }
+                    
+                    // Detect neighbor tiles that are locked as well but the current
+                    // tile has an edge pointing towards them while they do not
+                    let neighbor = grid.columnRowByMoving(column: column, row: row, direction: port)
+                    let neighborTile = grid[row: neighbor.row, column: neighbor.column]
+                    if neighborTile.isLocked && !neighborTile.ports.contains(port.opposite) {
+                        return true
+                    }
+                }
+            }
+        }
+        
         let networks = Network.fromLockedTiles(onGrid: grid)
         
+        // Detect closed sub-networks that do not contain the whole grid
         if let closedNetwork = networks.first(where: { $0.isClosed(onGrid: grid) }) {
             if !closedNetwork.isCompleteNetwork(ofGrid: grid) {
-                return false
+                return true
             }
         }
         

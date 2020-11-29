@@ -2,7 +2,7 @@
 /// Contains the tiles that form the network, along with their ports at the time
 /// of creation.
 struct Network {
-    var tiles: [Coordinate]
+    var tiles: Set<Coordinate>
     
     /// Returns `true` if this network contains a tile for a given column/row
     /// combination.
@@ -10,12 +10,43 @@ struct Network {
         return tile(forColumn: column, row: row) != nil
     }
     
+    /// Returns `true` if this network contains a tile that neighbors a tile at
+    /// the given column/row, with the given port available pointing towards it.
+    ///
+    /// The provided grid is used to perform grid wrapping and check for barriers.
+    func hasConnection(toColumn column: Int,
+                       row: Int,
+                       port: EdgePort,
+                       onGrid grid: Grid) -> Bool {
+        
+        let barriers = grid.barriersForTile(atColumn: column, row: row)
+        if barriers.contains(port) {
+            // If a barrier is present at the requested edge, it cannot be
+            // connected with a tile from this network.
+            return false
+        }
+        
+        let neighbor = grid.columnRowByMoving(column: column, row: row, direction: port)
+        if let tile = self.tile(forColumn: neighbor.column, row: neighbor.row), tile.ports.contains(port.opposite) {
+            return true
+        }
+        
+        return false
+    }
+    
     /// Returns `true` if this network represents a closed network, where all
     /// tiles have ports that only connect to other tiles on this same network.
+    ///
     /// The provided grid is used to perform grid wrapping.
     func isClosed(onGrid grid: Grid) -> Bool {
         for tile in tiles {
+            let barriers = grid.barriersForTile(atColumn: tile.column, row: tile.row)
+            
             for port in tile.ports {
+                if barriers.contains(port) {
+                    return false
+                }
+                
                 let coord =
                     grid.columnRowByMoving(column: tile.column,
                                            row: tile.row,
@@ -43,23 +74,20 @@ struct Network {
     /// If any of the tiles is out-of-bounds on the given grid, `false` is returned.
     /// Only tile coordinates are checked, current tile ports are ignored.
     func isCompleteNetwork(ofGrid grid: Grid) -> Bool {
-        var remaining = Self.removeDuplicates(from: tiles, grid: grid)
-        if remaining.count != grid.tileCount {
+        if tiles.count != grid.tileCount {
             return false
         }
         
-        while let next = remaining.popLast() {
-            if next.column >= grid.columns || next.row >= grid.rows {
-                return false
-            }
-        }
-        
-        return true
+        return tiles.allSatisfy { grid.isWithinBounds(column: $0.column, row: $0.row) }
     }
     
     private func _internalHasLoops(onGrid grid: Grid) -> Bool {
-        var visited: [Coordinate] = []
-        var toCheck: [(Coordinate, incomingPort: EdgePort?)] = [(tiles[0], nil)]
+        if tiles.isEmpty {
+            return false
+        }
+        
+        var visited: Set<Coordinate> = []
+        var toCheck: [(Coordinate, incomingPort: EdgePort?)] = [(Array(tiles)[0], nil)]
         
         // Checks a tile into the tilesToCheck array in case it has a given port
         // available and is locked. Returns `true` if the tile has been checked
@@ -70,7 +98,7 @@ struct Network {
             }
             
             // Check for loops
-            guard !visited.contains(where: { ($0.column, $0.row) == (x, y) }) else {
+            guard !visited.contains(tile) else {
                 return true
             }
             
@@ -83,7 +111,7 @@ struct Network {
         
         while !toCheck.isEmpty {
             let current = toCheck.removeFirst()
-            defer { visited.append(current.0) }
+            defer { visited.insert(current.0) }
             
             let barriers = grid.barriersForTile(atColumn: current.0.column, row: current.0.row)
             
@@ -112,19 +140,18 @@ struct Network {
     ///
     /// The provided grid is used to perform grid wrapping.
     func splitNetwork(onGrid grid: Grid) -> [Network] {
-        // Split networks
-        let networks: [Network] = tiles.map({ Network.fromCoordinates(onGrid: grid, [($0.column, $0.row)]) })
+        var copy = self
         var result: [Network] = []
         
-        outerLoop: for next in networks {
-            for index in 0..<result.count {
-                if let joined = result[index].attemptJoin(other: next, onGrid: grid) {
-                    result[index] = joined
-                    continue outerLoop
-                }
-            }
+        while let next = copy.tiles.first {
+            let connected = Network.allConnectedStartingFrom(column: next.column,
+                                                             row: next.row,
+                                                             onNetwork: copy,
+                                                             onGrid: grid)
             
-            result.append(next)
+            copy.tiles.subtract(connected.tiles)
+            
+            result.append(connected)
         }
         
         return result
@@ -143,7 +170,7 @@ struct Network {
     /// The provided grid is used to perform grid wrapping.
     func attemptJoin(other: Network, onGrid grid: Grid) -> Network? {
         func flushList() -> Network {
-            let list = Self.removeDuplicates(from: tiles + other.tiles, grid: grid)
+            let list = Self.removeDuplicates(from: Array(tiles) + Array(other.tiles), grid: grid)
             
             return Network(tiles: list)
         }
@@ -154,16 +181,11 @@ struct Network {
             }
             
             for port in tile.ports {
-                if grid.barriersForTile(atColumn: tile.column, row: tile.row).contains(port) {
+                guard other.hasConnection(toColumn: tile.column, row: tile.row, port: port, onGrid: grid) else {
                     continue
                 }
                 
-                let neighbor = grid.columnRowByMoving(column: tile.column, row: tile.row, direction: port)
-                let neighborTile = grid[row: neighbor.row, column: neighbor.column]
-                
-                if other.hasTile(forColumn: neighbor.column, row: neighbor.row) && neighborTile.ports.contains(port.opposite) {
-                    return flushList()
-                }
+                return flushList()
             }
         }
         
@@ -174,17 +196,17 @@ struct Network {
         return tiles.first(where: { $0.column == column && $0.row == row })
     }
     
-    private static func removeDuplicates(from list: [Coordinate], grid: Grid) -> [Coordinate] {
-        var result: [Coordinate] = []
+    private static func removeDuplicates(from list: [Coordinate], grid: Grid) -> Set<Coordinate> {
+        var result: Set<Coordinate> = []
         
-        for item in list where !result.contains(where: { $0.column == item.column && $0.row == item.row }) {
+        for item in list where !result.contains(item) {
             if item.column >= grid.columns || item.row >= grid.rows {
-                result.append(item)
+                result.insert(item)
                 continue
             }
             
             let tile = grid[row: item.row, column: item.column]
-            result.append(Coordinate(column: item.column, row: item.row, ports: tile.ports))
+            result.insert(Coordinate(column: item.column, row: item.row, ports: tile.ports))
         }
         
         return result
@@ -194,6 +216,11 @@ struct Network {
         var column: Int
         var row: Int
         var ports: Set<EdgePort>
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(column)
+            hasher.combine(row)
+        }
     }
 }
 
@@ -207,10 +234,27 @@ extension Network {
             let tile = grid[row: coord.row, column: coord.column]
             
             let netCoord = Coordinate(column: coord.column, row: coord.row, ports: tile.ports)
-            result.tiles.append(netCoord)
+            result.tiles.insert(netCoord)
         }
         
         return result
+    }
+    
+    /// Creates a single network that is formed out of all the tiles of a grid.
+    /// The resulting network may contain unconnected sub-networks, if they are
+    /// present in the underlying grid.
+    static func fromGrid(_ grid: Grid) -> Network {
+        var network = Network(tiles: [])
+        
+        for row in 0..<grid.rows {
+            for column in 0..<grid.columns {
+                let tile = grid[row: row, column: column]
+                
+                network.tiles.insert(Coordinate(column: column, row: row, ports: tile.ports))
+            }
+        }
+        
+        return network
     }
     
     /// Creates a list of networks formed by the currently locked tiles on a grid.
@@ -220,10 +264,11 @@ extension Network {
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
                 let tile = grid[row: row, column: column]
-                
-                if tile.isLocked {
-                    network.tiles.append(Coordinate(column: column, row: row, ports: tile.ports))
+                guard tile.isLocked else {
+                    continue
                 }
+                
+                network.tiles.insert(Coordinate(column: column, row: row, ports: tile.ports))
             }
         }
         
@@ -235,7 +280,7 @@ extension Network {
     ///
     /// Barriers are taking into consideration when traversing the grid.
     static func allConnectedStartingFrom(column: Int, row: Int, onGrid grid: Grid) -> Network {
-        var tiles: [Coordinate] = []
+        var tiles: Set<Coordinate> = []
         var queue: [(column: Int, row: Int)] = [(column, row)]
         
         while !queue.isEmpty {
@@ -248,7 +293,7 @@ extension Network {
             let tile = grid[row: current.row, column: current.column]
             let barriers = grid.barriersForTile(atColumn: current.column, row: current.row)
             
-            tiles.append(Coordinate(column: current.column, row: current.row, ports: tile.ports))
+            tiles.insert(Coordinate(column: current.column, row: current.row, ports: tile.ports))
             
             for port in tile.ports where !barriers.contains(port) {
                 let neighbor = grid.columnRowByMoving(column: current.column,
@@ -258,6 +303,53 @@ extension Network {
                 
                 if neighborPorts.ports.contains(port.opposite) {
                     queue.append(neighbor)
+                }
+            }
+        }
+        
+        return Network(tiles: tiles)
+    }
+    
+    /// Creates a network by spanning all connected tiles starting from a tile
+    /// at a given column/row combination on a given Network.
+    ///
+    /// The resulting Network only spans as far as the connected tiles within
+    /// the provided Network, not skipping gaps for tiles that are missing but
+    /// connected on the underlying grid.
+    ///
+    /// Barriers are taking into consideration when traversing the grid.
+    static func allConnectedStartingFrom(column: Int, row: Int,
+                                         onNetwork network: Network,
+                                         onGrid grid: Grid) -> Network {
+        
+        if !network.hasTile(forColumn: column, row: row) {
+            return Network(tiles: [])
+        }
+        
+        var tiles: Set<Coordinate> = []
+        var queue: [Coordinate] = [Coordinate(column: column, row: row, ports: [])]
+        
+        while !queue.isEmpty {
+            let current = queue.removeLast()
+            
+            if tiles.contains(current) {
+                continue
+            }
+            
+            let tile = grid[row: current.row, column: current.column]
+            let barriers = grid.barriersForTile(atColumn: current.column, row: current.row)
+            
+            tiles.insert(Coordinate(column: current.column, row: current.row, ports: tile.ports))
+            
+            for port in tile.ports where !barriers.contains(port) {
+                let neighbor = grid.columnRowByMoving(column: current.column,
+                                                      row: current.row,
+                                                      direction: port)
+                
+                if let next = network.tile(forColumn: neighbor.column, row: neighbor.row) {
+                    if next.ports.contains(port.opposite) {
+                        queue.append(next)
+                    }
                 }
             }
         }

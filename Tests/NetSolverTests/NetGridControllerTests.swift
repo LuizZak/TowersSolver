@@ -197,7 +197,19 @@ class NetGridControllerTests: XCTestCase {
         XCTAssertFalse(sut.isSolved)
     }
     
-    func testIsInvalid_nonLockedGrid() {
+    func testIsInvalid_4x4_solved_returnsFalse() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:8888ab6aa3de3562
+        let grid = TestGridBuilder(columns: 4, rows: 4)
+            .fromGameID("8888ab6aa3de3562")
+            .setAllTilesLocked(true)
+            .build()
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertFalse(sut.isInvalid)
+    }
+    
+    func testIsInvalid_nonLockedGrid_returnsFalse() {
         let grid = TestGridBuilder(columns: 1, rows: 1)
             .build()
         let sut = NetGridController(grid: grid)
@@ -205,7 +217,17 @@ class NetGridControllerTests: XCTestCase {
         XCTAssertFalse(sut.isInvalid)
     }
     
-    func testIsInvalid_nonLockedGrid_loop() {
+    func testIsInvalid_lockedGrid_subNetwork_returnsTrue() {
+        let grid = TestGridBuilder(columns: 2, rows: 2)
+            .setTile(0, 0, kind: .endPoint, orientation: .east, locked: true)
+            .setTile(1, 0, kind: .endPoint, orientation: .west, locked: true)
+            .build()
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertTrue(sut.isInvalid)
+    }
+    
+    func testIsInvalid_nonLockedGrid_loop_returnsFalse() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .L, orientation: .east, locked: false)
             .setTile(1, 0, kind: .L, orientation: .south, locked: true)
@@ -217,12 +239,41 @@ class NetGridControllerTests: XCTestCase {
         XCTAssertFalse(sut.isInvalid)
     }
     
-    func testIsInvalid_lockedGrid_loop() {
+    func testIsInvalid_lockedTileFacingAwayFromOtherLockedTileWithNoConnection_returnsFalse() {
+        let grid = TestGridBuilder(columns: 4, rows: 4)
+            .setTile(1, 1, kind: .L, orientation: .west, locked: true)
+            .setTile(2, 1, kind: .L, orientation: .east, locked: true)
+            .build()
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertFalse(sut.isInvalid)
+    }
+    
+    func testIsInvalid_lockedGrid_loop_returnsTrue() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .L, orientation: .east, locked: true)
             .setTile(1, 0, kind: .L, orientation: .south, locked: true)
             .setTile(0, 1, kind: .L, orientation: .north, locked: true)
             .setTile(1, 1, kind: .L, orientation: .west, locked: true)
+            .build()
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertTrue(sut.isInvalid)
+    }
+    
+    func testIsInvalid_lockedTileFacingBarrier_returnsTrue() {
+        let grid = TestGridBuilder(columns: 2, rows: 1)
+            .setTile(0, 0, kind: .endPoint, orientation: .west, locked: true)
+            .build()
+        let sut = NetGridController(grid: grid)
+        
+        XCTAssertTrue(sut.isInvalid)
+    }
+    
+    func testIsInvalid_lockedTileFacingLockedTileWithNoAvailablePorts_returnsTrue() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(0, 1, kind: .endPoint, orientation: .east, locked: true)
+            .setTile(1, 1, kind: .endPoint, orientation: .east, locked: true)
             .build()
         let sut = NetGridController(grid: grid)
         
