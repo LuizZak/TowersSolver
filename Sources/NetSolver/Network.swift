@@ -284,7 +284,7 @@ extension Network {
         var queue: [(column: Int, row: Int)] = [(column, row)]
         
         while !queue.isEmpty {
-            let current = queue.removeLast()
+            let current = queue.removeFirst()
             
             if tiles.contains(where: { ($0.column, $0.row) == current }) {
                 continue
@@ -322,26 +322,22 @@ extension Network {
                                          onNetwork network: Network,
                                          onGrid grid: Grid) -> Network {
         
-        if !network.hasTile(forColumn: column, row: row) {
+        guard let start = network.tile(forColumn: column, row: row) else {
             return Network(tiles: [])
         }
         
         var tiles: Set<Coordinate> = []
-        var queue: [Coordinate] = [Coordinate(column: column, row: row, ports: [])]
+        var queue: [Coordinate] = [start]
         
         while !queue.isEmpty {
-            let current = queue.removeLast()
-            
-            if tiles.contains(current) {
+            let current = queue.removeFirst()
+            if !tiles.insert(current).inserted {
                 continue
             }
             
-            let tile = grid[row: current.row, column: current.column]
             let barriers = grid.barriersForTile(atColumn: current.column, row: current.row)
             
-            tiles.insert(Coordinate(column: current.column, row: current.row, ports: tile.ports))
-            
-            for port in tile.ports where !barriers.contains(port) {
+            for port in current.ports where !barriers.contains(port) {
                 let neighbor = grid.columnRowByMoving(column: current.column,
                                                       row: current.row,
                                                       direction: port)
