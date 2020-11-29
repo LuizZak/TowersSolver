@@ -1,4 +1,5 @@
 import XCTest
+import Commons
 @testable import NetSolver
 
 class NetworkTests: XCTestCase {
