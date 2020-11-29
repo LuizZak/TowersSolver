@@ -54,6 +54,7 @@ class SolverTests: XCTestCase {
         let gridGen = NetGridGenerator(rows: 7, columns: 7)
         gridGen.loadFromGameID("84387c8c5e8b859ade369c88dab9c5bb18b86be4878647b41")
         let sut = Solver(grid: gridGen.grid)
+        sut.maxGuesses = 0
         
         XCTAssertTrue(sut.solve())
         
