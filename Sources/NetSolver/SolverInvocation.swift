@@ -59,32 +59,30 @@ class SolverInvocation {
             let step = steps.removeFirst()
             
             let actions = step.apply(on: grid, delegate: self)
-            grid = performGridActions(actions, grid: grid)
+            performGridActions(actions)
         }
     }
     
-    func performGridActions(_ actions: [GridAction], grid: Grid) -> Grid {
-        var grid = grid
-        
+    func performGridActions(_ actions: [GridAction]) {
         for action in actions {
-            grid = performGridAction(action, grid: grid)
+            performGridAction(action)
         }
-        
-        return grid
     }
     
-    func performGridAction(_ action: GridAction, grid: Grid) -> Grid {
-        var grid = grid
+    func lockOrientation(column: Int, row: Int, orientation: Tile.Orientation) {
+        grid[row: row, column: column].isLocked = true
+        grid[row: row, column: column].orientation = orientation
         
+        propagateTileCheck(column: column, row: row)
+    }
+    
+    func performGridAction(_ action: GridAction) {
         switch action {
         case .markAsInvalid:
             markIsInvalid()
         
         case let .lockOrientation(column, row, orientation):
-            grid[row: row, column: column].isLocked = true
-            grid[row: row, column: column].orientation = orientation
-            
-            propagateTileCheck(column: column, row: row)
+            lockOrientation(column: column, row: row, orientation: orientation)
             
         case let .markUnavailableIngoing(column, row, ports):
             // Figure out which orientations require the ports mentioned and
@@ -116,8 +114,7 @@ class SolverInvocation {
             // Possible orientation set contains only one item - lock tile on the
             // specified orientation
             if remaining.count == 1, let first = remaining.first {
-                grid[row: row, column: column].isLocked = true
-                grid[row: row, column: column].orientation = first
+                lockOrientation(column: column, row: row, orientation: first)
             } else if remaining.isEmpty {
                 // Possible orientation set is empty - mark grid as invalid
                 markIsInvalid()
@@ -125,8 +122,6 @@ class SolverInvocation {
             
             propagateTileCheck(column: column, row: row)
         }
-        
-        return grid
     }
     
     func performGuessMoves() -> Bool {
@@ -138,10 +133,7 @@ class SolverInvocation {
         
         while maxGuesses > 0, let next = guesses.popLast() {
             let subSolver = makeSubSolver(grid: self.grid)
-            subSolver.grid =
-                subSolver
-                .performGridAction(.lockOrientation(column: next.column, row: next.row, orientation: next.orientation),
-                                   grid: grid)
+            subSolver.lockOrientation(column: next.column, row: next.row, orientation: next.orientation)
             
             maxGuesses -= 1
             
@@ -152,11 +144,10 @@ class SolverInvocation {
                 return false
             
             case .invalid:
-                grid = performGridAction(
+                performGridAction(
                     .markImpossibleOrientations(column: next.column,
                                                 row: next.row,
-                                                [next.orientation]),
-                    grid: grid
+                                                [next.orientation])
                 )
                 return true
                 

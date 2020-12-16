@@ -150,7 +150,7 @@ class SolverInvcationTests: XCTestCase {
             .build()
         let sut = SolverInvocation(grid: grid)
         
-        _ = sut.performGridAction(.markUnavailableIngoing(column: 0, row: 0, [.top]), grid: grid)
+        sut.performGridAction(.markUnavailableIngoing(column: 0, row: 0, [.top]))
         
         XCTAssertEqual(sut.metadata.possibleOrientations(column: 0, row: 0), [.east, .south])
     }
