@@ -27,21 +27,39 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
             return [.markAsInvalid]
         }
         
+        // If unavailable incoming ports match all available orientations of a
+        // tile, the grid is invalid.
+        if tile.orientations(excludingPorts: unavailableOutgoing).isEmpty {
+            return [.markAsInvalid]
+        }
+        
+        let possible = delegate.possibleOrientationsForTile(atColumn: column, row: row)
+        
+        // Report impossible orientations of the tile based on the required ports
         let remainingSet =
             tile.orientations(includingPorts: required)
             .intersection(
                 tile.orientations(excludingPorts: unavailableOutgoing)
             )
-            
-        let reversedRemaining =
-            Set(Tile.Orientation.allCases)
+        
+        let reversedRemaining = possible
             .subtracting(remainingSet)
             .normalizedByPortSet(onTileKind: tile.kind)
         
         if !reversedRemaining.isEmpty {
+            // Detect ports that will become unavailable when the set of impossible
+            // orientations is reported and propagate them to neighboring tiles
+            let unavailablePorts = tile.commonUnavailablePorts(orientations: remainingSet)
+            
+            let actionsForNeighboringTiles: [GridAction] = unavailablePorts.sorted().map {
+                let (col, row) = grid.columnRowByMoving(column: column, row: row, direction: $0)
+                
+                return .markUnavailableIngoing(column: col, row: row, [$0.opposite])
+            }
+            
             return [
                 .markImpossibleOrientations(column: column, row: row, reversedRemaining)
-            ]
+            ] + actionsForNeighboringTiles
         }
         
         return []

@@ -93,6 +93,12 @@ class SolverInvocation {
                 break
             }
             
+            performGridAction(
+                .markImpossibleOrientations(column: column,
+                                            row: row,
+                                            Set(Tile.Orientation.allCases).subtracting(available))
+            )
+            
             metadata.setPossibleOrientations(column: column, row: row, available)
             
             propagateTileCheck(column: column, row: row)
@@ -173,8 +179,21 @@ class SolverInvocation {
         }
     }
     
+    private func hasEnqueuedGeneralTileCheck(column: Int, row: Int) -> Bool {
+        for case let step as GeneralTileCheckSolverStep in steps {
+            if step.column == column && step.row == row {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
     private func enqueueGeneralTileCheck(column: Int, row: Int) {
         guard !grid[row: row, column: column].isLocked else {
+            return
+        }
+        guard !hasEnqueuedGeneralTileCheck(column: column, row: row) else {
             return
         }
         

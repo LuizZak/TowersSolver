@@ -1,6 +1,6 @@
 /// A protocol for objects capable of performing discrete solution steps on a loopy
 /// field.
-public protocol SolverStep: class {
+public protocol SolverStep: AnyObject {
     static var metadataKey: String { get }
     
     func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid

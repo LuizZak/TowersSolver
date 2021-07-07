@@ -6,6 +6,7 @@ class MockNetSolverDelegate: NetSolverDelegate {
     var didCallEnqueue: [NetSolverStep] = []
     var didCallMarkIsInvalid = false
     
+    var mock_possibleOrientationsForTile: ((_ column: Int, _ row: Int) -> Set<Tile.Orientation>)?
     var mock_unavailableIncomingPortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     var mock_requiredPortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     var mock_guaranteedOutgoingUnavailablePortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
@@ -39,6 +40,10 @@ class MockNetSolverDelegate: NetSolverDelegate {
     }
     
     func possibleOrientationsForTile(atColumn column: Int, row: Int) -> Set<Tile.Orientation> {
+        if let mocked = mock_possibleOrientationsForTile {
+            return mocked(column, row)
+        }
+        
         return baseSolverDelegate.possibleOrientationsForTile(atColumn: column, row: row)
     }
     
