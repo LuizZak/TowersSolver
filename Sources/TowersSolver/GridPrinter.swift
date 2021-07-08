@@ -19,7 +19,7 @@ public extension GridPrinter {
         resetBuffer()
         
         // For visual hint
-        let heights = Array("▂▃▄▅▆▇█")
+        let heights = Array("▁▂▃▄▅▆▇█")
         
         let originX = 2
         let originY = 1
@@ -59,7 +59,8 @@ public extension GridPrinter {
                     }
                 case .solved(let value):
                     // Draw a small visual representation of the (relative) height
-                    let offset = Int((Float(value) / Float(grid.size)) * Float(heights.count) - 1)
+                    var offset = Int((Float(value) / Float(grid.size)) * Float(heights.count) - 1)
+                    offset = max(0, min(heights.count - 1, offset))
                     let hglyph = heights[offset]
                     
                     fillRect(char: hglyph, x: x + 1, y: y + h - 1, w: w - 1, h: 1)
