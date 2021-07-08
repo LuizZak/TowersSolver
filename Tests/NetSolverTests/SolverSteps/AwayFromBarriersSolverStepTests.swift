@@ -59,10 +59,9 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         XCTAssertEqual(result, [.lockOrientation(column: 1, row: 0, orientation: .south)])
     }
     
-    func testApply_nonWrappingGrid_endPoint_atTopEdge_doesNotChangeTileOrientation() {
-        // Set an end point tile at the top-center tile and check that no locking
-        // is done because the set of possible orientations is greater than one
-        // while providing no equivalent ports amongst the available orientations.
+    func testApply_nonWrappingGrid_endPoint_atTopEdge_markUnavailable() {
+        // End-points at the edge of non-wrapping grids or with surrounding barriers
+        // should have unavailable ports reported
         let grid = TestGridBuilder(columns: 3, rows: 3)
             .setAllTiles(kind: .L, orientation: .north)
             .setTile(1, 0, kind: .endPoint, orientation: .north)
@@ -72,7 +71,9 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
         
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
-        XCTAssertTrue(result.isEmpty)
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 1, row: 0, [.north])
+        ])
     }
     
     func testApply_noAvailablePorts_markAsInvalid() {

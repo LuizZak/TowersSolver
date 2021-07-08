@@ -41,6 +41,18 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
             ]
         }
         
+        // Remove from the available set of orientations any orientation that is
+        // blocked by barriers
+        let currentOrientations = delegate.possibleOrientationsForTile(atColumn: column, row: row)
+
+        let unavailable = currentOrientations.subtracting(availableOrientations)
+
+        if !unavailable.isEmpty {
+            return [
+                .markImpossibleOrientations(column: column, row: row, unavailable)
+            ]
+        }
+        
         return []
     }
 }
