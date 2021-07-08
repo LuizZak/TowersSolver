@@ -213,6 +213,8 @@ class SolverInvocation {
                 let tile = grid[row: row, column: column]
                 guard !tile.isLocked else { continue }
                 
+                // Find orientations that match required and available ports
+                // for this tile
                 let required = requiredPortsForTile(atColumn: column, row: row)
                 
                 let reduced =

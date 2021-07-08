@@ -1,7 +1,7 @@
 /// Solver for a Net game
 public final class Solver {
     private(set) public var grid: Grid
-    public var maxGuesses: Int = 5
+    public var maxGuesses: Int = 0
     
     public init(grid: Grid) {
         self.grid = grid
