@@ -35,11 +35,10 @@ public extension Tile {
     ///
     /// - For I pieces, north and south represent a vertical orientation, while
     /// east and west represent the vertical orientation;
-    /// - For L pieces, north has the corner piece rotated with the top and right
-    /// connected, with east, south and west rotating the tile 90 degrees
-    /// clockwise;
+    /// - For L pieces, north has the top and right connected, with east, south
+    /// and west rotating the tile 90 degrees clockwise;
     /// - For T pieces, north has the left, top and right sides connected, with
-    /// east, south and west rotating the tile 90 degrees;
+    /// east, south and west rotating the tile 90 degrees clockwise;
     /// - For end pieces, the orientation represent the side of the tile with
     /// the connection exposed.
     ///

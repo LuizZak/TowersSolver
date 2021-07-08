@@ -53,9 +53,7 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         let result = sut.apply(on: grid, delegate: mockDelegate)
         
         XCTAssertEqual(result, [
-            .markImpossibleOrientations(column: 0, row: 0, [.west, .east, .south]),
-            .markUnavailableIngoing(column: 0, row: 0, [.top]),
-            .markUnavailableIngoing(column: 0, row: 0, [.right])
+            .markImpossibleOrientations(column: 0, row: 0, [.west, .east, .south])
         ])
     }
     
@@ -149,6 +147,56 @@ class GeneralTileCheckSolverStepTests: BaseSolverStepTestClass {
         XCTAssertEqual(result, [
             .markImpossibleOrientations(column: 0, row: 1, [.north, .east]),
             .markUnavailableIngoing(column: 1, row: 1, [.left])
+        ])
+    }
+    
+    func testApply_doesNotPropagateUnavailableIncomingPortsWhenAlreadyReportedByDelegate() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTileKind(0, 1, kind: .L)
+            .setTileKind(1, 1, kind: .I)
+            .build()
+        mockDelegate.mock_prepare(forGrid: grid)
+        mockDelegate.mock_requiredPortsForTile = { (_, _) in
+            return [.left]
+        }
+        mockDelegate.mock_unavailableIncomingPortsForTile = { (_, _) in
+            return [.right]
+        }
+        let sut = GeneralTileCheckSolverStep(column: 0, row: 1)
+        
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+        
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 0, row: 1, [.north, .east])
+        ])
+    }
+    
+    func testApply_lockedTilesSurroundingTile_lockOrientation() {
+        // Grid:
+        //
+        // │ ├ ┘
+        // │ ┘ ┬
+        // └ ─ ┘
+        //
+        // Only center tile is unlocked
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(0, 0, kind: .I, orientation: .north, locked: true)
+            .setTile(1, 0, kind: .T, orientation: .east, locked: true)
+            .setTile(2, 0, kind: .L, orientation: .east, locked: true)
+            .setTile(0, 1, kind: .I, orientation: .north, locked: true)
+            .setTile(1, 1, kind: .L, orientation: .east)
+            .setTile(2, 1, kind: .T, orientation: .south, locked: true)
+            .setTile(0, 2, kind: .L, orientation: .north, locked: true)
+            .setTile(1, 2, kind: .I, orientation: .east, locked: true)
+            .setTile(2, 2, kind: .L, orientation: .east, locked: true)
+            .build()
+        mockDelegate.mock_prepare(forGrid: grid)
+        let sut = GeneralTileCheckSolverStep(column: 1, row: 1)
+        
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+        
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(column: 1, row: 1, [.south, .west, .east])
         ])
     }
 }

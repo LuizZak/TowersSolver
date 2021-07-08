@@ -49,7 +49,11 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
         if !reversedRemaining.isEmpty {
             // Detect ports that will become unavailable when the set of impossible
             // orientations is reported and propagate them to neighboring tiles
-            let unavailablePorts = tile.commonUnavailablePorts(orientations: remainingSet)
+            var unavailablePorts = tile.commonUnavailablePorts(orientations: remainingSet)
+            
+            // Remove from set ports that are already reported as unavailable
+            unavailablePorts
+                .subtract(delegate.unavailableIncomingPortsForTile(atColumn: column, row: row))
             
             let actionsForNeighboringTiles: [GridAction] = unavailablePorts.sorted().map {
                 let (col, row) = grid.columnRowByMoving(column: column, row: row, direction: $0)
