@@ -24,10 +24,12 @@ public final class Solver {
     func enqueueInitialSteps(on delegate: NetSolverDelegate) {
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
+                // Enqueue barrier checks for tiles bordering barriers
                 if !grid.barriersForTile(atColumn: column, row: row).isEmpty {
                     delegate.enqueue(AwayFromBarriersSolverStep(column: column, row: row))
                 }
                 
+                // Enqueue end-point checks
                 if grid[row: row, column: column].kind == .endPoint {
                     delegate.enqueue(EndPointNeighborsSolverStep(column: column, row: row))
                 }

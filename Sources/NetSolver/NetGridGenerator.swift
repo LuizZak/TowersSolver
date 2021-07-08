@@ -53,8 +53,8 @@ public class NetGridGenerator {
                         || charAtIndexMatches(state.index(after: index), char: "v") {
                     
                     // TODO: Add support for barriers
-                    // Since we don't support barriers for now, just skip the
-                    // characters, for now.
+                    // Since we don't support barriers yet, just skip the
+                    // character, for now.
                     index = state.index(after: index)
                     
                     // Original barrier decoding code from Simon Tatham's
@@ -62,19 +62,19 @@ public class NetGridGenerator {
                     // for decoding barriers later
                     /*
                      while (*desc == 'h' || *desc == 'v') {
-                     int x2, y2, d1, d2;
-                     if (*desc == 'v')
-                     d1 = R;
-                     else
-                     d1 = D;
-                     
-                     OFFSET(x2, y2, x, y, d1, state);
-                     d2 = F(d1);
-                     
-                     barrier(state, x, y) |= d1;
-                     barrier(state, x2, y2) |= d2;
-                     
-                     desc++;
+                         int x2, y2, d1, d2;
+                         if (*desc == 'v')
+                             d1 = R;
+                         else
+                             d1 = D;
+                         
+                         OFFSET(x2, y2, x, y, d1, state);
+                         d2 = F(d1);
+                         
+                         barrier(state, x, y) |= d1;
+                         barrier(state, x2, y2) |= d2;
+                         
+                         desc++;
                      }
                      */
                 }

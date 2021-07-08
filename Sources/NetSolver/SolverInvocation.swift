@@ -99,10 +99,6 @@ class SolverInvocation {
                                             Set(Tile.Orientation.allCases).subtracting(available))
             )
             
-            metadata.setPossibleOrientations(column: column, row: row, available)
-            
-            propagateTileCheck(column: column, row: row)
-            
         case let .markImpossibleOrientations(column, row, orientations):
             let possible = metadata.possibleOrientations(column: column, row: row)
             guard !possible.isDisjoint(with: orientations) else {
