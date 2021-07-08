@@ -162,10 +162,6 @@ class SolverInvocation {
     }
     
     private func propagateTileCheck(column: Int, row: Int) {
-        guard !grid[row: row, column: column].isLocked else {
-            return
-        }
-        
         enqueueGeneralTileCheck(column: column, row: row)
         
         EdgePort.allCases.forEach { port in
