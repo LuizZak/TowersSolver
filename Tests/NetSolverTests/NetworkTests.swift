@@ -247,6 +247,83 @@ class NetworkTests: XCTestCase {
         XCTAssertFalse(sut.isCompleteNetwork(ofGrid: grid))
     }
     
+    func testOpenPorts_singleTile() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(1, 1, kind: .L, orientation: .north, locked: true)
+            .build()
+        let sut = Network.fromCoordinates(onGrid: grid, [(1, 1)])
+        
+        let result = sut.openPorts(onGrid: grid)
+        
+        XCTAssertEqual(result, [
+            .init(column: 1, row: 1, ports: [.top, .right])
+        ])
+    }
+    
+    func testOpenPorts_twoTile() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(1, 1, kind: .L, orientation: .north)
+            .setTile(2, 1, kind: .I, orientation: .west)
+            .build()
+        let sut = Network.fromCoordinates(onGrid: grid, [(1, 1), (2, 1)])
+        
+        let result = sut.openPorts(onGrid: grid)
+        
+        XCTAssertEqual(result, [
+            .init(column: 1, row: 1, ports: [.top]),
+            .init(column: 2, row: 1, ports: [.right])
+        ])
+    }
+    
+    func testOpenPorts_wrappingGrid() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setWrapping(true)
+            .setTile(0, 1, kind: .L, orientation: .south)
+            .setTile(1, 1, kind: .L, orientation: .north)
+            .setTile(2, 1, kind: .I, orientation: .west)
+            .build()
+        let sut = Network.fromCoordinates(onGrid: grid, [(0, 1), (1, 1), (2, 1)])
+        
+        let result = sut.openPorts(onGrid: grid)
+        
+        XCTAssertEqual(result, [
+            .init(column: 1, row: 1, ports: [.top]),
+            .init(column: 0, row: 1, ports: [.bottom])
+        ])
+    }
+    
+    func testOpenPorts_nonWrappingGrid() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setWrapping(false)
+            .setTile(0, 1, kind: .L, orientation: .south)
+            .setTile(1, 1, kind: .L, orientation: .north)
+            .setTile(2, 1, kind: .I, orientation: .west)
+            .build()
+        let sut = Network.fromCoordinates(onGrid: grid, [(0, 1), (1, 1), (2, 1)])
+        
+        let result = sut.openPorts(onGrid: grid)
+        
+        XCTAssertEqual(result, [
+            .init(column: 0, row: 1, ports: [.left, .bottom]),
+            .init(column: 1, row: 1, ports: [.top]),
+            .init(column: 2, row: 1, ports: [.right])
+        ])
+    }
+    
+    func testOpenPorts_closedNetwork() {
+        let grid = TestGridBuilder(columns: 3, rows: 1)
+            .setWrapping(false)
+            .setTile(0, 0, kind: .endPoint, orientation: .east)
+            .setTile(1, 0, kind: .I, orientation: .west)
+            .setTile(2, 0, kind: .endPoint, orientation: .west)
+            .build()
+        let sut = Network.fromCoordinates(onGrid: grid, [(0, 0), (1, 0), (2, 0)])
+        
+        let result = sut.openPorts(onGrid: grid)
+        
+        XCTAssertEqual(result, [])
+    }
+    
     func testSplitNetwork_disconnectedNetwork() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .endPoint, orientation: .north)
@@ -617,5 +694,22 @@ class NetworkTests: XCTestCase {
         XCTAssertEqual(coord3.hashValue, coord4.hashValue)
         XCTAssertNotEqual(coord1.hashValue, coord3.hashValue)
         XCTAssertNotEqual(coord2.hashValue, coord4.hashValue)
+    }
+    
+    func testisEarlierInTopBottomLeftRightSweep() {
+        let coord0x0 = Network.Coordinate(column: 0, row: 0, ports: [])
+        let coord1x0 = Network.Coordinate(column: 1, row: 0, ports: [])
+        let coord1x1 = Network.Coordinate(column: 1, row: 1, ports: [])
+        let coord0x1 = Network.Coordinate(column: 0, row: 1, ports: [])
+        
+        XCTAssertTrue(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord0x0, coord0x1))
+        XCTAssertFalse(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord0x1, coord0x0))
+        XCTAssertTrue(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord0x0, coord1x0))
+        XCTAssertFalse(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord1x0, coord0x0))
+        
+        XCTAssertTrue(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord0x0, coord1x1))
+        XCTAssertFalse(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord1x1, coord0x0))
+        XCTAssertTrue(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord1x0, coord0x1))
+        XCTAssertFalse(Network.Coordinate.isEarlierInTopBottomLeftRightSweep(coord0x1, coord1x0))
     }
 }

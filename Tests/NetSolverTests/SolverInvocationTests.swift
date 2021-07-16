@@ -2,6 +2,30 @@ import XCTest
 @testable import NetSolver
 
 class SolverInvcationTests: XCTestCase {
+    func testLockedTileNetworks() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTile(0, 0, kind: .L, orientation: .west, locked: true)
+            .setTile(1, 0, kind: .I, orientation: .north, locked: true)
+            .setTile(1, 1, kind: .T, orientation: .north, locked: true)
+            .build()
+        let sut = SolverInvocation(grid: grid)
+        
+        let result = sut.lockedTileNetworks()
+        
+        XCTAssertEqual(2, result.count)
+        XCTAssertEqual(1, result.count(where: {
+            $0 == .init(tiles: [
+                .init(column: 0, row: 0, ports: [.left, .top]),
+            ])
+        }))
+        XCTAssertEqual(1, result.count(where: {
+            $0 == .init(tiles: [
+                .init(column: 1, row: 0, ports: [.top, .bottom]),
+                .init(column: 1, row: 1, ports: [.left, .top, .right])
+            ])
+        }))
+    }
+    
     func testPossibleOrientationsForTile() {
         let grid = Grid(rows: 1, columns: 1)
         let sut = SolverInvocation(grid: grid)

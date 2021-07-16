@@ -12,7 +12,12 @@ class MockNetSolverDelegate: NetSolverDelegate {
     var mock_guaranteedOutgoingUnavailablePortsForTile: ((_ column: Int, _ row: Int) -> Set<EdgePort>)?
     
     var metadata: GridMetadata {
-        baseSolverDelegate.metadata
+        get {
+            baseSolverDelegate.metadata
+        }
+        set {
+            baseSolverDelegate.metadata = newValue
+        }
     }
     var baseSolverDelegate: SolverInvocation!
     
@@ -37,6 +42,10 @@ class MockNetSolverDelegate: NetSolverDelegate {
         didCallEnqueue.append(step)
         
         baseSolverDelegate.enqueue(step)
+    }
+    
+    func lockedTileNetworks() -> [Network] {
+        return baseSolverDelegate.lockedTileNetworks()
     }
     
     func possibleOrientationsForTile(atColumn column: Int, row: Int) -> Set<Tile.Orientation> {

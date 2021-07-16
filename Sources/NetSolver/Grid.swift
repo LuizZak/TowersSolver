@@ -76,8 +76,11 @@ public struct Grid {
     }
     
     /// Returns whether two tiles are neighbors on the grid.
-    /// Tiles are neighbors if they share an edge, or are located at opposite
-    /// ends of the grid, in case the grid is wrapping.
+    /// Tiles are neighbors if they share an edge, or are located in the same column
+    /// or row at opposite ends of the grid, in case the grid is wrapping.
+    ///
+    /// Neighbor detection ignores barriers, except for barriers placed for
+    /// non-wrapping grids.
     public func areNeighbors(atColumn1 column1: Int, row1: Int, column2: Int, row2: Int) -> Bool {
         guard isWithinBounds(column: column1, row: row1),
               isWithinBounds(column: column2, row: row2) else {
@@ -114,6 +117,9 @@ public struct Grid {
     /// Returns a list of the four tiles surrounding a tile at a given column/row,
     /// along with the corresponding direction of the tile as an edge port from
     /// the center tile.
+    ///
+    /// For tiles that are at the corners of the grid, the surrounding tiles list
+    /// includes tiles that are wrapped around the grid on the opposite sides.
     public func surroundingTiles(column: Int, row: Int) -> [(tile: Tile, edge: EdgePort)] {
         func fetch(_ edgePort: EdgePort) -> (Tile, EdgePort) {
             let (c, r) = columnRowByMoving(column: column, row: row, direction: edgePort)
@@ -132,8 +138,8 @@ public struct Grid {
     /// Returns the column/row that results from moving from a given column/row
     /// at a specified edge port.
     ///
-    /// Querying tiles at the edge of the grid with a direction that points to
-    /// out-of-bounds, the resulting column or row are wrapped around to the
+    /// If querying tiles at the edge of the grid with a direction that points to
+    /// out-of-bounds, the resulting column/row are wrapped around to the
     /// opposite side of the grid.
     public func columnRowByMoving(column: Int, row: Int, direction: EdgePort) -> (column: Int, row: Int) {
         var column = column
@@ -190,5 +196,72 @@ public struct Grid {
         }
         
         return result
+    }
+    
+    /// Returns the edge port that connects the first tile to the second.
+    /// In case the tiles are not neighbors, `nil` is returned, instead.
+    ///
+    /// Tiles that are adjacent across grid bounds on wrapped grids are detected
+    /// as well.
+    ///
+    /// Edge port ignores tile kinds and orientations and operates solely on
+    /// coordinates.
+    public func edgePort(from tile1: (column: Int, row: Int), to tile2: (column: Int, row: Int)) -> EdgePort? {
+        guard areNeighbors(atColumn1: tile1.column, row1: tile1.row, column2: tile2.column, row2: tile2.row) else {
+            return nil
+        }
+        
+        // Horizontal neighbors
+        if tile1.row == tile2.row {
+            if tile1.column == tile2.column - 1 {
+                return .right
+            }
+            if tile1.column == tile2.column + 1 {
+                return .left
+            }
+            
+            // Wrapping grid detection
+            if wrapping {
+                if tile1.column == columns - 1 && tile2.column == 0 {
+                    return .right
+                }
+                if tile1.column == 0 && tile2.column == columns - 1 {
+                    return .left
+                }
+            }
+        }
+        
+        // Vertical neighbors
+        if tile1.column == tile2.column {
+            if tile1.row == tile2.row - 1 {
+                return .bottom
+            }
+            if tile1.row == tile2.row + 1 {
+                return .top
+            }
+            
+            // Wrapping grid detection
+            if wrapping {
+                if tile1.row == rows - 1 && tile2.row == 0 {
+                    return .bottom
+                }
+                if tile1.row == 0 && tile2.row == rows - 1 {
+                    return .top
+                }
+            }
+        }
+        
+        return nil
+    }
+}
+
+// MARK: Network <-> Grid interaction helper functions
+extension Grid {
+    /// Returns the tile for a given network coordinate.
+    ///
+    /// - precondition: ``coordinate.column``/``coordinate.row`` are within bounds
+    /// of grid size
+    func tile(fromCoordinate coordinate: Network.Coordinate) -> Tile {
+        return self[row: coordinate.row, column: coordinate.column]
     }
 }

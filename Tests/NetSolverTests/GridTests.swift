@@ -31,7 +31,16 @@ class GridTests: XCTestCase {
         XCTAssertTrue(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 0, row2: 1))
     }
     
-    func testAreNeighbors_oppositeTiles_wrappingGrid() {
+    func testAreNeighbors_diagonalTiles_returnsFalse() {
+        let grid = Grid(rows: 3, columns: 3)
+        
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 0, row2: 0))
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 2, row2: 0))
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 2, row2: 2))
+        XCTAssertFalse(grid.areNeighbors(atColumn1: 1, row1: 1, column2: 0, row2: 2))
+    }
+    
+    func testAreNeighbors_oppositeTiles_wrappingGrid_returnsTrue() {
         let grid = Grid(rows: 3, columns: 3, wrapping: true)
         
         XCTAssertTrue(grid.areNeighbors(atColumn1: 0, row1: 0, column2: 2, row2: 0))
@@ -40,7 +49,7 @@ class GridTests: XCTestCase {
         XCTAssertTrue(grid.areNeighbors(atColumn1: 0, row1: 2, column2: 0, row2: 0))
     }
     
-    func testAreNeighbors_oppositeTiles_nonWrappingGrid() {
+    func testAreNeighbors_oppositeTiles_nonWrappingGrid_returnsFalse() {
         let grid = Grid(rows: 3, columns: 3, wrapping: false)
         
         XCTAssertFalse(grid.areNeighbors(atColumn1: 0, row1: 0, column2: 2, row2: 0))
@@ -138,5 +147,41 @@ class GridTests: XCTestCase {
         let grid = Grid(rows: 3, columns: 3)
         
         XCTAssert(grid.columnRowByMoving(column: 1, row: 2, direction: .bottom) == (1, 0))
+    }
+    
+    func testEdgePort_neighborTiles() {
+        let grid = Grid(rows: 3, columns: 3)
+        
+        XCTAssertEqual(grid.edgePort(from: (column: 1, row: 1), to: (1, 0)), .top)
+        XCTAssertEqual(grid.edgePort(from: (column: 1, row: 1), to: (2, 1)), .right)
+        XCTAssertEqual(grid.edgePort(from: (column: 1, row: 1), to: (1, 2)), .bottom)
+        XCTAssertEqual(grid.edgePort(from: (column: 1, row: 1), to: (0, 1)), .left)
+    }
+    
+    func testEdgePort_nonNeighborTiles_returnsNil() {
+        let grid = Grid(rows: 3, columns: 3)
+        
+        XCTAssertNil(grid.edgePort(from: (column: 1, row: 1), to: (0, 0)))
+        XCTAssertNil(grid.edgePort(from: (column: 1, row: 1), to: (2, 0)))
+        XCTAssertNil(grid.edgePort(from: (column: 1, row: 1), to: (2, 2)))
+        XCTAssertNil(grid.edgePort(from: (column: 1, row: 1), to: (0, 2)))
+    }
+    
+    func testEdgePort_neighborTiles_wrappingGrid() {
+        let grid = Grid(rows: 3, columns: 3, wrapping: true)
+        
+        XCTAssertEqual(grid.edgePort(from: (column: 0, row: 1), to: (2, 1)), .left)
+        XCTAssertEqual(grid.edgePort(from: (column: 2, row: 1), to: (0, 1)), .right)
+        XCTAssertEqual(grid.edgePort(from: (column: 1, row: 0), to: (1, 2)), .top)
+        XCTAssertEqual(grid.edgePort(from: (column: 1, row: 2), to: (1, 0)), .bottom)
+    }
+    
+    func testEdgePort_neighborTiles_nonWrappingGrid_returnsNil() {
+        let grid = Grid(rows: 3, columns: 3, wrapping: false)
+        
+        XCTAssertNil(grid.edgePort(from: (column: 0, row: 1), to: (2, 1)))
+        XCTAssertNil(grid.edgePort(from: (column: 2, row: 1), to: (0, 1)))
+        XCTAssertNil(grid.edgePort(from: (column: 1, row: 0), to: (1, 2)))
+        XCTAssertNil(grid.edgePort(from: (column: 1, row: 2), to: (1, 0)))
     }
 }

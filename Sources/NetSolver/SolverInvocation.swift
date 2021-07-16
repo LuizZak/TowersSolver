@@ -12,25 +12,9 @@ class SolverInvocation {
         self.metadata = GridMetadata(forGrid: grid)
     }
     
-    /// Apply all currently enqueued solver steps
-    func apply() -> SolverInvocationResult {
-        setupPossibleOrientationsSet()
-        
-        performFullSolverCycle()
-        
-        let state: ResultState
-        let controller = NetGridController(grid: grid)
-        
-        if isValid && !controller.isInvalid {
-            state = controller.isSolved ? .solved : .unsolved
-        } else {
-            state = .invalid
-        }
-        
-        return SolverInvocationResult(state: state, grid: grid)
-    }
-    
-    func setupPossibleOrientationsSet() {
+    /// Resets the possible orientations set for each tile of the grid to their
+    /// corresponding normalized ports set of orientations via `.normalizedByPortSet`
+    func resetPossibleOrientationsSet() {
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
                 let tile = grid[row: row, column: column]
@@ -44,14 +28,20 @@ class SolverInvocation {
         }
     }
     
-    func performFullSolverCycle() {
+    /// Apply all currently enqueued solver steps
+    func apply() -> SolverInvocationResult {
         performSolverSteps()
         
-        if !NetGridController(grid: grid).isSolved {
-            if performGuessMoves() {
-                performFullSolverCycle()
-            }
+        let state: ResultState
+        let controller = NetGridController(grid: grid)
+        
+        if isValid && !controller.isInvalid {
+            state = controller.isSolved ? .solved : .unsolved
+        } else {
+            state = .invalid
         }
+        
+        return SolverInvocationResult(state: state, grid: grid)
     }
     
     func performSolverSteps() {
@@ -126,9 +116,9 @@ class SolverInvocation {
         }
     }
     
-    func performGuessMoves() -> Bool {
+    func performGuessMoves() -> GuessMovesResult {
         guard maxGuesses > 0 else {
-            return false
+            return .guessesExhausted
         }
         
         var guesses = generateGuessMoves()
@@ -143,7 +133,7 @@ class SolverInvocation {
             switch result.state {
             case .solved:
                 self.grid = result.grid
-                return false
+                return .gridSolved(result.grid)
             
             case .invalid:
                 performGridAction(
@@ -151,14 +141,23 @@ class SolverInvocation {
                                                 row: next.row,
                                                 [next.orientation])
                 )
-                return true
+                return .gridChanged
                 
             case .unsolved:
                 continue
             }
         }
         
-        return false
+        return .guessesExhausted
+    }
+    
+    func makeSubSolver(grid: Grid) -> SolverInvocation {
+        let solver = SolverInvocation(grid: grid)
+        solver.maxGuesses = maxGuesses - 1
+        solver.isValid = isValid
+        solver.metadata = metadata
+        
+        return solver
     }
     
     private func propagateTileCheck(column: Int, row: Int) {
@@ -190,15 +189,6 @@ class SolverInvocation {
         }
         
         enqueue(GeneralTileCheckSolverStep(column: column, row: row))
-    }
-    
-    private func makeSubSolver(grid: Grid) -> SolverInvocation {
-        let solver = SolverInvocation(grid: grid)
-        solver.maxGuesses = maxGuesses - 1
-        solver.isValid = isValid
-        solver.metadata = metadata
-        
-        return solver
     }
     
     private func generateGuessMoves() -> [GuessMove] {
@@ -237,6 +227,12 @@ class SolverInvocation {
         case unsolved
         case invalid
     }
+    
+    enum GuessMovesResult {
+        case gridSolved(Grid)
+        case gridChanged
+        case guessesExhausted
+    }
 }
 
 extension SolverInvocation: NetSolverDelegate {
@@ -246,6 +242,10 @@ extension SolverInvocation: NetSolverDelegate {
     
     func enqueue(_ step: NetSolverStep) {
         steps.append(step)
+    }
+    
+    func lockedTileNetworks() -> [Network] {
+        return Network.fromLockedTiles(onGrid: grid)
     }
     
     func possibleOrientationsForTile(atColumn column: Int, row: Int) -> Set<Tile.Orientation> {

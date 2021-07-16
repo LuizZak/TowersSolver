@@ -10,15 +10,37 @@ public final class Solver {
     /// Attempts to solve the grid for this solver, returning a boolean value
     /// indicating whether the solve attempt succeeded.
     public func solve() -> Bool {
-        let invocation = SolverInvocation(grid: grid)
-        invocation.maxGuesses = maxGuesses
+        let solverInvocation = SolverInvocation(grid: grid)
+        solverInvocation.resetPossibleOrientationsSet()
+        solverInvocation.maxGuesses = maxGuesses
         
-        enqueueInitialSteps(on: invocation)
+        enqueueInitialSteps(on: solverInvocation)
         
-        let result = invocation.apply()
+        return performSolverCycles(solverInvocation)
+    }
+    
+    func performSolverCycles(_ solver: SolverInvocation) -> Bool {
+        let result = solver.apply()
         grid = result.grid
         
-        return result.state == .solved
+        switch result.state {
+        case .solved:
+            return true
+        case .unsolved:
+            switch solver.performGuessMoves() {
+            case .gridSolved(let grid):
+                self.grid = grid
+                return true
+            
+            case .gridChanged:
+                return performSolverCycles(solver)
+                
+            case .guessesExhausted:
+                return false
+            }
+        case .invalid:
+            return false
+        }
     }
     
     func enqueueInitialSteps(on delegate: NetSolverDelegate) {

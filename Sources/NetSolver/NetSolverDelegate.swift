@@ -1,4 +1,5 @@
-/// Delegate for a solver which can be used to enqueue subsequent solver steps.
+/// Delegate for a solver which can be used to query information about a grid and
+/// enqueuesolver steps.
 protocol NetSolverDelegate {
     /// The metadata for the current solver grid.
     var metadata: GridMetadata { get }
@@ -6,12 +7,16 @@ protocol NetSolverDelegate {
     /// Enqueues a given solver step so it can be performed later.
     func enqueue(_ step: NetSolverStep)
     
+    /// Returns a list of networks for the currently locked tile on the grid
+    func lockedTileNetworks() -> [Network]
+    
     /// Returns a set of possible orientations for a tile at a given column/row
     /// combination.
     ///
     /// Possible orientation sets for tiles start as all four cardinal directions,
-    /// and are reduced as solver steps make passes through a grid, being reduced
-    /// to only one orientation when a tile is solved.
+    /// and are reduced as solver steps make passes through a grid via
+    /// ``GridAction.markImpossibleOrientations``, being reduced to only one
+    /// orientation when a tile is solved.
     func possibleOrientationsForTile(atColumn column: Int, row: Int) -> Set<Tile.Orientation>
     
     /// Returns a set of ports that are required to be available for a tile at a

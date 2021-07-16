@@ -1,7 +1,7 @@
 /// Represents a sub-network in a Net grid.
 /// Contains the tiles that form the network, along with their ports at the time
 /// of creation.
-struct Network {
+struct Network: Equatable {
     var tiles: Set<Coordinate>
     
     /// Returns `true` if this network contains a tile for a given column/row
@@ -132,6 +132,43 @@ struct Network {
         return false
     }
     
+    /// Returns a set of tile coordinates from this network that have ports that
+    /// do not connect to another tile from this network.
+    ///
+    /// The resulting set represents the coordinates for tiles that are
+    /// unconnected, where ``Coordinate.ports`` maps which ports of the tile are
+    /// unconnected.
+    ///
+    /// The provided grid is used to perform grid wrapping.
+    func openPorts(onGrid grid: Grid) -> Set<Coordinate> {
+        var result: Set<Coordinate> = []
+        
+        for tile in tiles {
+            var ports: Set<EdgePort> = []
+            
+            let barriers = grid.barriersForTile(atColumn: tile.column, row: tile.row)
+            
+            ports.formUnion(barriers.intersection(tile.ports))
+            
+            for port in tile.ports where !barriers.contains(port) {
+                let coord =
+                    grid.columnRowByMoving(column: tile.column,
+                                           row: tile.row,
+                                           direction: port)
+                
+                if !hasTile(forColumn: coord.column, row: coord.row) {
+                    ports.insert(port)
+                }
+            }
+            
+            if !ports.isEmpty {
+                result.insert(Coordinate(column: tile.column, row: tile.row, ports: ports))
+            }
+        }
+        
+        return result
+    }
+    
     /// Attempts to split this network into its subcomponents, composed of smaller
     /// subsets of tiles from this network which are connected by ports.
     ///
@@ -163,7 +200,7 @@ struct Network {
     /// If there are no connections between any of the network tiles via tile
     /// ports, `nil` is returned, instead.
     /// If one or more tile coordinates are shared between the two networks, the
-    /// result is a Network containing both tile lists, joined or not.
+    /// result is a single Network containing both tile lists.
     ///
     /// Barriers on the grid prevent networks from being joined.
     ///
@@ -351,5 +388,25 @@ extension Network {
         }
         
         return Network(tiles: tiles)
+    }
+}
+
+extension Network.Coordinate {
+    /// Returns `true` if `coord1` comes first in a top-bottom/left-right sweep
+    /// of the grid compared to `coord2`, `false` otherwise.
+    ///
+    /// Used to sort coordinates according to a top-bottom/left-right sweep of
+    /// the grid.
+    static func isEarlierInTopBottomLeftRightSweep(_ coord1: Self, _ coord2: Self) -> Bool {
+        if coord1.row < coord2.row {
+            return true
+        }
+        if coord1.row == coord2.row {
+            if coord1.column < coord2.column {
+                return true
+            }
+        }
+        
+        return false
     }
 }
