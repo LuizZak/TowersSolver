@@ -78,6 +78,19 @@ class SolverTests: XCTestCase {
         
         printGrid(sut.grid)
     }
+    
+    func testSolve_5x5_wrapping_trivial() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#5x5w:9db42c3ade3c2ba4e81a4468b
+        let gridGen = NetGridGenerator(rows: 5, columns: 5, wrapping: true)
+        gridGen.loadFromGameID("9db42c3ade3c2ba4e81a4468b")
+        let sut = Solver(grid: gridGen.grid)
+        sut.maxGuesses = 0
+        
+        XCTAssertTrue(sut.solve())
+        
+        printGrid(sut.grid)
+    }
 }
 
 private extension SolverTests {

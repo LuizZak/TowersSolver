@@ -9,11 +9,11 @@ public class NetGridGenerator {
     
     internal(set) public var grid: Grid
     
-    public init(rows: Int, columns: Int) {
+    public init(rows: Int, columns: Int, wrapping: Bool = false) {
         self.rows = rows
         self.columns = columns
         
-        grid = Grid(rows: rows, columns: columns)
+        grid = Grid(rows: rows, columns: columns, wrapping: wrapping)
     }
     
     public func loadFromGameID(_ state: String) {
