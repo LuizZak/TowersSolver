@@ -22,6 +22,11 @@ struct LoopDetectionSolverStep: NetSolverStep {
         // Fetch all open ports on this network
         let openPorts = Array(network.openPorts(onGrid: grid))
         
+        // At least two open ports are required
+        guard openPorts.count >= 2 else {
+            return []
+        }
+        
         // Map the open ports to tiles on the grid
         let tiles: [OpenPortTile] = openPorts.flatMap { openPort in
             openPort.ports.map {

@@ -1,5 +1,5 @@
 /// A Net game grid
-public struct Grid {
+public struct Grid: Equatable {
     /// Matrix of tiles, stored as [rows][columns]
     internal(set) public var tiles: [[Tile]] = []
     

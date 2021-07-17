@@ -19,6 +19,8 @@ public final class Solver {
         return performSolverCycles(solverInvocation)
     }
     
+    /// Performs solver cycles for a given solver, returning a boolean indicating
+    /// whether or not the grid has been solved.
     func performSolverCycles(_ solver: SolverInvocation) -> Bool {
         let result = solver.apply()
         grid = result.grid
@@ -27,18 +29,43 @@ public final class Solver {
         case .solved:
             return true
         case .unsolved:
-            switch solver.performGuessMoves() {
-            case .gridSolved(let grid):
-                self.grid = grid
-                return true
-            
-            case .gridChanged:
-                return performSolverCycles(solver)
-                
-            case .guessesExhausted:
-                return false
-            }
+            return performLoopDetectionSolverStep(solver)
         case .invalid:
+            return false
+        }
+    }
+    
+    /// Performs loop detection solving step and returns a boolean indicating
+    /// whether the function made changes to the solver's grid.
+    func performLoopDetectionSolverStep(_ solver: SolverInvocation) -> Bool {
+        let preGrid = solver.grid
+        
+        let step = LoopDetectionSolverStep()
+        
+        solver.enqueue(step)
+        let result = solver.apply()
+        
+        switch result.state {
+        case .solved:
+            self.grid = result.grid
+            return true
+        default:
+            break
+        }
+        
+        if preGrid != solver.grid {
+            return performSolverCycles(solver)
+        }
+        
+        switch solver.performGuessMoves() {
+        case .gridSolved(let grid):
+            self.grid = grid
+            return true
+        
+        case .gridChanged:
+            return performSolverCycles(solver)
+            
+        case .guessesExhausted:
             return false
         }
     }

@@ -1,5 +1,5 @@
 /// A Net tile
-public struct Tile {
+public struct Tile: Equatable {
     public var kind: Kind
     public var orientation: Orientation
     
