@@ -12,6 +12,10 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testIncompleteLoop() {
         // Test a case where closing a loop would form an invalid loop, so we
         // disable the edge that would close such loop:

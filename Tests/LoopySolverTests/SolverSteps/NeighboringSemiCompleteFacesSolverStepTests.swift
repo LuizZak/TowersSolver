@@ -12,6 +12,10 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testTouchingEdgeWise() {
         // Test a case where two semi-complete faces are touching, sharing a
         // common edge:

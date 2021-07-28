@@ -1,7 +1,11 @@
 /// A protocol for objects capable of performing discrete solution steps on a loopy
 /// field.
-public protocol SolverStep: class {
+public protocol SolverStep: AnyObject {
     static var metadataKey: String { get }
+    
+    /// Whether this solver step should be removed from the solve loop after it
+    /// has been executed at least once.
+    var isEphemeral: Bool { get }
     
     func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid
 }
@@ -9,6 +13,10 @@ public protocol SolverStep: class {
 public extension SolverStep {
     static var metadataKey: String {
         return "\(self)"
+    }
+    
+    var isEphemeral: Bool {
+        return false
     }
 }
 

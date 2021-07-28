@@ -12,6 +12,10 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApplyOnTrivial() {
         // Create a simple 2x2 square grid like so:
         //  .   .___.

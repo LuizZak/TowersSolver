@@ -12,6 +12,10 @@ class TwoEdgesPerVertexSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApplyOnTrivial() {
         // On a 2x2 square grid, mark the two center vertical edges as part of
         // the solution.

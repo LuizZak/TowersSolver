@@ -12,6 +12,10 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApplyOnTrivial() {
         // Create a grid with a loopy line that ends in a corner:
         //

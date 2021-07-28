@@ -12,6 +12,10 @@ class CornerSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApplyOnTrivial() {
         // Create a simple 3x3 square grid like so:
         //  .___.___.___.

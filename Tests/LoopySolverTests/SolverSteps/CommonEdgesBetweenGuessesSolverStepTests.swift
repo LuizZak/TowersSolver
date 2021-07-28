@@ -12,6 +12,10 @@ class CommonEdgesBetweenGuessesSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApply() {
         // Create a grid as follows:
         // .___.___.___.___.

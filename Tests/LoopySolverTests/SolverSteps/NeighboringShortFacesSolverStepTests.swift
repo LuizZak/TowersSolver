@@ -12,6 +12,10 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testOneFacesOnEdges() {
         // Test a scenario like the follow:
         // •───•───•───•───•
