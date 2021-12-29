@@ -4,7 +4,7 @@
 /// https://en.wikipedia.org/wiki/Quadtree
 public class QuadTree<Value: QuadTreeValue> {
     public typealias RectangleType = RectangleOf<Value.NumberType>
-    public typealias Quadrants = (q1: QuadTree, q2: QuadTree, q3: QuadTree, q4: QuadTree)
+    public typealias Quadrants = (topLeft: QuadTree, topRight: QuadTree, bottomRight: QuadTree, bottomLeft: QuadTree)
     
     /// Max number of elements before this quad tree nodes splits into sub-nodes
     public var maxElements: Int = 10
@@ -42,7 +42,7 @@ public class QuadTree<Value: QuadTreeValue> {
         let quads = split()
         
         func verifyQuadrants(with work: (QuadTree) -> Bool) -> Bool {
-            if work(quads.q1) || work(quads.q2) || work(quads.q3) || work(quads.q4) {
+            if work(quads.topLeft) || work(quads.topRight) || work(quads.bottomRight) || work(quads.bottomLeft) {
                 return true
             }
             return false
