@@ -22,8 +22,8 @@ public class QuadTree<Value: QuadTreeValue> {
     /// List of values on this quad tree node
     public var values: [Value] = []
     
-    /// Four sub-quadrants for this node, in top-left, top-right, bottom-left and
-    /// bottom-right order.
+    /// Four sub-quadrants for this node, in top-left, top-right, bottom-right and
+    /// bottom-left order.
     ///
     /// Is nil, if this node is not yet split into sub-nodes.
     public var quadrants: Quadrants?
