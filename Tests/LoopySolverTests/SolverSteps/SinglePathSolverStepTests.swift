@@ -12,6 +12,10 @@ class SinglePathSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApplyOnTrivial() {
         // Test a trivial case where a face with the exact required number of edges
         // hanging as a unique path around the cell:

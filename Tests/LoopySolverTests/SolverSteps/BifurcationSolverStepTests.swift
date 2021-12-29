@@ -12,6 +12,10 @@ class BifurcationSolverStepTests: XCTestCase {
         delegate = TestSolverStepDelegate()
     }
     
+    func testIsEphemeral() {
+        XCTAssertFalse(sut.isEphemeral)
+    }
+    
     func testApply() {
         // Create a honeycomb grid like so:
         //

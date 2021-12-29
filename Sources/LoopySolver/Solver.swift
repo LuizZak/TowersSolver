@@ -13,6 +13,12 @@ public final class Solver {
     // Solver steps applied after exhausting normal solving attempts.
     private var postSolveAttemptSteps: [SolverStep] = []
     
+    /// Whether ephemeral basic solver steps have been removed already
+    private var hasRemovedEphemeral = false
+    
+    /// Whether ephemeral post-solve solver steps have been removed already
+    private var hasRemovedPostSolveEphemeral = false
+    
     /// Whether this solver was spawned by a solver when attempting to inspect
     /// the results of a play isolatedly.
     var isChildSolver = false
@@ -190,10 +196,26 @@ public final class Solver {
     }
     
     private func applySteps(to grid: LoopyGrid) -> LoopyGrid {
+        defer {
+            if !hasRemovedEphemeral {
+                hasRemovedEphemeral = true
+                
+                steps = steps.filter { !$0.isEphemeral }
+            }
+        }
+        
         return applySteps(steps, to: grid)
     }
     
     private func applyPostSolveAttemptSteps(to grid: LoopyGrid) -> LoopyGrid {
+        defer {
+            if !hasRemovedPostSolveEphemeral {
+                hasRemovedPostSolveEphemeral = true
+                
+                postSolveAttemptSteps = postSolveAttemptSteps.filter { !$0.isEphemeral }
+            }
+        }
+        
         return applySteps(postSolveAttemptSteps, to: grid)
     }
     
