@@ -1,9 +1,4 @@
-#if os(macOS)
-    import Foundation
-#else
-    import Glibc
-#endif
-
+import Foundation
 import TowersSolver
 
 do {

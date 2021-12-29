@@ -44,9 +44,28 @@ public extension Tile {
     ///
     /// - seealso: `Kind`
     enum Orientation: Int, CaseIterable, CustomStringConvertible {
+        /// - For I piece: Vertical; connects top and bottom.
+        /// - For L piece: Top and right sides connected; a letter 'L'.
+        /// - For T piece: Left, top and right sides connected; a letter 'T'.
+        /// - For end piece: Pointing up.
         case north
+
+        /// - For I piece: Horizontal; connects left and right.
+        /// - For L piece: Right and bottom sides connected.
+        /// - For T piece: Top, right and bottom sides connected.
+        /// - For end piece: Pointing right
         case east
+
+        /// - For I piece: Vertical; connects top and bottom.
+        /// - For L piece: bottom and left sides connected.
+        /// - For T piece: Left, top and bottom sides connected.
+        /// - For end piece: Pointing down.
         case south
+
+        /// - For I piece: Horizontal; connects left and right.
+        /// - For L piece: Left and top sides connected.
+        /// - For T piece: Bottom, left and top sides connected.
+        /// - For end piece: Pointing left.
         case west
         
         public var description: String {

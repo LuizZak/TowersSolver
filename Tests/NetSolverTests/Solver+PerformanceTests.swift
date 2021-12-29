@@ -8,7 +8,7 @@ class Solver_PerformanceTests: XCTestCase {
         let gridGen = NetGridGenerator(rows: 4, columns: 4)
         gridGen.loadFromGameID("48225b3556d73a64")
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             let sut = Solver(grid: gridGen.grid)
             
             _ = sut.solve()
@@ -21,7 +21,7 @@ class Solver_PerformanceTests: XCTestCase {
         let gridGen = NetGridGenerator(rows: 5, columns: 5)
         gridGen.loadFromGameID("85b2225e8bc17be6be5546284")
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             let sut = Solver(grid: gridGen.grid)
             
             _ = sut.solve()
@@ -34,7 +34,7 @@ class Solver_PerformanceTests: XCTestCase {
         let gridGen = NetGridGenerator(rows: 7, columns: 7)
         gridGen.loadFromGameID("84387c8c5e8b859ade369c88dab9c5bb18b86be4878647b41")
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             let sut = Solver(grid: gridGen.grid)
             sut.maxGuesses = 0
             
@@ -53,7 +53,7 @@ class Solver_PerformanceTests: XCTestCase {
             ed7d8a3752de217171e2d92c978187881e1
             """)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             let sut = Solver(grid: gridGen.grid)
             sut.maxGuesses = 0
             

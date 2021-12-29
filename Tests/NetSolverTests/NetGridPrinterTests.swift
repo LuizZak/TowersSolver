@@ -50,11 +50,7 @@ class NetGridPrinterTests: XCTestCase {
 
 internal class TestConsolePrintTarget: ConsolePrintTarget {
     var supportsTerminalColors: Bool {
-        #if Xcode
         return false
-        #else
-        return true
-        #endif
     }
     
     var buffer: String = ""

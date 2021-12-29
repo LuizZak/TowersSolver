@@ -25,7 +25,7 @@ class NetGridController_PerformanceTests: XCTestCase {
             .build()
         let sut = NetGridController(grid: grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.isInvalid
         }
     }
@@ -68,7 +68,7 @@ class NetGridController_PerformanceTests: XCTestCase {
             .build()
         let sut = NetGridController(grid: grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.isInvalid
         }
     }
@@ -112,7 +112,7 @@ class NetGridController_PerformanceTests: XCTestCase {
             .build()
         let sut = NetGridController(grid: grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.isInvalid
         }
     }
@@ -140,7 +140,7 @@ class NetGridController_PerformanceTests: XCTestCase {
             .build()
         let sut = NetGridController(grid: grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.isInvalid
         }
     }
@@ -167,7 +167,7 @@ class NetGridController_PerformanceTests: XCTestCase {
             .build()
         let sut = NetGridController(grid: grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.isSolved
         }
     }
@@ -194,7 +194,7 @@ class NetGridController_PerformanceTests: XCTestCase {
             .build()
         let sut = NetGridController(grid: grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.isSolved
         }
     }

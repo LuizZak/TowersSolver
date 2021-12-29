@@ -24,7 +24,7 @@ class Network_PerformanceTests: XCTestCase {
             .build()
         let sut = Network.fromGrid(grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.splitNetwork(onGrid: grid)
         }
     }
@@ -51,7 +51,7 @@ class Network_PerformanceTests: XCTestCase {
             .build()
         let sut = Network.fromGrid(grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.splitNetwork(onGrid: grid)
         }
     }
@@ -78,7 +78,7 @@ class Network_PerformanceTests: XCTestCase {
             .setAllTilesLocked(true)
             .build()
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = Network.fromLockedTiles(onGrid: grid)
         }
     }
@@ -105,7 +105,7 @@ class Network_PerformanceTests: XCTestCase {
             .build()
         let sut = Network.fromGrid(grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.hasLoops(onGrid: grid)
         }
     }
@@ -132,7 +132,7 @@ class Network_PerformanceTests: XCTestCase {
             .build()
         let sut = Network.fromGrid(grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.hasLoops(onGrid: grid)
         }
     }
@@ -175,7 +175,7 @@ class Network_PerformanceTests: XCTestCase {
             .build()
         let sut = Network.fromGrid(grid)
         
-        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+        doMeasure {
             _ = sut.hasLoops(onGrid: grid)
         }
     }

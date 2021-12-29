@@ -6,7 +6,7 @@ public class QuadTree<Value: QuadTreeValue> {
     public typealias RectangleType = RectangleOf<Value.NumberType>
     public typealias Quadrants = (q1: QuadTree, q2: QuadTree, q3: QuadTree, q4: QuadTree)
     
-    /// Max number of elements before this quad tree nodes splits into sub-ndoes
+    /// Max number of elements before this quad tree nodes splits into sub-nodes
     public var maxElements: Int = 10
     
     /// Max number of recursive nodes allowed
