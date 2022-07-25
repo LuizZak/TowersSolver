@@ -59,6 +59,9 @@ public class SignpostGridGenerator {
                 }
             } else if let orientation = Tile.Orientation(rawValue: char - ascii(for: "a")) {
                 if num > 0 {
+                    if num == 1 {
+                        grid[sequential: i].isStartTile = true
+                    }
                     if num == grid.tileCount {
                         grid[sequential: i].isEndTile = true
                     }
