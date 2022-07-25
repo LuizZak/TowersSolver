@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class NeighboringShortFacesSolverStepTests: XCTestCase {
     var sut: NeighboringShortFacesSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = NeighboringShortFacesSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testOneFacesOnEdges() {
         // Test a scenario like the follow:
         // •───•───•───•───•
@@ -32,9 +33,9 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 4, height: 2)
         gridGen.setHint(x: 1, y: 0, hint: 1)
         gridGen.setHint(x: 2, y: 0, hint: 1)
-        
+
         let result = sut.apply(to: gridGen.generate(), delegate)
-        
+
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
         }
@@ -58,7 +59,7 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         // Bottom-right
         XCTAssertEqual(edgeStatesForFace(7), [.normal, .normal, .normal, .normal])
     }
-    
+
     func testDisabledEdgesCountingTowardsRequirement() {
         // Test a scenario like the follow:
         // •───•───•───•   •
@@ -78,9 +79,9 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
         controller.setEdge(state: .disabled, forFace: 3, edgeIndex: 1)
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
         }
@@ -104,7 +105,7 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         // Bottom-right
         XCTAssertEqual(edgeStatesForFace(7), [.normal, .normal, .normal, .normal])
     }
-    
+
     func testNegativeCase() {
         // Test a scenario like the follow:
         // •───•───•───•───•
@@ -117,12 +118,12 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 0, hint: 2)
         gridGen.setHint(x: 2, y: 0, hint: 2)
         let before = gridGen.generate()
-        
+
         let result = sut.apply(to: before, delegate)
-        
+
         XCTAssertEqual(before, result)
     }
-    
+
     func testNegativeCase2() {
         // Test a scenario like the follow:
         // •───•───•───•───•
@@ -142,9 +143,9 @@ class NeighboringShortFacesSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 5, edgeIndices: [1, 2])
         controller.setEdge(state: .disabled, forFace: 6, edgeIndex: 2)
         let before = controller.grid
-        
+
         let result = sut.apply(to: before, delegate)
-        
+
         XCTAssertEqual(before, result)
     }
 }

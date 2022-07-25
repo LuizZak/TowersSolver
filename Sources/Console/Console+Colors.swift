@@ -9,7 +9,7 @@ extension String {
      by the UInt8 terminal color code.
      */
     public func terminalColorize(_ color: ConsoleColor) -> String {
-        
+
         #if !Xcode
             return color.terminalForeground.ansi + self + UInt8(0).ansi
         #else
@@ -27,9 +27,7 @@ extension String {
     }
 }
 
-/**
- Underlying colors for console styles.
- */
+/// Underlying colors for console styles.
 public enum ConsoleColor {
     case black
     case red
@@ -66,7 +64,7 @@ extension ConsoleColor {
             return 37
         }
     }
-    
+
     /**
      Returns the background terminal color
      code for the ConsoleColor.

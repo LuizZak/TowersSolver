@@ -220,7 +220,6 @@
 	"extensions": {
 		"recommendations": [
 			"exodiusstudios.comment-anchors",
-			"makeitbetter.vscode-swift-test-adapter",
 		],
 	},
 }

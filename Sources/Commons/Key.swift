@@ -3,7 +3,7 @@
 /// key types.
 public struct Key<T, U> {
     public var value: U
-    
+
     @inlinable
     public init(_ value: U) {
         self.value = value
@@ -12,7 +12,7 @@ public struct Key<T, U> {
 
 extension Key: ExpressibleByIntegerLiteral where U: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = U.IntegerLiteralType
-    
+
     @inlinable
     public init(integerLiteral value: IntegerLiteralType) {
         self.init(U(integerLiteral: value))
@@ -21,7 +21,7 @@ extension Key: ExpressibleByIntegerLiteral where U: ExpressibleByIntegerLiteral 
 
 extension Key: Equatable where U: Equatable {
     @inlinable
-    public static func ==(lhs: Key, rhs: Key) -> Bool {
+    public static func == (lhs: Key, rhs: Key) -> Bool {
         return lhs.value == rhs.value
     }
 }

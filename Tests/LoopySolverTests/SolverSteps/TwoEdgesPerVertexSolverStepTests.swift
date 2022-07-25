@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class TwoEdgesPerVertexSolverStepTests: XCTestCase {
     var sut: TwoEdgesPerVertexSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = TwoEdgesPerVertexSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApplyOnTrivial() {
         // On a 2x2 square grid, mark the two center vertical edges as part of
         // the solution.
@@ -25,9 +26,9 @@ class TwoEdgesPerVertexSolverStepTests: XCTestCase {
         let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 2, edgeIndex: 1)
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import NetSolver
 
 class SolverInvcationTests: XCTestCase {
@@ -9,44 +10,55 @@ class SolverInvcationTests: XCTestCase {
             .setTile(1, 1, kind: .T, orientation: .north, locked: true)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         let result = sut.lockedTileNetworks()
-        
+
         XCTAssertEqual(2, result.count)
-        XCTAssertEqual(1, result.count(where: {
-            $0 == .init(tiles: [
-                .init(column: 0, row: 0, ports: [.left, .top]),
-            ])
-        }))
-        XCTAssertEqual(1, result.count(where: {
-            $0 == .init(tiles: [
-                .init(column: 1, row: 0, ports: [.top, .bottom]),
-                .init(column: 1, row: 1, ports: [.left, .top, .right])
-            ])
-        }))
+        XCTAssertEqual(
+            1,
+            result.count(where: {
+                $0
+                    == .init(tiles: [
+                        .init(column: 0, row: 0, ports: [.left, .top])
+                    ])
+            })
+        )
+        XCTAssertEqual(
+            1,
+            result.count(where: {
+                $0
+                    == .init(tiles: [
+                        .init(column: 1, row: 0, ports: [.top, .bottom]),
+                        .init(column: 1, row: 1, ports: [.left, .top, .right]),
+                    ])
+            })
+        )
     }
-    
+
     func testPossibleOrientationsForTile() {
         let grid = Grid(rows: 1, columns: 1)
         let sut = SolverInvocation(grid: grid)
-        
+
         sut.metadata.setPossibleOrientations(column: 0, row: 0, [.east, .south])
-        
+
         XCTAssertEqual(sut.possibleOrientationsForTile(atColumn: 0, row: 0), [.east, .south])
     }
-    
+
     func testPossibleOrientationsForTile_startWithAllOrientations() {
         let grid = Grid(rows: 1, columns: 1)
         let sut = SolverInvocation(grid: grid)
-        
-        XCTAssertEqual(sut.possibleOrientationsForTile(atColumn: 0, row: 0), Set(Tile.Orientation.allCases))
+
+        XCTAssertEqual(
+            sut.possibleOrientationsForTile(atColumn: 0, row: 0),
+            Set(Tile.Orientation.allCases)
+        )
     }
-    
+
     func testUnavailableIncomingPortsForTile_nonWrappingGrid() {
         let grid = TestGridBuilder(columns: 3, rows: 3)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 0, row: 0), [.top, .left])
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 1, row: 0), [.top])
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 2, row: 0), [.top, .right])
@@ -57,7 +69,7 @@ class SolverInvcationTests: XCTestCase {
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 1, row: 2), [.bottom])
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 2, row: 2), [.bottom, .right])
     }
-    
+
     func testUnavailableIncomingPortsForTile_neighborLockedTile() {
         // Create a grid with a locked T tile that is pointing south (all ports
         // except top are available as connections), and check the four surrounding
@@ -67,7 +79,7 @@ class SolverInvcationTests: XCTestCase {
             .lockTile(atColumn: 2, row: 2)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         // Top
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 2, row: 1), [.bottom])
         // Left
@@ -77,7 +89,7 @@ class SolverInvcationTests: XCTestCase {
         // Bottom
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 2, row: 3), [])
     }
-    
+
     func testUnavailableIncomingPortsForTile_neighborRestrictedTile() {
         let grid = TestGridBuilder(columns: 3, rows: 3)
             .setTile(1, 0, kind: .L, orientation: .north)
@@ -85,38 +97,38 @@ class SolverInvcationTests: XCTestCase {
             .build()
         let sut = SolverInvocation(grid: grid)
         sut.metadata.setPossibleOrientations(column: 1, row: 0, [.west, .north])
-        
+
         XCTAssertEqual(sut.unavailableIncomingPortsForTile(atColumn: 1, row: 1), [.top])
     }
-    
+
     func testRequiredPortsForTile() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [])
     }
-    
+
     func testRequiredPortsForTile_neighborLockedTile() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .I, orientation: .east)
             .lockTile(atColumn: 0, row: 0)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [.left])
     }
-    
+
     func testRequiredPortsForTile_neighborRestrictedTile() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .L, orientation: .east)
             .build()
         let sut = SolverInvocation(grid: grid)
         sut.metadata.setPossibleOrientations(column: 0, row: 0, [.north, .east])
-        
+
         XCTAssertEqual(sut.requiredPortsForTile(atColumn: 1, row: 0), [.left])
     }
-    
+
     func testGuaranteedOutgoingAvailablePorts_lockedTile() {
         // Create a grid with a locked T tile, and test the outgoing ports match
         // the ports for the tile itself.
@@ -125,10 +137,13 @@ class SolverInvcationTests: XCTestCase {
             .lockTile(atColumn: 0, row: 0)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
-        XCTAssertEqual(sut.guaranteedOutgoingAvailablePortsForTile(atColumn: 0, row: 0), [.left, .bottom, .right])
+
+        XCTAssertEqual(
+            sut.guaranteedOutgoingAvailablePortsForTile(atColumn: 0, row: 0),
+            [.left, .bottom, .right]
+        )
     }
-    
+
     func testGuaranteedOutgoingUnavailablePorts_lockedTile() {
         // Create a grid with a locked T tile, and test the outgoing ports match
         // the missing ports for the tile itself.
@@ -137,10 +152,10 @@ class SolverInvcationTests: XCTestCase {
             .lockTile(atColumn: 0, row: 0)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         XCTAssertEqual(sut.guaranteedOutgoingUnavailablePortsForTile(atColumn: 0, row: 0), [.top])
     }
-    
+
     func testGuaranteedOutgoingAvailablePorts_restrictedTile() {
         // Create a grid with a tile that has orientation restrictions, and check
         // the resulting guaranteed outgoing ports match the restrictions
@@ -149,10 +164,10 @@ class SolverInvcationTests: XCTestCase {
             .build()
         let sut = SolverInvocation(grid: grid)
         sut.metadata.setPossibleOrientations(column: 0, row: 0, [.west, .north])
-        
+
         XCTAssertEqual(sut.guaranteedOutgoingAvailablePortsForTile(atColumn: 0, row: 0), [.top])
     }
-    
+
     func testGuaranteedOutgoingUnavailablePorts_restrictedTile() {
         // Create a grid with a tile that has orientation restrictions, and check
         // the resulting guaranteed outgoing ports match the restrictions
@@ -161,10 +176,13 @@ class SolverInvcationTests: XCTestCase {
             .build()
         let sut = SolverInvocation(grid: grid)
         sut.metadata.setPossibleOrientations(column: 0, row: 0, [.west, .north])
-        
-        XCTAssertEqual(sut.guaranteedOutgoingUnavailablePortsForTile(atColumn: 0, row: 0), [.bottom])
+
+        XCTAssertEqual(
+            sut.guaranteedOutgoingUnavailablePortsForTile(atColumn: 0, row: 0),
+            [.bottom]
+        )
     }
-    
+
     func testPerformGridAction_markUnavailableIngoing() {
         // Create a single tile grid with a corner tile, and mark the top port
         // as unavailable in-going, and check that the allowed orientations include
@@ -173,9 +191,9 @@ class SolverInvcationTests: XCTestCase {
             .setTile(0, 0, kind: .L, orientation: .north)
             .build()
         let sut = SolverInvocation(grid: grid)
-        
+
         sut.performGridAction(.markUnavailableIngoing(column: 0, row: 0, [.top]))
-        
+
         XCTAssertEqual(sut.metadata.possibleOrientations(column: 0, row: 0), [.east, .south])
     }
 }

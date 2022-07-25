@@ -2,11 +2,11 @@
 public struct Tile: Equatable {
     public var kind: Kind
     public var orientation: Orientation
-    
+
     /// Whether this tile has been marked as locked by the solver, indicating
     /// that it has been solved.
     public var isLocked: Bool
-    
+
     public init(kind: Kind, orientation: Orientation, isLocked: Bool = false) {
         self.kind = kind
         self.orientation = orientation
@@ -14,7 +14,7 @@ public struct Tile: Equatable {
     }
 }
 
-public extension Tile {
+extension Tile {
     /// Represents the type of a Net tile.
     ///
     /// - `I`: The straight line piece, connecting two opposing edges.
@@ -24,13 +24,13 @@ public extension Tile {
     /// a dead end.
     ///
     /// - seealso: `Orientation`
-    enum Kind {
+    public enum Kind {
         case I
         case L
         case T
         case endPoint
     }
-    
+
     /// Represents the orientation of a Net tile.
     ///
     /// - For I pieces, north and south represent a vertical orientation, while
@@ -43,7 +43,7 @@ public extension Tile {
     /// the connection exposed.
     ///
     /// - seealso: `Kind`
-    enum Orientation: Int, CaseIterable, CustomStringConvertible {
+    public enum Orientation: Int, CaseIterable, CustomStringConvertible {
         /// - For I piece: Vertical; connects top and bottom.
         /// - For L piece: Top and right sides connected; a letter 'L'.
         /// - For T piece: Left, top and right sides connected; a letter 'T'.
@@ -67,7 +67,7 @@ public extension Tile {
         /// - For T piece: Bottom, left and top sides connected.
         /// - For end piece: Pointing left.
         case west
-        
+
         public var description: String {
             switch self {
             case .north:

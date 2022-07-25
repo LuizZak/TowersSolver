@@ -6,10 +6,11 @@
 //
 
 import XCTest
+
 @testable import Geometry
 
 class PolygonTests: XCTestCase {
-    
+
     func testContains() {
         // Envelope shaped polygon, roughly looks like this:
         //
@@ -24,7 +25,7 @@ class PolygonTests: XCTestCase {
             Vertex(x: 0, y: 20),
         ]
         let poly = Polygon(vertices: vecs)
-        
+
         XCTAssert(poly.contains(Vertex(x: 0.1, y: 0.1)))
         XCTAssert(poly.contains(Vertex(x: 3, y: 3)))
         XCTAssert(poly.contains(Vertex(x: 3, y: 15)))
@@ -33,7 +34,7 @@ class PolygonTests: XCTestCase {
         XCTAssertFalse(poly.contains(Vertex(x: 10, y: 0)))
         XCTAssertFalse(poly.contains(Vertex(x: 20, y: 20)))
     }
-    
+
     func testBounds() {
         let vecs = [
             Vertex(x: 0, y: -1),
@@ -41,15 +42,15 @@ class PolygonTests: XCTestCase {
             Vertex(x: 20, y: 0),
             Vertex(x: 20, y: 20),
             Vertex(x: 0, y: 20),
-            ]
+        ]
         let poly = Polygon(vertices: vecs)
-        
+
         XCTAssertEqual(0, poly.bounds.left)
         XCTAssertEqual(20, poly.bounds.right)
         XCTAssertEqual(20, poly.bounds.bottom)
         XCTAssertEqual(-1, poly.bounds.top)
     }
-    
+
     func testBoundsUpdateAfterChangingVertices() {
         let vecs = [
             Vertex(x: 0, y: -1),
@@ -57,9 +58,9 @@ class PolygonTests: XCTestCase {
             Vertex(x: 20, y: 0),
             Vertex(x: 20, y: 20),
             Vertex(x: 0, y: 20),
-            ]
+        ]
         var poly = Polygon(vertices: vecs)
-        
+
         poly.vertices = [
             Vertex(x: 0, y: -10),
             Vertex(x: 10, y: 10),
@@ -67,7 +68,7 @@ class PolygonTests: XCTestCase {
             Vertex(x: 20, y: 200),
             Vertex(x: 0, y: 20),
         ]
-        
+
         XCTAssertEqual(0, poly.bounds.left)
         XCTAssertEqual(20, poly.bounds.right)
         XCTAssertEqual(200, poly.bounds.bottom)

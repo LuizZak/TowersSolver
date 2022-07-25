@@ -1,10 +1,12 @@
 import XCTest
+
 @testable import NetSolver
 
 class NetGridController_PerformanceTests: XCTestCase {
     func testIsInvalid_unsolvedGrid_performance() {
         let grid = TestGridBuilder(columns: 30, rows: 30)
-            .fromGameID("""
+            .fromGameID(
+                """
                 2821145ac84ac2538ba55aaee7512467ae3424a37437a337a524418211a517\
                 a673c79adc8521b8816c5c42e3aa1ed2d247aa5b5bc3d1e7dd35cd39d64ab8\
                 79a5aa73e741ebebcc57a13b5299b29b99c1e6718887888431bedaa4aa692a\
@@ -20,19 +22,21 @@ class NetGridController_PerformanceTests: XCTestCase {
                 a17d4eed621871968eec55d81719eec14dbcabd63a94e69e2b553e2a6d876b\
                 1ad14a4e3187da1a2e2d4d82c93e976a796e24477da18ec69a8ccab21e7451\
                 4a423a5c4c328ab84328b2435631c849
-                """)
+                """
+            )
             .setAllTilesLocked(true)
             .build()
         let sut = NetGridController(grid: grid)
-        
+
         doMeasure {
             _ = sut.isInvalid
         }
     }
-    
+
     func testIsInvalid_unsolvedGrid_freeOfClosedNetworks_facingBarriers_performance() {
         let grid = TestGridBuilder(columns: 30, rows: 30)
-            .fromGameID("""
+            .fromGameID(
+                """
                 2821185ac84ac2538ba55aaee75124\
                 67ae3424a37437a337a524418211a5\
                 17a673c79adc8521b8816c5c42e3aa\
@@ -63,19 +67,21 @@ class NetGridController_PerformanceTests: XCTestCase {
                 4a4e3187da1a2e2d4d82c93e976a79\
                 6e24477da18ec69a8ccab21e74511a\
                 423a5c4c328ab84388b2435631c849
-                """)
+                """
+            )
             .setAllTilesLocked(true)
             .build()
         let sut = NetGridController(grid: grid)
-        
+
         doMeasure {
             _ = sut.isInvalid
         }
     }
-    
+
     func testIsInvalid_solvedGrid_largeLoop_performance() {
         let grid = TestGridBuilder(columns: 30, rows: 30)
-            .fromGameID("""
+            .fromGameID(
+                """
                 c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9\
                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
@@ -106,20 +112,22 @@ class NetGridController_PerformanceTests: XCTestCase {
                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
                 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
                 363636363636363636363636363636
-                """)
+                """
+            )
             .setWrapping(true)
             .setAllTilesLocked(true)
             .build()
         let sut = NetGridController(grid: grid)
-        
+
         doMeasure {
             _ = sut.isInvalid
         }
     }
-    
+
     func testIsInvalid_solvedGrid_performance() {
         let grid = TestGridBuilder(columns: 30, rows: 30)
-            .fromGameID("""
+            .fromGameID(
+                """
                 88888155c815c15c1d55555ddd54883eab6888a3d43d56975548822288aa1e\
                 a3d63e357c8a88b48896a948b6aa17e1e817555eab63e17ebd6a97697615e1\
                 e35555d6b7417dd7635ea897549cb43dc9c1e9e8881e2881c2b77554aa3c8a\
@@ -135,19 +143,21 @@ class NetGridController_PerformanceTests: XCTestCase {
                 a2be1ebe3481e2962b7caab41e89dd682bd6abdc3568bc9e1eaa3d4a3e2bcb\
                 4ab42a2bc88bea2a1e2b4b42969e37cabc9e822b7ea217c3ca1695e82bd4a2\
                 2a223556163415742341742356343416
-                """)
+                """
+            )
             .setAllTilesLocked(true)
             .build()
         let sut = NetGridController(grid: grid)
-        
+
         doMeasure {
             _ = sut.isInvalid
         }
     }
-    
+
     func testIsSolved_unsolvedGrid_performance() {
         let grid = TestGridBuilder(columns: 30, rows: 30)
-            .fromGameID("""
+            .fromGameID(
+                """
                 2821145ac84ac2538ba55aaee7512467ae3424a37437a337a524418211a517\
                 a673c79adc8521b8816c5c42e3aa1ed2d247aa5b5bc3d1e7dd35cd39d64ab8\
                 79a5aa73e741ebebcc57a13b5299b29b99c1e6718887888431bedaa4aa692a\
@@ -163,18 +173,20 @@ class NetGridController_PerformanceTests: XCTestCase {
                 a17d4eed621871968eec55d81719eec14dbcabd63a94e69e2b553e2a6d876b\
                 1ad14a4e3187da1a2e2d4d82c93e976a796e24477da18ec69a8ccab21e7451\
                 4a423a5c4c328ab84328b2435631c849
-                """)
+                """
+            )
             .build()
         let sut = NetGridController(grid: grid)
-        
+
         doMeasure {
             _ = sut.isSolved
         }
     }
-    
+
     func testIsSolved_solvedGrid_performance() {
         let grid = TestGridBuilder(columns: 30, rows: 30)
-            .fromGameID("""
+            .fromGameID(
+                """
                 88888155c815c15c1d55555ddd54883eab6888a3d43d56975548822288aa1e\
                 a3d63e357c8a88b48896a948b6aa17e1e817555eab63e17ebd6a97697615e1\
                 e35555d6b7417dd7635ea897549cb43dc9c1e9e8881e2881c2b77554aa3c8a\
@@ -190,10 +202,11 @@ class NetGridController_PerformanceTests: XCTestCase {
                 a2be1ebe3481e2962b7caab41e89dd682bd6abdc3568bc9e1eaa3d4a3e2bcb\
                 4ab42a2bc88bea2a1e2b4b42969e37cabc9e822b7ea217c3ca1695e82bd4a2\
                 2a223556163415742341742356343416
-                """)
+                """
+            )
             .build()
         let sut = NetGridController(grid: grid)
-        
+
         doMeasure {
             _ = sut.isSolved
         }

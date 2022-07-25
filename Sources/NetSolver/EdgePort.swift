@@ -12,44 +12,44 @@ extension EdgePort: Comparable {
     }
 }
 
-public extension EdgePort {
+extension EdgePort {
     /// Returns the opposite edge for this edge port, that is, inverting top
     /// to bottom/left to right and vice-versa
-    var opposite: EdgePort {
+    public var opposite: EdgePort {
         switch self {
-        case .top:    return .bottom
-        case .right:  return .left
+        case .top: return .bottom
+        case .right: return .left
         case .bottom: return .top
-        case .left:   return .right
+        case .left: return .right
         }
     }
-    
+
     /// Returns the edge port equivalent to this edge port, rotated counter-clockwise
     /// 90 degrees
-    var leftRotated: EdgePort {
+    public var leftRotated: EdgePort {
         switch self {
-        case .top:    return .left
-        case .right:  return .top
+        case .top: return .left
+        case .right: return .top
         case .bottom: return .right
-        case .left:   return .bottom
+        case .left: return .bottom
         }
     }
-    
+
     /// Returns the edge port equivalent to this edge port, rotated clockwise
     /// 90 degrees
-    var rightRotated: EdgePort {
+    public var rightRotated: EdgePort {
         switch self {
-        case .top:    return .right
-        case .right:  return .bottom
+        case .top: return .right
+        case .right: return .bottom
         case .bottom: return .left
-        case .left:   return .top
+        case .left: return .top
         }
     }
 }
 
-public extension EdgePort {
+extension EdgePort {
     /// Returns the equivalent orientation for this edge port
-    var asOrientation: Tile.Orientation {
+    public var asOrientation: Tile.Orientation {
         switch self {
         case .top:
             return .north
@@ -63,9 +63,9 @@ public extension EdgePort {
     }
 }
 
-public extension Tile.Orientation {
+extension Tile.Orientation {
     /// Returns the equivalent edge port for this orientation
-    var asEdgePort: EdgePort {
+    public var asEdgePort: EdgePort {
         switch self {
         case .north:
             return .top

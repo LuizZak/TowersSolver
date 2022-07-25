@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class ZeroSolverStepTests: XCTestCase {
     var sut: ZeroSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = ZeroSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertTrue(sut.isEphemeral)
     }
-    
+
     func testApplyOnTrivial() {
         // Create a simple 2x2 square grid like so:
         //   _______
@@ -29,9 +30,9 @@ class ZeroSolverStepTests: XCTestCase {
         gridGen.setHint(x: 0, y: 1, hint: 2)
         gridGen.setHint(x: 1, y: 1, hint: 3)
         let grid = gridGen.generate()
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

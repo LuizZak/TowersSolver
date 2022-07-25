@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class ExactEdgeCountSolverStepTests: XCTestCase {
     var sut: ExactEdgeCountSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = ExactEdgeCountSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApplyOnTrivial() {
         // Create a simple 2x2 square grid like so:
         //  .   .___.
@@ -28,9 +29,9 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         var grid = gridGen.generate()
         grid.withEdge(0) { $0.state = .disabled }
         grid.withEdge(3) { $0.state = .disabled }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -45,7 +46,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(1)[2], .normal)
         XCTAssertEqual(edgeStatesForFace(1)[3], .marked)
     }
-    
+
     func testApplyOnMarkedEdges() {
         // Create a simple 2x2 square grid with marked edges like so:
         //  .   .___.
@@ -59,9 +60,9 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         grid.withEdge(4) { $0.state = .marked }
         grid.withEdge(5) { $0.state = .marked }
         grid.withEdge(6) { $0.state = .marked }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -76,7 +77,7 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(1)[2], .marked)
         XCTAssertEqual(edgeStatesForFace(1)[3], .disabled)
     }
-    
+
     func testApplyOnSemiMarkedEdges() {
         // Create a simple 2x2 square grid with marked edges like so:
         //  .   .___.
@@ -89,9 +90,9 @@ class ExactEdgeCountSolverStepTests: XCTestCase {
         var grid = gridGen.generate()
         grid.withEdge(1) { $0.state = .disabled }
         grid.withEdge(5) { $0.state = .marked }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

@@ -17,29 +17,29 @@ public protocol FaceReferenceConvertible {
 /// faces nor with themselves.
 public struct Face: Equatable {
     public typealias Id = Key<Face, Int>
-    
+
     public var id: Face.Id
-    
+
     /// Indices of vertices that make up this face
     public let indices: [Int]
-    
+
     /// Maps local edges from 0 to n edges to global edge index on the grid this
     /// face is located in.
     ///
     /// Each index on this array represents the 0th to edge-count edge within
     /// this face, and the value within the index, the global edge index.
     public let localToGlobalEdges: [Edge.Id]
-    
+
     /// The hint that describes the number of edges on this face that are part
     /// of the solution of the grid.
     public var hint: Int?
-    
+
     /// Returns the number of edges that form this face
     @inlinable
     public var edgesCount: Int {
         return localToGlobalEdges.count
     }
-    
+
     /// Returns `true` if this face is semi-complete.
     ///
     /// A semi-complete face has a hint number matching the number of edges of
@@ -49,7 +49,7 @@ public struct Face: Equatable {
     public var isSemiComplete: Bool {
         return hint == edgesCount - 1
     }
-    
+
     /// Returns `true` if this face contains a given edge id
     @inlinable
     public func containsEdge(id: Edge.Id) -> Bool {

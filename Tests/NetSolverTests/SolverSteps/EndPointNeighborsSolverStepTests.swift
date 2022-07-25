@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import NetSolver
 
 class EndPointNeighborsSolverStepTests: BaseSolverStepTestClass {
@@ -14,14 +15,17 @@ class EndPointNeighborsSolverStepTests: BaseSolverStepTestClass {
             return [.top]
         }
         let sut = EndPointNeighborsSolverStep(column: 2, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
-        XCTAssertEqual(result, [
-            .markImpossibleOrientations(column: 2, row: 0, [.east, .west])
-        ])
+
+        XCTAssertEqual(
+            result,
+            [
+                .markImpossibleOrientations(column: 2, row: 0, [.east, .west])
+            ]
+        )
     }
-    
+
     func testApply_wrapping_onEdge_surroundedByEndPoints() {
         let grid = TestGridBuilder(columns: 6, rows: 3)
             .setTile(1, 0, kind: .endPoint, orientation: .north)
@@ -32,11 +36,14 @@ class EndPointNeighborsSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = EndPointNeighborsSolverStep(column: 2, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
-        XCTAssertEqual(result, [
-            .markImpossibleOrientations(column: 2, row: 0, [.east, .north, .west])
-        ])
+
+        XCTAssertEqual(
+            result,
+            [
+                .markImpossibleOrientations(column: 2, row: 0, [.east, .north, .west])
+            ]
+        )
     }
 }

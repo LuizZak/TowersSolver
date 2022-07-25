@@ -17,18 +17,20 @@ extension LoopyGrid {
     /// including the starting edge itself.
     /// If the starting edge is not connected to any edges uniquely, an array with
     /// just the starting edge is returned.
-    public func singlePathEdges(fromEdge edge: Edge.Id,
-                                excludeDisabled: Bool = true) -> Set<Edge.Id> {
-        
+    public func singlePathEdges(
+        fromEdge edge: Edge.Id,
+        excludeDisabled: Bool = true
+    ) -> Set<Edge.Id> {
+
         return singlePathEdges(fromEdge: edge) { edge in
             if excludeDisabled && edgeState(forEdge: edge) == .disabled {
                 return false
             }
-            
+
             return true
         }
     }
-    
+
     /// Returns an array of all edges that enclose a face with a given id.
     public func edges(forFace face: Int) -> [Edge.Id] {
         return edges(forFace: Face.Id(face))

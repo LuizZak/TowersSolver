@@ -37,60 +37,64 @@ public class BifurcationSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InnerSolver(grid: grid)
         solver.apply()
-        
+
         return solver.grid
     }
 }
 
 private class InnerSolver {
     var grid: LoopyGrid
-    
+
     init(grid: LoopyGrid) {
         self.grid = grid
     }
-    
+
     func apply() {
         for face in grid.faceIds {
             apply(to: face)
         }
     }
-    
+
     func apply(to face: Face.Id) {
         if grid.isFaceSolved(face) {
             return
         }
-        
+
         // Must feature hint!
         guard let hint = grid.hintForFace(face) else {
             return
         }
-        
+
         let markedCount = grid.edgeCount(withState: .marked, onFace: face)
         let enabledCount = grid.edgeCount(withState: .normal, onFace: face)
-        
+
         guard markedCount + enabledCount == hint + 1 && enabledCount == 2 else {
             return
         }
-        
+
         let edges = grid.edges(forFace: face)
-        
-        guard let (enabled1, enabled2) = edges.onlyTwo(where: { grid.edgeState(forEdge: $0) == .normal }) else {
+
+        guard
+            let (enabled1, enabled2) = edges.onlyTwo(where: {
+                grid.edgeState(forEdge: $0) == .normal
+            })
+        else {
             return
         }
-        
+
         let enabledEdge1 = grid.edgeWithId(enabled1)
         let enabledEdge2 = grid.edgeWithId(enabled2)
-        
+
         // Must be connected!
         guard let sharedVertex = enabledEdge1.sharedVertex(with: enabledEdge2) else {
             return
         }
-        
+
         // Must share one more edge in common
         let common =
             Set(grid.edgesSharing(vertexIndex: sharedVertex))
-                .symmetricDifference([enabled1, enabled2])
-        
+            .symmetricDifference([enabled1, enabled2])
+
         if common.count == 1 {
             grid.setEdges(state: .marked, forEdges: common)
         }

@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
     var sut: NeighboringSemiCompleteFacesSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = NeighboringSemiCompleteFacesSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testTouchingEdgeWise() {
         // Test a case where two semi-complete faces are touching, sharing a
         // common edge:
@@ -37,9 +38,9 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 4, height: 2)
         gridGen.setHint(x: 1, y: 0, hint: 3)
         gridGen.setHint(x: 2, y: 0, hint: 3)
-        
+
         let result = sut.apply(to: gridGen.generate(), delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -84,7 +85,7 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(7)[2], .normal)
         XCTAssertEqual(edgeStatesForFace(7)[3], .normal)
     }
-    
+
     func testSharingVertex() {
         // Test a case where two semi-complete faces share a common vertex:
         // •───•───•
@@ -103,9 +104,9 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 2)
         gridGen.setHint(x: 0, y: 0, hint: 3)
         gridGen.setHint(x: 1, y: 1, hint: 3)
-        
+
         let result = sut.apply(to: gridGen.generate(), delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

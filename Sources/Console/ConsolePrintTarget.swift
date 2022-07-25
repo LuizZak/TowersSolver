@@ -3,12 +3,12 @@ public protocol ConsolePrintTarget {
     /// Whether this print target supports printing of colors through ASCII
     /// control characters
     var supportsTerminalColors: Bool { get }
-    
+
     func print(_ values: [Any], separator: String, terminator: String)
 }
 
-public extension ConsolePrintTarget {
-    func print(_ values: Any..., separator: String = " ") {
+extension ConsolePrintTarget {
+    public func print(_ values: Any..., separator: String = " ") {
         print(values, separator: separator, terminator: "\n")
     }
 }

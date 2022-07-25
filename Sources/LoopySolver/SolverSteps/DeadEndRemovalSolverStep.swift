@@ -18,41 +18,43 @@ public class DeadEndRemovalSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()
-        
+
         return solver.grid
     }
 }
 
 private class InternalSolver {
     var grid: LoopyGrid
-    
+
     init(grid: LoopyGrid) {
         self.grid = grid
     }
-    
+
     func apply() {
         while applyInternal() {
             // Empty
         }
     }
-    
+
     private func applyInternal() -> Bool {
         var didWork = false
-        
+
         for i in 0..<grid.vertices.count {
             let edges = grid.edgesSharing(vertexIndex: i)
-            
+
             let enabledCount = edges.count { grid.edgeState(forEdge: $0).isEnabled }
-            
+
             if enabledCount == 1 {
-                grid.setEdges(state: .disabled,
-                              forEdges: edges,
-                              where: { $0.state.isEnabled })
-                
+                grid.setEdges(
+                    state: .disabled,
+                    forEdges: edges,
+                    where: { $0.state.isEnabled }
+                )
+
                 didWork = true
             }
         }
-        
+
         return didWork
     }
 }

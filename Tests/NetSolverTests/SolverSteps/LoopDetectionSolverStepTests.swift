@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import NetSolver
 
 class LoopDetectionSolverStepTests: BaseSolverStepTestClass {
@@ -30,14 +31,17 @@ class LoopDetectionSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         mockDelegate.metadata.setPossibleOrientations(column: 1, row: 0, [.east, .south, .west])
         let sut = LoopDetectionSolverStep()
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
-        XCTAssertEqual(result, [
-            .markImpossibleOrientations(column: 1, row: 0, [.east])
-        ])
+
+        XCTAssertEqual(
+            result,
+            [
+                .markImpossibleOrientations(column: 1, row: 0, [.east])
+            ]
+        )
     }
-    
+
     func testApply_wrappedGrid() {
         //  ┐  ┐ ┌  ┌
         // *┘  │ │ *└
@@ -64,14 +68,17 @@ class LoopDetectionSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         mockDelegate.metadata.setPossibleOrientations(column: 0, row: 0, [.east, .south, .north])
         let sut = LoopDetectionSolverStep()
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
-        XCTAssertEqual(result, [
-            .markImpossibleOrientations(column: 0, row: 0, [.south])
-        ])
+
+        XCTAssertEqual(
+            result,
+            [
+                .markImpossibleOrientations(column: 0, row: 0, [.south])
+            ]
+        )
     }
-    
+
     func testApply_nonMatchingNetworks_doNothing() {
         // ┌  ┌  ┐  ┐
         // │ *│ *│  │
@@ -97,9 +104,9 @@ class LoopDetectionSolverStepTests: BaseSolverStepTestClass {
         mockDelegate.mock_prepare(forGrid: grid)
         mockDelegate.metadata.setPossibleOrientations(column: 1, row: 0, [.east, .south, .west])
         let sut = LoopDetectionSolverStep()
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [])
     }
 }

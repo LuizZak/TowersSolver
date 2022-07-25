@@ -4,7 +4,7 @@ public typealias IntInterval = Interval<Int>
 /// objects.
 public protocol IntervalProtocol: Equatable {
     associatedtype Bounds: Comparable
-    
+
     var start: Bounds { get }
     var end: Bounds { get }
 }
@@ -19,14 +19,17 @@ public protocol ConstructibleIntervalProtocol: IntervalProtocol {
 public struct Interval<Bounds: Comparable>: ConstructibleIntervalProtocol {
     public var start: Bounds
     public var end: Bounds
-    
+
     public init(start: Bounds, end: Bounds) {
-        precondition(start <= end, "cannot create interval where start > end: provided \(start) > \(end)")
-        
+        precondition(
+            start <= end,
+            "cannot create interval where start > end: provided \(start) > \(end)"
+        )
+
         self.start = start
         self.end = end
     }
-    
+
     public init<I: IntervalProtocol>(_ interval: I) where I.Bounds == Bounds {
         self.start = interval.start
         self.end = interval.end

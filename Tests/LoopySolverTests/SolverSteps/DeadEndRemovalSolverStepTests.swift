@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class DeadEndRemovalSolverStepTests: XCTestCase {
     var sut: DeadEndRemovalSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = DeadEndRemovalSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApplyOnTrivial() {
         // Create a simple 2x2 square grid like so:
         //  .  .__.
@@ -28,9 +29,9 @@ class DeadEndRemovalSolverStepTests: XCTestCase {
         let gridGen = LoopySquareGridGen(width: 2, height: 1)
         var grid = gridGen.generate()
         grid.withEdge(0) { $0.state = .disabled }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

@@ -1,17 +1,18 @@
-import XCTest
-import Geometry
 import Console
+import Geometry
+import XCTest
+
 @testable import LoopySolver
 
 class LoopyGridPrinterTests: XCTestCase {
     private var target: TestConsolePrintTarget!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         target = TestConsolePrintTarget()
     }
-    
+
     func testPrintEdgeIndices() {
         let generator = LoopySquareGridGen(width: 6, height: 6)
         generator.setHint(x: 1, y: 1, hint: 1)
@@ -23,9 +24,9 @@ class LoopyGridPrinterTests: XCTestCase {
         let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
         printer.printEdgeIndices = true
         printer.target = target
-        
+
         printer.printGrid(grid: controller.grid, width: 36, height: 24)
-        
+
         assertPrintEquals(
             """
             •  0  •──4──•──7──•─10──•─13──•─16──•
@@ -56,7 +57,7 @@ class LoopyGridPrinterTests: XCTestCase {
             """
         )
     }
-    
+
     func testPrintFaceIndices() {
         let generator = LoopySquareGridGen(width: 6, height: 6)
         generator.setHint(x: 1, y: 1, hint: 1)
@@ -68,9 +69,9 @@ class LoopyGridPrinterTests: XCTestCase {
         let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
         printer.printFaceIndices = true
         printer.target = target
-        
+
         printer.printGrid(grid: controller.grid, width: 72, height: 24)
-        
+
         assertPrintEquals(
             """
             •           •───────────•───────────•───────────•───────────•───────────•
@@ -101,7 +102,7 @@ class LoopyGridPrinterTests: XCTestCase {
             """
         )
     }
-    
+
     func testPrintPolygon() {
         var grid = LoopyGrid()
         grid.addVertex(Vertex(x: 0, y: 0))
@@ -116,9 +117,9 @@ class LoopyGridPrinterTests: XCTestCase {
         grid.createFace(withVertexIndices: [3, 5, 4], hint: nil)
         let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
         printer.target = target
-        
+
         printer.printGrid(grid: grid)
-        
+
         assertPrintEquals(
             """
             •╲
@@ -184,7 +185,7 @@ class LoopyGridPrinterTests: XCTestCase {
             """
         )
     }
-    
+
     func testPrintSquareGrid() {
         let generator = LoopySquareGridGen(width: 6, height: 6)
         generator.setHint(x: 1, y: 1, hint: 1)
@@ -195,9 +196,9 @@ class LoopyGridPrinterTests: XCTestCase {
         controller.setEdges(state: .disabled, forFace: 0)
         let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
         printer.target = target
-        
+
         printer.printGrid(grid: controller.grid, width: 60, height: 30)
-        
+
         assertPrintEquals(
             """
             •         •─────────•─────────•─────────•─────────•─────────•
@@ -232,9 +233,9 @@ class LoopyGridPrinterTests: XCTestCase {
             │         │         │         │         │         │         │
             •─────────•─────────•─────────•─────────•─────────•─────────•
             """
-            )
+        )
     }
-    
+
     func testPrintHoneycombGrid() {
         let generator = LoopyHoneycombGridGenerator(width: 6, height: 6)
         generator.setHint(faceIndex: 0, hint: 1)
@@ -245,9 +246,9 @@ class LoopyGridPrinterTests: XCTestCase {
         controller.setEdges(state: .disabled, forFace: 0)
         let printer = LoopyGridPrinter(bufferWidth: 120, bufferHeight: 60)
         printer.target = target
-        
+
         printer.printGrid(grid: controller.grid, width: 38, height: 26)
-        
+
         assertPrintEquals(
             """
               •   •       •───•       •───•
@@ -282,9 +283,9 @@ class LoopyGridPrinterTests: XCTestCase {
     }
 }
 
-private extension LoopyGridPrinterTests {
-    
-    func assertPrintEquals(_ expected: String, line: UInt = #line) {
+extension LoopyGridPrinterTests {
+
+    fileprivate func assertPrintEquals(_ expected: String, line: UInt = #line) {
         // Strip trailing whitespace (except newlines) and lines which are only
         // whitespace (including newline)
         let actual = target.buffer
@@ -294,29 +295,31 @@ private extension LoopyGridPrinterTests {
                 if trimmed.isEmpty {
                     return nil
                 }
-                
+
                 let leading = line.prefix(while: { $0 == " " || $0 == "\t" })
-                
+
                 return leading + trimmed
             }
             .joined(separator: "\n")
-        
+
         if actual != expected {
-            XCTFail("\(actual)\n\nis not equal to expected\n\n\(expected)",
-                    file: #filePath,
-                    line: line)
+            XCTFail(
+                "\(actual)\n\nis not equal to expected\n\n\(expected)",
+                file: #filePath,
+                line: line
+            )
         }
     }
 }
 
 private class TestConsolePrintTarget: ConsolePrintTarget {
     let supportsTerminalColors = false
-    
+
     var buffer: String = ""
-    
+
     func print(_ values: [Any], separator: String, terminator: String) {
         let total = values.map { String(describing: $0) }.joined(separator: separator)
-        
+
         Swift.print(total, terminator: terminator, to: &buffer)
     }
 }

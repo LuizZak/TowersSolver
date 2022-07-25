@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class CommonEdgesBetweenGuessesSolverStepTests: XCTestCase {
     var sut: CommonEdgesBetweenGuessesSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = CommonEdgesBetweenGuessesSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApply() {
         // Create a grid as follows:
         // .___.___.___.___.
@@ -41,9 +42,9 @@ class CommonEdgesBetweenGuessesSolverStepTests: XCTestCase {
         controller.setEdge(state: .disabled, forFace: 9, edgeIndex: 1)
         controller.setEdge(state: .disabled, forFace: 10, edgeIndex: 3)
         controller.setEdge(state: .marked, forFace: 12, edgeIndex: 1)
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

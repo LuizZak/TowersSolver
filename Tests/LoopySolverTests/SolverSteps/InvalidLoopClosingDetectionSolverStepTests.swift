@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
     var sut: InvalidLoopClosingDetectionSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = InvalidLoopClosingDetectionSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testIncompleteLoop() {
         // Test a case where closing a loop would form an invalid loop, so we
         // disable the edge that would close such loop:
@@ -34,9 +35,9 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 2, edgeIndices: [0, 2])
         controller.setEdges(state: .marked, forFace: 3, edgeIndices: [0, 1, 2])
         controller.setEdge(state: .disabled, forFace: 2, edgeIndex: 1)
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
         }
@@ -52,7 +53,7 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         // Right `3`
         XCTAssertEqual(edgeStatesForFace(3), [.marked, .marked, .marked, .disabled])
     }
-    
+
     func testSolverDoesntMarkPotentialEdgeAsDisabled() {
         // Test a counter-case where the solver should not disable an edge since
         // closing it doesn't produce dangling line segments on the rest of the
@@ -67,9 +68,9 @@ class InvalidLoopClosingDetectionSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 1, edgeIndices: [0, 2])
         controller.setEdges(state: .marked, forFace: 2, edgeIndices: [0, 1, 2])
         controller.setEdge(state: .disabled, forFace: 2, edgeIndex: 3)
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgesForFace: (Int) -> [Edge.Id] = {
             result.edges(forFace: $0)
         }

@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class BifurcationSolverStepTests: XCTestCase {
     var sut: BifurcationSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = BifurcationSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApply() {
         // Create a honeycomb grid like so:
         //
@@ -45,11 +46,11 @@ class BifurcationSolverStepTests: XCTestCase {
         let input = controller.grid
         controller.setEdge(state: .marked, forEdge: 16)
         let expected = controller.grid
-        
+
         let result = sut.apply(to: input, delegate)
-        
+
         XCTAssertEqual(result, expected)
-        
+
         let printer = LoopyGridPrinter(bufferWidth: 22, bufferHeight: 11)
         printer.printGrid(grid: result)
     }

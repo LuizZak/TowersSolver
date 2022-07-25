@@ -7,7 +7,7 @@ public typealias IntPoint = Vector2<Int>
 /// A protocol for vector types
 public protocol VectorType {
     associatedtype Coordinate: Comparable
-    
+
     var x: Coordinate { get }
     var y: Coordinate { get }
 }
@@ -16,162 +16,162 @@ public protocol VectorType {
 public struct Vector2<T: Comparable>: VectorType {
     public var x: T
     public var y: T
-    
+
     @inlinable
     public init(x: T, y: T) {
         self.x = x
         self.y = y
     }
-    
+
     @inlinable
-    public static func <(lhs: Vector2, rhs: Vector2) -> Bool {
+    public static func < (lhs: Vector2, rhs: Vector2) -> Bool {
         return lhs.x < rhs.x && lhs.y < rhs.y
     }
-    
+
     @inlinable
-    public static func <=(lhs: Vector2, rhs: Vector2) -> Bool {
+    public static func <= (lhs: Vector2, rhs: Vector2) -> Bool {
         return lhs.x <= rhs.x && lhs.y <= rhs.y
     }
-    
+
     @inlinable
-    public static func >(lhs: Vector2, rhs: Vector2) -> Bool {
+    public static func > (lhs: Vector2, rhs: Vector2) -> Bool {
         return lhs.x > rhs.x && lhs.y > rhs.y
     }
-    
+
     @inlinable
-    public static func >=(lhs: Vector2, rhs: Vector2) -> Bool {
+    public static func >= (lhs: Vector2, rhs: Vector2) -> Bool {
         return lhs.x >= rhs.x && lhs.y >= rhs.y
     }
 }
 
 // MARK: - Equatable / Hashable
-extension Vector2: Equatable where T: Equatable { }
-extension Vector2: Hashable where T: Hashable { }
+extension Vector2: Equatable where T: Equatable {}
+extension Vector2: Hashable where T: Hashable {}
 
 // MARK: - Basic operators
-public extension Vector2 where T: Numeric {
+extension Vector2 where T: Numeric {
     @inlinable
-    static func +(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    public static func + (lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
     }
-    
+
     @inlinable
-    static func +=(lhs: inout Vector2, rhs: Vector2) {
+    public static func += (lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs + rhs
     }
-    
+
     @inlinable
-    static func -(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    public static func - (lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
     }
-    
+
     @inlinable
-    static func -=(lhs: inout Vector2, rhs: Vector2) {
+    public static func -= (lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs - rhs
     }
-    
+
     @inlinable
-    static func *(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    public static func * (lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x * rhs.x, y: lhs.y * rhs.y)
     }
-    
+
     @inlinable
-    static func *=(lhs: inout Vector2, rhs: Vector2) {
+    public static func *= (lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs * rhs
     }
-    
+
     @inlinable
-    static func *(lhs: Vector2, rhs: T) -> Vector2 {
+    public static func * (lhs: Vector2, rhs: T) -> Vector2 {
         return Vector2(x: lhs.x * rhs, y: lhs.y * rhs)
     }
-    
+
     @inlinable
-    static func *=(lhs: inout Vector2, rhs: T) {
+    public static func *= (lhs: inout Vector2, rhs: T) {
         lhs = lhs * rhs
     }
 }
 
 // MARK: - Signed operators
-public extension Vector2 where T: SignedNumeric {
+extension Vector2 where T: SignedNumeric {
     @inlinable
-    static prefix func -(lhs: Vector2) -> Vector2 {
+    public static prefix func - (lhs: Vector2) -> Vector2 {
         return Vector2(x: -lhs.x, y: -lhs.y)
     }
-    
+
     /// Returns a perpendicular vector to this Vector2
     @inlinable
-    func perpendicular() -> Vector2 {
+    public func perpendicular() -> Vector2 {
         return Vector2(x: -y, y: x)
     }
 }
 
 // MARK: - Binary Integers
-public extension Vector2 where T: BinaryInteger {
+extension Vector2 where T: BinaryInteger {
     @inlinable
-    static var zero: Vector2 {
+    public static var zero: Vector2 {
         return Vector2(x: T(), y: T())
     }
-    
+
     @inlinable
-    static var one: Vector2 {
+    public static var one: Vector2 {
         return Vector2(x: T(1), y: T(1))
     }
-    
+
     @inlinable
-    static func /(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    public static func / (lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
     }
-    
+
     @inlinable
-    static func /=(lhs: inout Vector2, rhs: Vector2) {
+    public static func /= (lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs / rhs
     }
-    
+
     @inlinable
-    static func /(lhs: Vector2, rhs: T) -> Vector2 {
+    public static func / (lhs: Vector2, rhs: T) -> Vector2 {
         return Vector2(x: lhs.x / rhs, y: lhs.y / rhs)
     }
-    
+
     @inlinable
-    static func /=(lhs: inout Vector2, rhs: T) {
+    public static func /= (lhs: inout Vector2, rhs: T) {
         lhs = lhs / rhs
     }
 }
 
 // MARK: - Floating Point Numbers
-public extension Vector2 where T: FloatingPoint {
+extension Vector2 where T: FloatingPoint {
     @inlinable
-    static var zero: Vector2 {
+    public static var zero: Vector2 {
         return Vector2(x: T(0), y: T(0))
     }
-    
+
     @inlinable
-    static var one: Vector2 {
+    public static var one: Vector2 {
         return Vector2(x: T(1), y: T(1))
     }
-    
+
     @inlinable
-    init(x: Int, y: Int) {
+    public init(x: Int, y: Int) {
         self.init(x: T(x), y: T(y))
     }
-    
+
     @inlinable
-    static func /(lhs: Vector2, rhs: Vector2) -> Vector2 {
+    public static func / (lhs: Vector2, rhs: Vector2) -> Vector2 {
         return Vector2(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
     }
-    
+
     @inlinable
-    static func /=(lhs: inout Vector2, rhs: Vector2) {
+    public static func /= (lhs: inout Vector2, rhs: Vector2) {
         lhs = lhs / rhs
     }
-    
+
     @inlinable
-    static func /(lhs: Vector2, rhs: T) -> Vector2 {
+    public static func / (lhs: Vector2, rhs: T) -> Vector2 {
         return Vector2(x: lhs.x / rhs, y: lhs.y / rhs)
     }
-    
+
     @inlinable
-    static func /=(lhs: inout Vector2, rhs: T) {
+    public static func /= (lhs: inout Vector2, rhs: T) {
         lhs = lhs / rhs
     }
 }
@@ -183,10 +183,10 @@ public extension Vector2 where T: FloatingPoint {
 @inlinable
 public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
     var res = a
-    
+
     res.x = min(a.x, b.x)
     res.y = min(a.y, b.y)
-    
+
     return res
 }
 
@@ -195,10 +195,10 @@ public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
 @inlinable
 public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
     var res = a
-    
+
     res.x = max(a.x, b.x)
     res.y = max(a.y, b.y)
-    
+
     return res
 }
 
@@ -206,7 +206,8 @@ public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>) -> Vector2<T> {
 /// The returned Vector2 has the smallest x,y coordinates found on the vectors
 /// list.
 @inlinable
-public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T> {
+public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T>
+{
     return rem.reduce(min(a, b), min)
 }
 
@@ -214,6 +215,7 @@ public func min<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<
 /// The returned Vector2 has the largest x,y coordinates found on the vectors
 /// list.
 @inlinable
-public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T> {
+public func max<T: Comparable>(_ a: Vector2<T>, _ b: Vector2<T>, _ rem: Vector2<T>...) -> Vector2<T>
+{
     return rem.reduce(max(a, b), max)
 }

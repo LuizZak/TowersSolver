@@ -1,13 +1,14 @@
 import XCTest
+
 @testable import LoopySolver
 
 class CornerEntrySolverStepTests: XCTestCase {
     var sut: CornerEntrySolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = CornerEntrySolverStep()
         delegate = TestSolverStepDelegate()
     }
@@ -15,7 +16,7 @@ class CornerEntrySolverStepTests: XCTestCase {
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApplyOnTrivial() {
         // Create a simple 2x2 square grid like so:
         // . _ . _ .
@@ -28,9 +29,9 @@ class CornerEntrySolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 1, hint: 1)
         var grid = gridGen.generate()
         grid.withEdge(5) { $0.state = .marked }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -40,7 +41,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(3)[2], .disabled)
         XCTAssertEqual(edgeStatesForFace(3)[3], .disabled)
     }
-    
+
     func testApplyOnFaceWithDisabledEdge() {
         // Create a simple 2x3 square grid like so:
         // . _ . _ .
@@ -55,9 +56,9 @@ class CornerEntrySolverStepTests: XCTestCase {
         var grid = gridGen.generate()
         grid.withEdge(5) { $0.state = .marked }
         grid.withEdge(6) { $0.state = .disabled }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -67,7 +68,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(3)[2], .disabled)
         XCTAssertEqual(edgeStatesForFace(3)[3], .disabled)
     }
-    
+
     func testApplyOnFaceWithLoopback() {
         // Create a simple 2x3 square grid like so:
         // . _ . _ .
@@ -84,9 +85,9 @@ class CornerEntrySolverStepTests: XCTestCase {
         grid.withEdge(8) { $0.state = .disabled }
         grid.withEdge(11) { $0.state = .disabled }
         grid.withEdge(13) { $0.state = .disabled }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -96,7 +97,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(3)[2], .disabled)
         XCTAssertEqual(edgeStatesForFace(3)[3], .disabled)
     }
-    
+
     func testApplyOnSemiCompleteFace() {
         // Create a simple 3x2 square grid like so:
         // . _ . _ . _ .
@@ -111,13 +112,13 @@ class CornerEntrySolverStepTests: XCTestCase {
         gridGen.setHint(x: 1, y: 1, hint: 3)
         var grid = gridGen.generate()
         grid.withEdge(5) { $0.state = .marked }
-        
+
         let result = sut.apply(to: grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
-        
+
         // Top-center face
         XCTAssertEqual(edgeStatesForFace(1)[0], .normal)
         XCTAssertEqual(edgeStatesForFace(1)[1], .marked)
@@ -133,10 +134,10 @@ class CornerEntrySolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(5)[1], .normal)
         XCTAssertEqual(edgeStatesForFace(5)[2], .normal)
         XCTAssertEqual(edgeStatesForFace(5)[3], .normal)
-        
+
         LoopyGridPrinter(bufferWidth: 14, bufferHeight: 5).printGrid(grid: result)
     }
-    
+
     func testApplyCornerEntryForkingPath() {
         // Test a honeycomb grid of the following configuration:
         //
@@ -159,7 +160,7 @@ class CornerEntrySolverStepTests: XCTestCase {
         // Assert that the bottom-left path from the marked edge (marked 2.) is
         // disabled after it is inferred that taking it would disable too many
         // edges from the top path (starting from marked edge 1.)
-        
+
         let honeycomb = LoopyHoneycombGridGenerator(width: 3, height: 3)
         honeycomb.setHint(faceIndex: 4, hint: 4)
         let controller = LoopyGridController(grid: honeycomb.generate())
@@ -171,11 +172,11 @@ class CornerEntrySolverStepTests: XCTestCase {
         let input = controller.grid
         controller.setEdge(state: .disabled, forEdge: 16)
         let expected = controller.grid
-        
+
         let result = sut.apply(to: input, delegate)
-        
+
         XCTAssertEqual(result, expected)
-        
+
         let printer = LoopyGridPrinter(bufferWidth: 22, bufferHeight: 15)
         printer.printGrid(grid: result)
     }

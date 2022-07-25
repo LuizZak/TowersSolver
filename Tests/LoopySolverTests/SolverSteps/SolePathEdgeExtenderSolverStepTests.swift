@@ -1,21 +1,22 @@
 import XCTest
+
 @testable import LoopySolver
 
 class SolePathEdgeExtenderSolverStepTests: XCTestCase {
     var sut: SolePathEdgeExtenderSolverStep!
     var delegate: SolverStepDelegate!
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = SolePathEdgeExtenderSolverStep()
         delegate = TestSolverStepDelegate()
     }
-    
+
     func testIsEphemeral() {
         XCTAssertFalse(sut.isEphemeral)
     }
-    
+
     func testApplyOnTrivial() {
         // Create a grid with a loopy line that ends in a corner:
         //
@@ -34,9 +35,9 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         let controller = LoopyGridController(grid: gridGen.generate())
         controller.setEdge(state: .disabled, forFace: 0, edgeIndex: 1)
         controller.setEdge(state: .marked, forFace: 0, edgeIndex: 3)
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -61,12 +62,12 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         XCTAssertEqual(edgeStatesForFace(3)[2], .normal)
         XCTAssertEqual(edgeStatesForFace(3)[3], .normal)
     }
-    
+
     func testApplyEdgeCase() {
         // Create a grid with a loopy line that ends in a corner:
         //
         // •═══•   •   •
-        // ║   ║      
+        // ║   ║
         // •   •═══•   •
         // ║       ║
         // •───•   •═══•
@@ -103,9 +104,9 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 6, edgeIndices: [1])
         controller.setEdges(state: .marked, forFace: 7, edgeIndices: [2])
         controller.setEdges(state: .marked, forFace: 8, edgeIndices: [1, 2])
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }
@@ -128,7 +129,7 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         // 3, 3
         XCTAssertEqual(edgeStatesForFace(8), [.marked, .marked, .marked, .disabled])
     }
-    
+
     func testApplyEdgeCase2() {
         // Create a grid with a loopy line that ends in a corner:
         //
@@ -166,9 +167,9 @@ class SolePathEdgeExtenderSolverStepTests: XCTestCase {
         controller.setEdges(state: .marked, forFace: 6, edgeIndices: [2, 3])
         controller.setEdges(state: .marked, forFace: 7, edgeIndices: [2])
         controller.setEdges(state: .marked, forFace: 8, edgeIndices: [1, 2])
-        
+
         let result = sut.apply(to: controller.grid, delegate)
-        
+
         let edgeStatesForFace: (Int) -> [Edge.State] = {
             result.edges(forFace: $0).map(result.edgeState(forEdge:))
         }

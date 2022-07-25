@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import NetSolver
 
 class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
@@ -8,12 +9,12 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 0, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [.lockOrientation(column: 0, row: 0, orientation: .east)])
     }
-    
+
     func testApply_nonWrappingGrid_lineTile_atTopEdge() {
         // Set an I tile at the top-center tile and check it is locked away from
         // the edge, always preferring east orientation
@@ -23,12 +24,12 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 1, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [.lockOrientation(column: 1, row: 0, orientation: .east)])
     }
-    
+
     func testApply_nonWrappingGrid_lineTile_atLeftEdge() {
         // Set an I tile at the left-center tile and check it is locked away from
         // the edge, always preferring north orientation
@@ -38,12 +39,12 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 0, row: 1)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [.lockOrientation(column: 0, row: 1, orientation: .north)])
     }
-    
+
     func testApply_nonWrappingGrid_tripleTile_atTopEdge() {
         // Set a T tile at the top-center tile and check it is locked away from
         // the edge
@@ -53,12 +54,12 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 1, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [.lockOrientation(column: 1, row: 0, orientation: .south)])
     }
-    
+
     func testApply_nonWrappingGrid_endPoint_atTopEdge_markUnavailable() {
         // End-points at the edge of non-wrapping grids or with surrounding barriers
         // should have unavailable ports reported
@@ -68,14 +69,17 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 1, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
-        XCTAssertEqual(result, [
-            .markImpossibleOrientations(column: 1, row: 0, [.north])
-        ])
+
+        XCTAssertEqual(
+            result,
+            [
+                .markImpossibleOrientations(column: 1, row: 0, [.north])
+            ]
+        )
     }
-    
+
     func testApply_noAvailablePorts_markAsInvalid() {
         // Create a grid with a line piece sitting on a corner, which cannot be
         // solved if the grid is non-wrapping
@@ -84,21 +88,21 @@ class AwayFromBarriersSolverStepTests: BaseSolverStepTestClass {
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 0, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [.markAsInvalid])
     }
-    
+
     func testApply_ignoreLockedTiles() {
         let grid = TestGridBuilder(columns: 2, rows: 2)
             .setTile(0, 0, kind: .I, orientation: .north, locked: true)
             .build()
         mockDelegate.mock_prepare(forGrid: grid)
         let sut = AwayFromBarriersSolverStep(column: 0, row: 0)
-        
+
         let result = sut.apply(on: grid, delegate: mockDelegate)
-        
+
         XCTAssertEqual(result, [])
     }
 }

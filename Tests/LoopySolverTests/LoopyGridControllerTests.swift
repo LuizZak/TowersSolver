@@ -1,11 +1,11 @@
-import XCTest
 import LoopySolver
+import XCTest
 
 class LoopyGridControllerTests: XCTestCase {
     func testNonSharedEdges() {
         let grid = LoopySquareGridGen(width: 3, height: 3).generate()
         let sut = LoopyGridController(grid: grid)
-        
+
         // Center face shares all edges with all connecting faces
         XCTAssert(sut.nonSharedEdges(forFace: 4).isEmpty)
         // Corner faces share only two edges
@@ -13,7 +13,7 @@ class LoopyGridControllerTests: XCTestCase {
         // Lateral faces share three edges with neighboring faces
         XCTAssertEqual(sut.nonSharedEdges(forFace: 1), [4])
     }
-    
+
     func testSetEdgeStateForFaceEdgeIndex() {
         // Produce a 2x2 grid that has the all top horizontal edges of the faces
         // disabled
@@ -24,12 +24,12 @@ class LoopyGridControllerTests: XCTestCase {
         //
         let grid = LoopySquareGridGen(width: 2, height: 2).generate()
         let sut = LoopyGridController(grid: grid)
-        
+
         sut.setEdge(state: .disabled, forFace: 0, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 1, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 2, edgeIndex: 0)
         sut.setEdge(state: .disabled, forFace: 3, edgeIndex: 0)
-        
+
         let edgeStates = sut.grid.edgeIds.map(sut.grid.edgeState(forEdge:))
         XCTAssertEqual(
             edgeStates,
@@ -49,10 +49,11 @@ class LoopyGridControllerTests: XCTestCase {
                 .normal,
                 // Bottom-right
                 .normal,
-                .normal
-            ])
+                .normal,
+            ]
+        )
     }
-    
+
     func testSemiCompleteFaces() {
         // Create a grid with a given configuration:
         // ._________. _________.
@@ -73,9 +74,9 @@ class LoopyGridControllerTests: XCTestCase {
         let f2 = grid.createFace(withVertexIndices: [1, 5, 2], hint: 2)
         grid.createFace(withVertexIndices: [1, 4, 5], hint: 1)
         let sut = LoopyGridController(grid: grid)
-        
+
         let faces = sut.semiCompleteFaces()
-        
+
         XCTAssertEqual(faces.count, 2)
         XCTAssert(faces.contains(f1))
         XCTAssert(faces.contains(f2))
