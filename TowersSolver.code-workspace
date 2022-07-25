@@ -99,17 +99,8 @@
 	},
 	"folders": [
 		{
-			"path": ".",
-            "name": "TowersSolver",
-		},
-		{
-			"name": "Swift Package Dependencies",
-			"path": ".build/checkouts",
-		},
-		{
-			"name": "Build",
-			"path": ".build/debug/..",
-		},
+			"path": "."
+		}
 	],
 	"launch": {
 		"inputs": [

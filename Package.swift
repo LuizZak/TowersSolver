@@ -8,7 +8,7 @@ let package = Package(
     products: [
         .executable(name: "App", targets: ["App"]),
         .library(name: "LoopySolver", targets: ["LoopySolver"]),
-        .library(name: "NetSolver", targets: ["NetSolver"])
+        .library(name: "NetSolver", targets: ["NetSolver"]),
     ],
     dependencies: [],
     targets: [
@@ -19,6 +19,7 @@ let package = Package(
         .target(name: "TowersSolver", dependencies: ["Console", "Geometry"]),
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
+        .target(name: "SignpostSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "App", dependencies: ["TowersSolver"]),
         // Tests
         .testTarget(
@@ -50,7 +51,12 @@ let package = Package(
             name: "NetSolverTests",
             dependencies: ["NetSolver"],
             path: "Tests/NetSolverTests"
-        )
+        ),
+        .testTarget(
+            name: "SignpostSolverTests",
+            dependencies: ["SignpostSolver"],
+            path: "Tests/SignpostSolverTests"
+        ),
     ],
     swiftLanguageVersions: [.v5]
 )
