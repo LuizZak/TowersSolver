@@ -66,7 +66,7 @@ public class SignpostGridGenerator {
                         grid[sequential: i].isEndTile = true
                     }
 
-                    grid[sequential: i].hint = num
+                    grid[sequential: i].solution = num
                     num = 0
                 }
 

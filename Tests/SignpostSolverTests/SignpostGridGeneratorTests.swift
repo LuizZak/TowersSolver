@@ -11,7 +11,7 @@ class SignpostGridGeneratorTests: XCTestCase {
 
         let result = sut.grid
         let tiles = result.tilesSequential
-        let hints = tiles.map(\.hint)
+        let solutions = tiles.map(\.solution)
         let orientations = tiles.map(\.orientation)
         let isStartTile = tiles.map(\.isStartTile)
         let isEndTile = tiles.map(\.isEndTile)
@@ -21,7 +21,7 @@ class SignpostGridGeneratorTests: XCTestCase {
             .northEast, .north, .southWest, .south,
             .northEast, .east, .north, .north
         ])
-        XCTAssertEqual(hints, [
+        XCTAssertEqual(solutions, [
             1, nil, nil, nil,
             nil, nil, nil, nil,
             12, nil, nil, nil,
