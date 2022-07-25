@@ -2,7 +2,8 @@
 public class Solver {
     private(set) public var grid: Grid
 
-    private let initialGridGraph: GridGraph
+    private let connectionsGridGraph: GridGraph
+    private var solutionGridGraph: GridGraph
 
     /// Returns `true` if the for this solver is in a valid state and solved.
     ///
@@ -21,26 +22,28 @@ public class Solver {
     public init(grid: Grid) {
         self.grid = grid
 
-        initialGridGraph = .fromGrid(grid)
+        connectionsGridGraph = .fromGrid(grid)
+        solutionGridGraph = .fromGrid(grid, connectNodes: false)
     }
 
     public func solve() {
-
+        
     }
 
     private func _isSolved() -> Bool {
-        let numbersPresent = grid.tilesSequential.compactMap(\.solution)
-
-        if numbersPresent.sorted() != Array(1...grid.tileCount) {
-            return false
-        }
-
         // Check that each tile is pointing to its successor
         outerLoop:
         for tileCoord in grid.tileCoordinates {
             let tile = grid[tileCoord]
             if tile.isEndTile {
+                if tile.solution != grid.tileCount {
+                    return false
+                }
+
                 continue
+            }
+            if tile.isStartTile && tile.solution != 1 {
+                return false
             }
 
             guard let solution = tile.solution else {

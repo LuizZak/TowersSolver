@@ -73,13 +73,17 @@ struct GridGraph: DirectedGraph {
 
 extension GridGraph {
     /// Creates a new grid graph for a given grid input.
-    static func fromGrid(_ grid: Grid) -> GridGraph {
+    static func fromGrid(_ grid: Grid, connectNodes: Bool = true) -> GridGraph {
         var graph = GridGraph()
 
         for tileCoord in grid.tileCoordinates {
             let node = Node(column: tileCoord.column, row: tileCoord.row)
 
             graph.nodes.append(node)
+
+            guard connectNodes else {
+                continue
+            }
 
             // Do not connect nodes from end tile
             if grid[tileCoord].isEndTile {
@@ -100,5 +104,17 @@ extension GridGraph {
         }
 
         return graph
+    }
+}
+
+extension GridGraph {
+    mutating func connect(start: Node, end: Node) -> Edge {
+        if let existing = edge(from: start, to: end) {
+            return existing
+        }
+
+        let edge = Edge(start: start, end: end)
+        edges.append(edge)
+        return edge
     }
 }

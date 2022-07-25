@@ -32,7 +32,14 @@ class SolverTests: XCTestCase {
         XCTAssertTrue(sut.isSolved)
     }
 
-    func testSolve() {
-        
+    func testSolve_3x3() {
+        // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#3x3:1deecaaag9a
+        let gridGen = SignpostGridGenerator(rows: 3, columns: 3)
+        gridGen.loadFromGameID("1deecaaag9a")
+        let sut = Solver(grid: gridGen.grid)
+
+        sut.solve()
+
+        XCTAssertTrue(sut.isSolved)
     }
 }

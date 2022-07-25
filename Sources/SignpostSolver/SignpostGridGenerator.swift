@@ -79,43 +79,29 @@ public class SignpostGridGenerator {
             }
         }
 
-        /*
-        char c;
-        int num = 0, i = 0;
+        _tieConnectedTiles()
+    }
 
-        while (*desc) {
-            if (i >= state->n) {
-                msg = _("Game description longer than expected");
-                goto done;
+    /// For tiles that are sequentially numbered, pre-fill the connected state
+    /// of the tiles.
+    private func _tieConnectedTiles() {
+        for tileCoord in grid.tileCoordinates {
+            let tile = grid[tileCoord]
+
+            guard let solution = tile.solution else {
+                continue
             }
 
-            c = *desc;
-            if (isdigit((unsigned char)c)) {
-                num = (num*10) + (int)(c-'0');
-                if (num > state->n) {
-                    msg = _("Number out of range");
-                    goto done;
+            let nextCoords = grid.tileCoordsPointedBy(column: tileCoord.column, row: tileCoord.row)
+
+            for next in nextCoords {
+                let nextTile = grid[next]
+
+                if nextTile.solution == solution + 1 {
+                    grid[tileCoord].connectionState = .connectedTo(column: next.column, row: next.row)
+                    break
                 }
-            } else if ((c-'a') >= 0 && (c-'a') < DIR_MAX) {
-                state->nums[i] = num;
-                state->flags[i] = num ? FLAG_IMMUTABLE : 0;
-                num = 0;
-
-                state->dirs[i] = c - 'a';
-                i++;
-            } else if (!*desc) {
-                msg = _("Game description shorter than expected");
-                goto done;
-            } else {
-                msg = _("Invalid character in game description");
-                goto done;
             }
-            desc++;
         }
-        if (i < state->n) {
-            msg = _("Game description shorter than expected");
-            goto done;
-        }
-        */
     }
 }
