@@ -44,4 +44,17 @@ class SolverTests: XCTestCase {
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }
+
+    func testSolve_4x4() {
+        // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#4x4:1cefgcdbfafbechb16a
+        let gridGen = SignpostGridGenerator(rows: 4, columns: 4)
+        gridGen.loadFromGameID("1cefgcdbfafbechb16a")
+        let sut = Solver(grid: gridGen.grid)
+
+        sut.solve()
+        
+        let printer = SignpostGridPrinter(bufferWidth: 26, bufferHeight: 14)
+        printer.printGrid(grid: sut.grid)
+        XCTAssertTrue(sut.isSolved)
+    }
 }
