@@ -72,7 +72,12 @@ public class Solver {
 
         let resultGraph = GridGraph.fromGrid(grid, connectionMode: .connectedToProperty)
 
-        let paths = resultGraph.allPaths(from: .init(startTileCoord), to: .init(endTileCoord), confirmVisit: { _ in true })
+        let paths = resultGraph
+            .allPaths(
+                from: .init(startTileCoord),
+                to: .init(endTileCoord), 
+                confirmVisit: { _ in true }
+            )
 
         if paths.count != 1 {
             return false
@@ -139,8 +144,8 @@ public class Solver {
             repeat {
                 didChange = false
 
+                // Perform pathfinding between known numbered tiles
                 let pairs = _collectNumberedPairs()
-
                 for pair in pairs {
                     didChange = _evaluatePathsBetween(numberedPair: pair) || didChange
                 }
@@ -159,6 +164,7 @@ public class Solver {
         }
     }
 
+    /// Performs exhaustive path analysis between two pair of known numbered tiles.
     private func _evaluatePathsBetween(numberedPair: NumberedPair) -> Bool {
         let startTile = numberedPair.start
         let endTile = numberedPair.end
@@ -240,7 +246,10 @@ public class Solver {
         return changed
     }
 
-    /// Exclusively connects two nodes, returning whether the connection was made.
+    /// Connects two nodes and excludes any alternative connections from
+    /// `start`/towards `end` that where previously considered in `connectionsGridGraph`,
+    /// returning whether the connection was made in the underlying `grid`
+    /// instance.
     ///
     /// - returns: `false` if the nodes where already previously connected on the
     /// internal grid state, `true` if they where not and a connection was made.
@@ -272,7 +281,9 @@ public class Solver {
         let solution = grid.effectiveNumberForTile(column: node.column, row: node.row)
 
         for (i, next) in nodes.enumerated().reversed() {
+            // Exclude nodes that are already connected to other nodes
             if grid.tileConnectedTo(column: next.column, row: next.row) != nil {
+                nodes.remove(at: i)
                 continue
             }
             
@@ -313,7 +324,9 @@ public class Solver {
         let solution = grid.effectiveNumberForTile(column: node.column, row: node.row)
 
         for (i, prev) in nodes.enumerated().reversed() {
+            // Exclude nodes that are already connected to other nodes
             if grid.tileConnectedFrom(column: prev.column, row: prev.row) != nil {
+                nodes.remove(at: i)
                 continue
             }
 
@@ -404,10 +417,10 @@ public class Solver {
 
         // Check each pre-filled number, visiting each subsequent connected node
         // and storing the last node in the run.
-        // The run is used in the next pre-filled number to indicate a path must
-        // be found between them.
+        // The last node is then used in the next pre-filled number run to
+        // indicate a path must be found between them.
         // If two or more pre-filled numbers are part of the same run of
-        // connected tiles, they are treated as one tile run.
+        // connected tiles, they are treated as one contiguous tile run.
         while !candidates.isEmpty {
             let candidate = candidates.removeFirst()
 
