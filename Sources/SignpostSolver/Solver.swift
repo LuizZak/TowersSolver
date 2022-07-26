@@ -23,47 +23,90 @@ public class Solver {
         self.grid = grid
 
         connectionsGridGraph = .fromGrid(grid)
-        solutionGridGraph = .fromGrid(grid, connectNodes: false)
+        solutionGridGraph = .fromGrid(grid, connectionMode: .connectedToProperty)
     }
 
     public func solve() {
-        
+        defer { _postSolve() }
+
+        // Connect tiles that have only one entry/exit edge
+        for node in connectionsGridGraph.nodes {
+            let from = connectionsGridGraph.edges(from: node)
+            let to = connectionsGridGraph.edges(towards: node)
+
+            if from.count == 1 {
+                let start = node
+                let end = from[0].end
+
+                solutionGridGraph.connect(start: start, end: end)
+                grid[start.coordinates].connectedTo = end.coordinates
+            }
+            if to.count == 1 {
+                let start = to[0].start
+                let end = node
+
+                solutionGridGraph.connect(start: start, end: end)
+                grid[start.coordinates].connectedTo = end.coordinates
+            }
+        }
     }
 
-    private func _isSolved() -> Bool {
-        // Check that each tile is pointing to its successor
-        outerLoop:
+    private func _postSolve() {
         for tileCoord in grid.tileCoordinates {
-            let tile = grid[tileCoord]
-            if tile.isEndTile {
-                if tile.solution != grid.tileCount {
-                    return false
-                }
-
+            guard grid[tileCoord].connectedTo == nil else {
                 continue
             }
-            if tile.isStartTile && tile.solution != 1 {
-                return false
-            }
-
-            guard let solution = tile.solution else {
-                return false
+            
+            guard let number = grid.effectiveNumberForTile(column: tileCoord.column, row: tileCoord.row) else {
+                continue
             }
 
             let nextCoords = grid.tileCoordsPointedBy(column: tileCoord.column, row: tileCoord.row)
-            
-            for next in nextCoords {
-                let nextTile = grid[next]
 
-                if nextTile.solution == solution + 1 {
-                    continue outerLoop
+            for next in nextCoords {
+                if grid.effectiveNumberForTile(column: next.column, row: next.row) == number + 1 {
+                    solutionGridGraph.connect(start: .init(tileCoord), end: .init(next))
+                    grid[tileCoord].connectionState = .connectedTo(column: next.column, row: next.row)
+                    break
                 }
             }
+        }
+    }
 
-            // No successor found!
+    private func _isSolved() -> Bool {
+        let startTileCoord = grid.tileCoordinates.first {
+            grid[$0].isStartTile && grid[$0].solution == 1
+        }
+        let endTileCoord = grid.tileCoordinates.first {
+            grid[$0].isEndTile && grid[$0].solution == grid.tileCount
+        }
+
+        guard let startTileCoord = startTileCoord, let endTileCoord = endTileCoord else {
             return false
         }
 
+        let resultGraph = GridGraph.fromGrid(grid, connectionMode: .connectedToProperty)
+
+        let paths = resultGraph.allPaths(from: .init(startTileCoord), to: .init(endTileCoord))
+
+        if paths.count != 1 {
+            return false
+        }
+
+        let path = paths[0]
+
+        var current = 1
+        
+        for node in path {
+            let tile = grid[node.coordinates]
+
+            if let solution = tile.solution, solution != current {
+                return false
+            }
+
+            current += 1
+        }
+        
         return true
     }
 }

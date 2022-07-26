@@ -39,7 +39,9 @@ class SolverTests: XCTestCase {
         let sut = Solver(grid: gridGen.grid)
 
         sut.solve()
-
+        
+        let printer = SignpostGridPrinter(bufferWidth: 20, bufferHeight: 11)
+        printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }
 }

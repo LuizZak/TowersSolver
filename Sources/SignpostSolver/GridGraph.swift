@@ -57,6 +57,20 @@ struct GridGraph: DirectedGraph {
     struct Node: DirectedGraphNode, CustomStringConvertible, Comparable {
         var column: Int, row: Int
 
+        var coordinates: Grid.Coordinates {
+            (column, row)
+        }
+
+        init(column: Int, row: Int) {
+            self.column = column
+            self.row = row
+        }
+
+        init(_ coord: Grid.Coordinates) {
+            self.column = coord.column
+            self.row = coord.row
+        }
+
         var description: String {
             "(\(column), \(row))"
         }
@@ -73,7 +87,7 @@ struct GridGraph: DirectedGraph {
 
 extension GridGraph {
     /// Creates a new grid graph for a given grid input.
-    static func fromGrid(_ grid: Grid, connectNodes: Bool = true) -> GridGraph {
+    static func fromGrid(_ grid: Grid, connectionMode: ConnectionMode = .tilesInPathOfArrow) -> GridGraph {
         var graph = GridGraph()
 
         for tileCoord in grid.tileCoordinates {
@@ -81,33 +95,57 @@ extension GridGraph {
 
             graph.nodes.append(node)
 
-            guard connectNodes else {
-                continue
-            }
+            switch connectionMode {
+            case .noConnections:
+                break
 
-            // Do not connect nodes from end tile
-            if grid[tileCoord].isEndTile {
-                continue
-            }
-
-            let tilesFrom = grid
-                .tileCoordsPointedBy(column: tileCoord.column, row: tileCoord.row)
-                .filter {
-                    !grid[$0].isStartTile
+            case .connectedToProperty:
+                guard let connectedTo = grid[tileCoord].connectedTo else {
+                    break
                 }
 
-            graph.edges.append(contentsOf:
-                tilesFrom.map {
-                    Edge(start: node, end: Node(column: $0.column, row: $0.row))
+                graph.connect(start: Node(tileCoord), end: Node(connectedTo))
+
+            case .tilesInPathOfArrow:
+                // Do not connect nodes from end tile
+                guard !grid[tileCoord].isEndTile else {
+                    continue
                 }
-            )
+
+                let tilesFrom = grid
+                    .tileCoordsPointedBy(column: tileCoord.column, row: tileCoord.row)
+                    .filter {
+                        !grid[$0].isStartTile
+                    }
+                    .filter {
+                        switch (grid[node.coordinates].solution, grid[$0].solution) {
+                        case (let lhs?, let rhs?):
+                            return lhs == rhs - 1
+                        default:
+                            return true
+                        }
+                    }
+
+                graph.edges.append(contentsOf:
+                    tilesFrom.map {
+                        Edge(start: node, end: Node(column: $0.column, row: $0.row))
+                    }
+                )
+            }
         }
 
         return graph
     }
+
+    enum ConnectionMode {
+        case noConnections
+        case tilesInPathOfArrow
+        case connectedToProperty
+    }
 }
 
 extension GridGraph {
+    @discardableResult
     mutating func connect(start: Node, end: Node) -> Edge {
         if let existing = edge(from: start, to: end) {
             return existing
@@ -116,5 +154,63 @@ extension GridGraph {
         let edge = Edge(start: start, end: end)
         edges.append(edge)
         return edge
+    }
+
+    /// Returns a subgraph that represents a section of this graph with all nodes
+    /// connected to a given node within it.
+    ///
+    /// If `node` has no connections, the resulting subgraph contains `node` only.
+    @inlinable
+    func subgraph(forNode node: Node) -> Self {
+        var result = Self()
+
+        var queue: [Node] = [node]
+        var visited: [Node] = []
+
+        while let next = queue.popLast() {
+            if visited.contains(next) {
+                continue
+            }
+            visited.append(next)
+
+            result.nodes.append(next)
+
+            for nextNode in nodesConnected(from: next) {
+                result.connect(start: next, end: nextNode)
+
+                queue.append(nextNode)
+            }
+            for prevNode in nodesConnected(towards: next) {
+                result.connect(start: prevNode, end: next)
+
+                queue.append(prevNode)
+            }
+        }
+
+        return result
+    }
+
+    /// Returns a list of graphs based on which island of nodes are connected
+    /// within this graph.
+    /// The resulting subgraphs are guaranteed to be connected within themselves
+    /// within this graph, but not connected to any other node of any other
+    /// subgraph.
+    ///
+    /// If a node has no connections, it is present as a single-node subgraph.
+    @inlinable
+    func subgraphs() -> [Self] {
+        var result: [Self] = []
+        var remaining = nodes
+
+        while !remaining.isEmpty {
+            let node = remaining.removeFirst()
+
+            let subgraph = self.subgraph(forNode: node)
+            result.append(subgraph)
+
+            remaining.removeAll(where: subgraph.nodes.contains)
+        }
+
+        return result
     }
 }

@@ -10,11 +10,20 @@ public struct Tile: Equatable {
     public var connectionState: ConnectionState = .unconnected
 
     public var connectedTo: Grid.Coordinates? {
-        switch connectionState {
-        case .unconnected:
-            return nil
-        case .connectedTo(let column, let row):
-            return (column, row)
+        get {
+            switch connectionState {
+            case .unconnected:
+                return nil
+            case .connectedTo(let column, let row):
+                return (column, row)
+            }
+        }
+        set {
+            if let newValue = newValue {
+                connectionState = .connectedTo(column: newValue.column, row: newValue.row)
+            } else {
+                connectionState = .unconnected
+            }
         }
     }
 

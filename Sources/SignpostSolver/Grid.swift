@@ -103,11 +103,49 @@ public struct Grid: Equatable {
         }
     }
 
-    private func _indexToColumnRow(_ index: Int) -> (column: Int, row: Int) {
-        let column = index % columns
-        let row = index / columns
+    /// Returns the effective numerical value for a tile on the given coordinates.
+    /// Effective numbers include numbers that are part of the original hints
+    /// as well as numbers deduced from following blank signposts until a numbered
+    /// one is reached.
+    public func effectiveNumberForTile(column: Int, row: Int) -> Int? {
+        let tile = self[column: column, row: row]
+        if let solution = tile.solution {
+            return solution
+        }
 
-        return (column, row)
+        var counter: Int
+
+        // Search forwards
+        counter = -1
+
+        var next = tileConnectedFrom(column: column, row: row)
+        while let n = next {
+            defer { counter -= 1 }
+
+            let tile = self[n]
+            if let solution = tile.solution {
+                return solution + counter
+            }
+
+            next = tileConnectedFrom(column: n.column, row: n.row)
+        }
+
+        // Search backwards
+        counter = 1
+
+        var prev = tileConnectedTo(column: column, row: row)
+        while let p = prev {
+            defer { counter += 1 }
+
+            let tile = self[p]
+            if let solution = tile.solution {
+                return solution + counter
+            }
+
+            prev = tileConnectedTo(column: p.column, row: p.row)
+        }
+
+        return nil
     }
 
     /// Returns `true` if the given column/row combination represents a valid
@@ -125,13 +163,60 @@ public struct Grid: Equatable {
 
         let tile = self[column: column, row: row]
 
-        var current = _stepDirection(column: column, row: row, orientation: tile.orientation)
+        return _allTilesFrom(column: column, row: row, orientation: tile.orientation)
+    }
+
+    /// Returns a list of all tiles that point to a given tile coordinate.
+    public func tileCoordsPointingTowards(column: Int, row: Int) -> [Coordinates] {
+        guard isWithinBounds(column: column, row: row) else {
+            return []
+        }
+
+        var result: [Coordinates] = []
+
+        for orientation in Tile.Orientation.allCases {
+            for tile in _allTilesFrom(column: column, row: row, orientation: orientation) {
+                if self[tile].orientation == orientation.reversed {
+                    result.append(tile)
+                }
+            }
+        }
+
+        return result
+    }
+
+    func tileConnectedFrom(column: Int, row: Int) -> Coordinates? {
+        self[column: column, row: row].connectedTo
+    }
+
+    func tileConnectedTo(column: Int, row: Int) -> Coordinates? {
+        for coord in tileCoordinates where coord != (column, row) {
+            let tile = self[coord]
+
+            if let connected = tile.connectedTo, connected == (column, row) {
+                return coord
+            }
+        }
+
+        return nil
+    }
+
+    /// Returns a list of tiles, beginning from a given column/row, traveling
+    /// in a given orientation until the end of the grid is reached.
+    ///
+    /// The tile under (column, row) is not included in the result.
+    private func _allTilesFrom(column: Int, row: Int, orientation: Tile.Orientation) -> [Coordinates] {
+        guard isWithinBounds(column: column, row: row) else {
+            return []
+        }
+
+        var current = _stepDirection(column: column, row: row, orientation: orientation)
         var result: [Coordinates] = []
 
         while isWithinBounds(column: current.column, row: current.row) {
             result.append(current)
 
-            current = _stepDirection(column: current.column, row: current.row, orientation: tile.orientation)
+            current = _stepDirection(column: current.column, row: current.row, orientation: orientation)
         }
 
         return result
@@ -148,5 +233,12 @@ public struct Grid: Equatable {
         assert(newCoord != (column, row), "newCoord != (column, row)")
 
         return newCoord
+    }
+
+    private func _indexToColumnRow(_ index: Int) -> (column: Int, row: Int) {
+        let column = index % columns
+        let row = index / columns
+
+        return (column, row)
     }
 }
