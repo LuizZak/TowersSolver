@@ -3,8 +3,6 @@ import XCTest
 @testable import SignpostSolver
 
 class SolverTests: XCTestCase {
-
-
     func testIsSolved_3x3_nonSolved() {
         // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#3x3:1deecaaag9a
         let gridGen = SignpostGridGenerator(rows: 3, columns: 3)
