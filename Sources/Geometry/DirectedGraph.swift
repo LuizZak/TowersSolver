@@ -288,25 +288,53 @@ public extension DirectedGraph {
     ///
     /// If `start == end`, `[start]` is returned.
     ///
+    /// Note that the results of this method are only valid for acyclic graphs.
+    ///
     /// In case the two nodes are not connected, or are connected in the opposite
     /// direction, `nil` is returned.
+    ///
+    /// A closure is used to provide fine-grained control over which visits should
+    /// be considered.
     @inlinable
-    func allPaths(from start: Node, to end: Node) -> [[Node]] {
-        var paths: [VisitElement] = []
+    func allPaths(from start: Node, to end: Node, confirmVisit: (VisitElement) -> Bool) -> [[Node]] {
+        typealias State = (visited: Set<Node>, next: VisitElement)
 
-        breadthFirstVisit(start: start) { visit in
-            if visit.node == end {
-                paths.append(visit)
+        var paths: [[Node]] = []
+
+        var states: [State] = [
+            ([], .start(start))
+        ]
+
+        while !states.isEmpty {
+            var state = states.removeFirst()
+
+            let next = state.next
+
+            if next.node == end {
+                paths.append(next.allNodes)
             }
+
+            state.visited.insert(next.node)
             
-            return true
-        }
-        
-        if paths.isEmpty {
-            return []
+            for nextEdge in edges(from: next.node) {
+                let node = endNode(for: nextEdge)
+                if state.visited.contains(node) {
+                    continue
+                }
+
+                let nextVisit = VisitElement.edge(nextEdge, from: next, towards: node)
+                
+                if !confirmVisit(nextVisit) {
+                    continue
+                }
+                
+                var newState = state
+                newState.next = nextVisit
+                states.append(newState)
+            }
         }
 
-        return paths.map(\.allNodes)
+        return paths
     }
     
     /// Returns the first path found between two nodes.
@@ -339,7 +367,19 @@ public extension DirectedGraph {
     /// direction, `nil` is returned.
     @inlinable
     func shortestPath(from start: Node, to end: Node) -> [Node]? {
-        let paths = allPaths(from: start, to: end)
+        var paths: [[Node]] = []
+
+        breadthFirstVisit(start: start) { visit in
+            if visit.node == end {
+                paths.append(visit.allNodes)
+            }
+            
+            return true
+        }
+        
+        if paths.isEmpty {
+            return []
+        }
 
         return paths.sorted(by: { $0.count < $1.count }).first
     }

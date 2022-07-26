@@ -156,6 +156,19 @@ extension GridGraph {
         return edge
     }
 
+    /// Connects two nodes such that the other entry/exit edges for each node are
+    /// removed in the process, resulting in an exclusive path between `start -> end`
+    @discardableResult
+    mutating func connectExclusive(start: Node, end: Node) -> Edge {
+        let fromStart = edges(from: start)
+        let toEnd = edges(towards: end)
+
+        edges.removeAll(where: fromStart.contains)
+        edges.removeAll(where: toEnd.contains)
+
+        return connect(start: start, end: end)
+    }
+
     /// Returns a subgraph that represents a section of this graph with all nodes
     /// connected to a given node within it.
     ///

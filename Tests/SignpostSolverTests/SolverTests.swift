@@ -57,4 +57,30 @@ class SolverTests: XCTestCase {
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }
+
+    func testSolve_5x5() {
+        // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#5x5:1d17d3cffcdcgedgafacahhgaccb25a
+        let gridGen = SignpostGridGenerator(rows: 5, columns: 5)
+        gridGen.loadFromGameID("1d17d3cffcdcgedgafacahhgaccb25a")
+        let sut = Solver(grid: gridGen.grid)
+
+        sut.solve()
+        
+        let printer = SignpostGridPrinter(bufferWidth: 32, bufferHeight: 17)
+        printer.printGrid(grid: sut.grid)
+        XCTAssertTrue(sut.isSolved)
+    }
+
+    func testSolve_7x7() {
+        // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#7x7:1c5dcffgf45decefagded47gfff25cd46becb35hc18fabhf11hcca9ca20eaabbaaa49a
+        let gridGen = SignpostGridGenerator(rows: 7, columns: 7)
+        gridGen.loadFromGameID("1c5dcffgf45decefagded47gfff25cd46becb35hc18fabhf11hcca9ca20eaabbaaa49a")
+        let sut = Solver(grid: gridGen.grid)
+
+        sut.solve()
+        
+        let printer = SignpostGridPrinter(bufferWidth: 44, bufferHeight: 23)
+        printer.printGrid(grid: sut.grid)
+        XCTAssertTrue(sut.isSolved)
+    }
 }

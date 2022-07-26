@@ -2,12 +2,14 @@ private let dxs: [Int] = [  0,  1, 1, 1, 0, -1, -1, -1 ]
 private let dys: [Int] = [ -1, -1, 0, 1, 1,  1,  0, -1 ]
 
 /// A Signpost game grid
-public struct Grid: Equatable {
+public struct Grid {
     /// A typealias for the underlying coordinate type of each tile in this grid.
     public typealias Coordinates = (column: Int, row: Int)
 
+    private var _cache: InternalCache
+
     /// Matrix of tiles, stored as [columns][rows]
-    internal(set) public var tiles: [[Tile]] = []
+    private(set) public var tiles: [[Tile]] = []
 
     /// Returns the number of tiles on this grid
     public var tileCount: Int {
@@ -41,6 +43,8 @@ public struct Grid: Equatable {
             return self[column: column, row: row]
         }
         set {
+            ensureUnique()
+            
             let (column, row) = _indexToColumnRow(index)
 
             self[column: column, row: row] = newValue
@@ -52,6 +56,9 @@ public struct Grid: Equatable {
             return self[column: column][row]
         }
         set {
+            ensureUnique()
+            _cache.invalidate()
+            
             self[column: column][row] = newValue
         }
     }
@@ -61,6 +68,9 @@ public struct Grid: Equatable {
             return self[column: coordinates.column, row: coordinates.row]
         }
         set {
+            ensureUnique()
+            _cache.invalidate()
+            
             self[column: coordinates.column, row: coordinates.row] = newValue
         }
     }
@@ -70,6 +80,9 @@ public struct Grid: Equatable {
             return tiles[column]
         }
         set {
+            ensureUnique()
+            _cache.invalidate()
+
             tiles[column] = newValue
         }
     }
@@ -90,10 +103,21 @@ public struct Grid: Equatable {
         self.rows = rows
         self.columns = columns
 
+        self._cache = InternalCache(columns: columns)
+
         initGrid()
     }
 
+    private mutating func ensureUnique() {
+        if !isKnownUniquelyReferenced(&_cache) {
+            _cache = _cache.copy()
+        }
+    }
+
     private mutating func initGrid() {
+        ensureUnique()
+        _cache.invalidate()
+
         tiles.removeAll()
 
         for _ in 0..<rows {
@@ -107,24 +131,59 @@ public struct Grid: Equatable {
     /// Effective numbers include numbers that are part of the original hints
     /// as well as numbers deduced from following blank signposts until a numbered
     /// one is reached.
+    public func effectiveNumberForTile(_ coordinates: Coordinates) -> Int? {
+        effectiveNumberForTile(column: coordinates.column, row: coordinates.row)
+    }
+
+    /// Returns the effective numerical value for a tile on the given coordinates.
+    /// Effective numbers include numbers that are part of the original hints
+    /// as well as numbers deduced from following blank signposts until a numbered
+    /// one is reached.
     public func effectiveNumberForTile(column: Int, row: Int) -> Int? {
         let tile = self[column: column, row: row]
         if let solution = tile.solution {
             return solution
         }
 
+        if let cached = _cache.getTileNumber(column: column, row: row) {
+            return cached
+        }
+
+        func cacheAndReturn(column: Int, row: Int, _ value: Int?) -> Int? {
+            _cache.setTileNumber(column: column, row: row, number: value)
+            return value
+        }
+
+        func cacheAndReturn(_ coordinates: Coordinates, _ value: Int?) -> Int? {
+            _cache.setTileNumber(column: coordinates.column, row: coordinates.row, number: value)
+            return value
+        }
+
+        func cacheAndReturn(_ value: Int?) -> Int? {
+            cacheAndReturn(column: column, row: row, value)
+        }
+
         var counter: Int
+        var visitedNodes: [Grid.Coordinates]
 
         // Search forwards
         counter = -1
+        visitedNodes = []
 
         var next = tileConnectedFrom(column: column, row: row)
         while let n = next {
             defer { counter -= 1 }
 
+            visitedNodes.append(n)
+
             let tile = self[n]
             if let solution = tile.solution {
-                return solution + counter
+                while let visit = visitedNodes.last {
+                    _=cacheAndReturn(visit, solution - visitedNodes.count)
+                    visitedNodes.removeLast()
+                }
+
+                return cacheAndReturn(solution + counter)
             }
 
             next = tileConnectedFrom(column: n.column, row: n.row)
@@ -132,20 +191,28 @@ public struct Grid: Equatable {
 
         // Search backwards
         counter = 1
+        visitedNodes = []
 
         var prev = tileConnectedTo(column: column, row: row)
         while let p = prev {
             defer { counter += 1 }
 
+            visitedNodes.append(p)
+
             let tile = self[p]
             if let solution = tile.solution {
-                return solution + counter
+                while let visit = visitedNodes.last {
+                    _=cacheAndReturn(visit, solution + visitedNodes.count)
+                    visitedNodes.removeLast()
+                }
+
+                return cacheAndReturn(solution + counter)
             }
 
             prev = tileConnectedTo(column: p.column, row: p.row)
         }
 
-        return nil
+        return cacheAndReturn(nil)
     }
 
     /// Returns `true` if the given column/row combination represents a valid
@@ -185,8 +252,16 @@ public struct Grid: Equatable {
         return result
     }
 
+    func tileConnectedFrom(_ coordinates: Coordinates) -> Coordinates? {
+        tileConnectedFrom(column: coordinates.column, row: coordinates.row)
+    }
+
     func tileConnectedFrom(column: Int, row: Int) -> Coordinates? {
         self[column: column, row: row].connectedTo
+    }
+    
+    func tileConnectedTo(_ coordinates: Coordinates) -> Coordinates? {
+        tileConnectedTo(column: coordinates.column, row: coordinates.row)
     }
 
     func tileConnectedTo(column: Int, row: Int) -> Coordinates? {
@@ -240,5 +315,43 @@ public struct Grid: Equatable {
         let row = index / columns
 
         return (column, row)
+    }
+
+    private class InternalCache {
+        private var _tileNumbers: [Int: Int?] = [:]
+
+        let columns: Int
+
+        init(columns: Int) {
+            self.columns = columns
+        }
+
+        func copy() -> InternalCache {
+            let copy = InternalCache(columns: columns)
+            copy._tileNumbers = _tileNumbers
+            return copy
+        }
+
+        func getTileNumber(column: Int, row: Int) -> Int?? {
+            _tileNumbers[_columnRowToIndex(column: column, row: row)]
+        }
+
+        func setTileNumber(column: Int, row: Int, number: Int?) {
+            _tileNumbers[_columnRowToIndex(column: column, row: row)] = number
+        }
+
+        func invalidate() {
+            _tileNumbers.removeAll()
+        }
+
+        private func _columnRowToIndex(column: Int, row: Int) -> Int {
+            row * columns + column
+        }
+    }
+}
+
+extension Grid: Equatable {
+    public static func == (lhs: Grid, rhs: Grid) -> Bool {
+        lhs.columns == rhs.columns && lhs.rows == rhs.rows && lhs.tiles == rhs.tiles
     }
 }
