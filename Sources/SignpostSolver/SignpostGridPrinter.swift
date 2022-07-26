@@ -6,9 +6,15 @@ public class SignpostGridPrinter: ConsolePrintBuffer {
     }
 
     /// Initializes a grid printer with a buffer capable of rendering a grid of
-    /// given size where each cell has 8 characters of width and 4 of height.
+    /// given size where each cell has 6 characters of width and 3 of height.
     public init(bufferForGridWidth width: Int, height: Int) {
-        super.init(bufferWidth: width * 8 + 2, bufferHeight: height * 4 + 2)
+        super.init(bufferWidth: width * 6 + 2, bufferHeight: height * 3 + 2)
+    }
+
+    /// Initializes a grid printer with a buffer capable of rendering the given
+    /// grid with each cell has 6 characters of width and 3 of height.
+    public convenience init(bufferForGrid grid: Grid) {
+        self.init(bufferForGridWidth: grid.columns, height: grid.rows)
     }
 
     public func printGrid(grid: Grid) {

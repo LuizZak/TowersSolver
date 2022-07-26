@@ -44,6 +44,7 @@ public struct Grid {
         }
         set {
             ensureUnique()
+            _cache.invalidate()
             
             let (column, row) = _indexToColumnRow(index)
 
@@ -168,36 +169,34 @@ public struct Grid {
 
         // Search forwards
         counter = -1
-        visitedNodes = []
+        visitedNodes = [(column: column, row: row)]
 
         var next = tileConnectedFrom(column: column, row: row)
         while let n = next {
             defer { counter -= 1 }
 
-            visitedNodes.append(n)
-
             let tile = self[n]
             if let solution = tile.solution {
-                while let visit = visitedNodes.last {
+                while let visit = visitedNodes.first {
                     _=cacheAndReturn(visit, solution - visitedNodes.count)
-                    visitedNodes.removeLast()
+                    visitedNodes.removeFirst()
                 }
 
                 return cacheAndReturn(solution + counter)
             }
+
+            visitedNodes.append(n)
 
             next = tileConnectedFrom(column: n.column, row: n.row)
         }
 
         // Search backwards
         counter = 1
-        visitedNodes = []
+        visitedNodes = [(column: column, row: row)]
 
         var prev = tileConnectedTo(column: column, row: row)
         while let p = prev {
             defer { counter += 1 }
-
-            visitedNodes.append(p)
 
             let tile = self[p]
             if let solution = tile.solution {
@@ -208,6 +207,8 @@ public struct Grid {
 
                 return cacheAndReturn(solution + counter)
             }
+
+            visitedNodes.append(p)
 
             prev = tileConnectedTo(column: p.column, row: p.row)
         }

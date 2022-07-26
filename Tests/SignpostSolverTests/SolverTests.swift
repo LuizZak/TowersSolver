@@ -3,6 +3,8 @@ import XCTest
 @testable import SignpostSolver
 
 class SolverTests: XCTestCase {
+
+
     func testIsSolved_3x3_nonSolved() {
         // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#3x3:1deecaaag9a
         let gridGen = SignpostGridGenerator(rows: 3, columns: 3)
@@ -40,7 +42,7 @@ class SolverTests: XCTestCase {
 
         sut.solve()
         
-        let printer = SignpostGridPrinter(bufferWidth: 20, bufferHeight: 11)
+        let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }
@@ -53,7 +55,7 @@ class SolverTests: XCTestCase {
 
         sut.solve()
         
-        let printer = SignpostGridPrinter(bufferWidth: 26, bufferHeight: 14)
+        let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }
@@ -66,7 +68,7 @@ class SolverTests: XCTestCase {
 
         sut.solve()
         
-        let printer = SignpostGridPrinter(bufferWidth: 32, bufferHeight: 17)
+        let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }
@@ -79,7 +81,20 @@ class SolverTests: XCTestCase {
 
         sut.solve()
         
-        let printer = SignpostGridPrinter(bufferWidth: 44, bufferHeight: 23)
+        let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
+        printer.printGrid(grid: sut.grid)
+        XCTAssertTrue(sut.isSolved)
+    }
+
+    func testSolve_11x11() {
+        // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#11x11:1eee14dgef20e44e74gg2e30d39dc18cebc28cg51feeed25d67gg118fceed102dbbebcchhgb76cf13ac40ghbg77eh3adef119cd52ch53egh42dceab96cfh86gggcbd115bah84c33ceh9gc108c64cc109ddaa31gg107g100dbh89c70gb91hb54h78hg61aa88bcg81g83a93cha121a
+        let gridGen = SignpostGridGenerator(rows: 11, columns: 11)
+        gridGen.loadFromGameID("1eee14dgef20e44e74gg2e30d39dc18cebc28cg51feeed25d67gg118fceed102dbbebcchhgb76cf13ac40ghbg77eh3adef119cd52ch53egh42dceab96cfh86gggcbd115bah84c33ceh9gc108c64cc109ddaa31gg107g100dbh89c70gb91hb54h78hg61aa88bcg81g83a93cha121a")
+        let sut = Solver(grid: gridGen.grid)
+
+        sut.solve()
+        
+        let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
     }

@@ -4,7 +4,11 @@ import Commons
 public class Solver {
     private(set) public var grid: Grid
 
+    /// Graph with all potential connections between tiles.
     private var connectionsGridGraph: GridGraph
+
+    /// Graph containing only the final connections that are intended to be part
+    /// of the solution.
     private var solutionGridGraph: GridGraph
 
     /// Returns `true` if the for this solver is in a valid state and solved.
@@ -54,6 +58,43 @@ public class Solver {
         }
     }
 
+    private func _isSolved() -> Bool {
+        let startTileCoord = grid.tileCoordinates.first {
+            grid[$0].isStartTile && grid[$0].solution == 1
+        }
+        let endTileCoord = grid.tileCoordinates.first {
+            grid[$0].isEndTile && grid[$0].solution == grid.tileCount
+        }
+
+        guard let startTileCoord = startTileCoord, let endTileCoord = endTileCoord else {
+            return false
+        }
+
+        let resultGraph = GridGraph.fromGrid(grid, connectionMode: .connectedToProperty)
+
+        let paths = resultGraph.allPaths(from: .init(startTileCoord), to: .init(endTileCoord), confirmVisit: { _ in true })
+
+        if paths.count != 1 {
+            return false
+        }
+
+        let path = paths[0]
+
+        var current = 1
+        
+        for node in path {
+            let tile = grid[node.coordinates]
+
+            if let solution = tile.solution, solution != current {
+                return false
+            }
+
+            current += 1
+        }
+        
+        return true
+    }
+
     public func solve() {
         defer { _postSolve() }
 
@@ -73,13 +114,13 @@ public class Solver {
                         let start = node
                         let end = from[0]
                         
-                        didChange = didChange || _exclusiveConnect(start: start, end: end)
+                        didChange = _exclusiveConnect(start: start, end: end) || didChange
                     }
                     if to.count == 1 {
                         let start = to[0]
                         let end = node
 
-                        didChange = didChange || _exclusiveConnect(start: start, end: end)
+                        didChange = _exclusiveConnect(start: start, end: end) || didChange
                     }
                 }
 
@@ -101,7 +142,7 @@ public class Solver {
                 let pairs = _collectNumberedPairs()
 
                 for pair in pairs {
-                    didChange = didChange || _evaluatePathsBetween(numberedPair: pair)
+                    didChange = _evaluatePathsBetween(numberedPair: pair) || didChange
                 }
 
                 if didChange {
@@ -114,7 +155,7 @@ public class Solver {
 
         // Do a pre-pass of the grid to detect obvious connections
         while trivialSolverStep() && complexSolverStep() {
-
+            // empty
         }
     }
 
@@ -192,7 +233,7 @@ public class Solver {
             }
 
             for (node, next) in zip(path, path.dropFirst()) {
-                changed = changed || _exclusiveConnect(start: node, end: next)
+                changed = _exclusiveConnect(start: node, end: next) || changed
             }
         }
 
@@ -238,6 +279,7 @@ public class Solver {
             // Exclude nodes in the same subgraph
             if subgraph.nodes.contains(next) {
                 nodes.remove(at: i)
+                continue
             }
 
             // Exclude numbered nodes that cannot directly connect to one another
@@ -277,6 +319,7 @@ public class Solver {
 
             if subgraph.nodes.contains(prev) {
                 nodes.remove(at: i)
+                continue
             }
 
             // Exclude numbered nodes that cannot directly connect to one another
@@ -319,6 +362,7 @@ public class Solver {
     }
 
     private func _postSolve() {
+        // Finish connecting sequentially numbered tiles
         for tileCoord in grid.tileCoordinates {
             guard grid[tileCoord].connectedTo == nil else {
                 continue
@@ -338,43 +382,6 @@ public class Solver {
                 }
             }
         }
-    }
-
-    private func _isSolved() -> Bool {
-        let startTileCoord = grid.tileCoordinates.first {
-            grid[$0].isStartTile && grid[$0].solution == 1
-        }
-        let endTileCoord = grid.tileCoordinates.first {
-            grid[$0].isEndTile && grid[$0].solution == grid.tileCount
-        }
-
-        guard let startTileCoord = startTileCoord, let endTileCoord = endTileCoord else {
-            return false
-        }
-
-        let resultGraph = GridGraph.fromGrid(grid, connectionMode: .connectedToProperty)
-
-        let paths = resultGraph.allPaths(from: .init(startTileCoord), to: .init(endTileCoord), confirmVisit: { _ in true })
-
-        if paths.count != 1 {
-            return false
-        }
-
-        let path = paths[0]
-
-        var current = 1
-        
-        for node in path {
-            let tile = grid[node.coordinates]
-
-            if let solution = tile.solution, solution != current {
-                return false
-            }
-
-            current += 1
-        }
-        
-        return true
     }
 
     /// Returns a list of numbered pairs which represent gaps between known
