@@ -157,7 +157,7 @@ public enum Cell: Equatable {
     /// Cell is empty- no hint or solution is currently in place.
     case empty
 
-    /// Cell is not solved, bunt contains a set of possible heights.
+    /// Cell is not solved, but contains a set of possible heights.
     case hint(Set<Int>)
 
     /// Cell is solved with a given height.

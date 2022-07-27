@@ -29,7 +29,7 @@ public class Solver {
 
     /// When using descriptive interactive printing, collects descriptive steps
     /// until we hit a grid print operation, which we then print after the grid
-    /// to improve legibility of the temrinal output.
+    /// to improve legibility of the terminal output.
     private var _description = ""
 
     /// Only really used when `self.interactive == true`
@@ -557,7 +557,7 @@ extension Solver {
                 gridPrinter.printGrid(grid: grid)
                 _flushDescriptiveText()
 
-                print("^ After full trivials + complex step cycle. Press Enter to advance...")
+                print("^ After full trivial + complex step cycle. Press Enter to advance...")
                 _ = readLine()
             }
 
@@ -640,7 +640,7 @@ extension Solver {
             )
 
             // Check if this doesn't lead into an inconsistent solve attempt
-            // (this counts as a backtracking attempt torwards the max guess counts)
+            // (this counts as a backtracking attempt towards the max guess counts)
             if !subSolver.isConsistent() || subSolver.hasEmptySolutionCells() {
                 guesses += 1
 
@@ -703,16 +703,16 @@ extension Solver {
 
         // Do nested trivial and complex runs
         runWhileChangingGrid {
-            // Fill out trivials first. These don't need to construct visibility
-            // trees, and so are much faster to perform, as well as trim out many
-            // easy cases.
+            // Fill out trivial changes first. These don't need to construct
+            // visibility trees, and so are much faster to perform, as well as
+            // trim out many easy cases.
             runWhileChangingGrid {
                 runTrivialStep()
                 _print("End of trivial cycle.")
             }
 
             // Run a complex step that uses visibility trees as an aid for a more
-            // complete solving attempt with solution combinations checkings
+            // complete solving attempt with solution combinations checking
             runComplexStep()
             _print("End of complex + trivial cycle.")
         }
@@ -781,8 +781,7 @@ extension Solver {
             }
 
             return true
-        }
-        catch {
+        } catch {
             return false
         }
     }

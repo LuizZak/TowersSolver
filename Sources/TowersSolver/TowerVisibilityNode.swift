@@ -24,15 +24,13 @@ struct TowerVisibilityNode {
         let newH: [Int]
         if ignoreRoot && height == -1 {
             newH = heights
-        }
-        else {
+        } else {
             newH = heights + [height]
         }
 
         if children.count == 0 {
             dumpTo.append(newH)
-        }
-        else {
+        } else {
             for child in children.sorted(by: { $0.height < $1.height }) {
                 child._traverse(newH, &dumpTo)
             }
@@ -40,7 +38,7 @@ struct TowerVisibilityNode {
     }
 
     /// Returns permutations of heights found on this node and all children nodes
-    /// that ammount to a given final visible tower count.
+    /// that amount to a given final visible tower count.
     /// All other permutations are not included, and if no combinations of nodes
     /// results in the requested visibility, an empty array is returned.
     func permutations(ofVisibleTowers visible: Int, ignoreRoot: Bool = true) -> [[Int]] {
@@ -72,15 +70,13 @@ struct TowerVisibilityNode {
         let newH: [Int]
         if ignoreRoot && height == -1 {
             newH = heights
-        }
-        else {
+        } else {
             newH = heights + [height]
         }
 
         if children.count == 0 && heightBudget == 0 {
             dumpTo.append(newH)
-        }
-        else {
+        } else {
             for child in children.sorted(by: { $0.height < $1.height }) {
                 child._traverse(heightBudget: heightBudget, highest: highest, newH, &dumpTo)
             }
@@ -108,8 +104,7 @@ struct TowerVisibilityNode {
             for child in children {
                 set.formUnion(child.possibleSolutionHeights(at: height == -1 ? index : index - 1))
             }
-        }
-        else if index == 0 {
+        } else if index == 0 {
             set.insert(height)
         }
 
@@ -186,18 +181,18 @@ extension TowerVisibilityNode {
     /// all possible permutations of combinations of available heights for the
     /// given cell list.
     ///
-    /// Non-solveable permutations (when e.g. a combination leaves a cell that
+    /// Non-solvable permutations (when e.g. a combination leaves a cell that
     /// cannot be filled with any valid value) are stripped away before returning.
     public static func visibilities(from cells: [Cell]) -> TowerVisibilityNode {
         var root = TowerVisibilityNode(height: -1)
-        _permutate(onto: &root, cells: cells)
+        _permute(onto: &root, cells: cells)
 
         root.stripShallower(than: cells.count)
 
         return root
     }
 
-    private static func _permutate(onto node: inout TowerVisibilityNode, cells: [Cell]) {
+    private static func _permute(onto node: inout TowerVisibilityNode, cells: [Cell]) {
         guard let next = cells.first else {
             return
         }
@@ -207,7 +202,7 @@ extension TowerVisibilityNode {
 
             if cells.count > 1 {
                 let rem = _strippingHeight(height, from: cells[1...])
-                _permutate(onto: &newNode, cells: rem)
+                _permute(onto: &newNode, cells: rem)
             }
 
             node.addChild(node: newNode)
