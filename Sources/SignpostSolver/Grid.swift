@@ -265,18 +265,26 @@ public struct Grid {
         return result
     }
 
+    /// Returns the coordinates of the tile that a tile at the given coordinates
+    /// is connecting towards, or `nil`, if none is found.
     func tileConnectedFrom(_ coordinates: Coordinates) -> Coordinates? {
         tileConnectedFrom(column: coordinates.column, row: coordinates.row)
     }
 
+    /// Returns the coordinates of the tile that a tile at the given coordinates
+    /// is connecting towards, or `nil`, if none is found.
     func tileConnectedFrom(column: Int, row: Int) -> Coordinates? {
         self[column: column, row: row].connectedTo
     }
     
+    /// Returns the coordinates of a tile that is connecting towards a given
+    /// tile's coordinates, or `nil`, if none is found.
     func tileConnectedTo(_ coordinates: Coordinates) -> Coordinates? {
         tileConnectedTo(column: coordinates.column, row: coordinates.row)
     }
 
+    /// Returns the coordinates of a tile that is connecting towards a given
+    /// tile's coordinates, or `nil`, if none is found.
     func tileConnectedTo(column: Int, row: Int) -> Coordinates? {
         let coordinates = Coordinates(column: column, row: row)
         for coord in tileCoordinates where coord != coordinates {
@@ -346,16 +354,16 @@ public struct Grid {
             return copy
         }
 
+        func invalidate() {
+            _tileNumbers.removeAll()
+        }
+
         func getTileNumber(column: Int, row: Int) -> Int?? {
             _tileNumbers[_columnRowToIndex(column: column, row: row)]
         }
 
         func setTileNumber(column: Int, row: Int, number: Int?) {
             _tileNumbers[_columnRowToIndex(column: column, row: row)] = number
-        }
-
-        func invalidate() {
-            _tileNumbers.removeAll()
         }
 
         private func _columnRowToIndex(column: Int, row: Int) -> Int {

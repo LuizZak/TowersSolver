@@ -7,10 +7,6 @@ public class Solver {
     /// Graph with all potential connections between tiles.
     private var connectionsGridGraph: GridGraph
 
-    /// Graph containing only the final connections that are intended to be part
-    /// of the solution.
-    private var solutionGridGraph: GridGraph
-
     /// Returns `true` if the for this solver is in a valid state and solved.
     ///
     /// For a Signpost grid, the grid is valid and solved when all conditions
@@ -28,7 +24,6 @@ public class Solver {
         self.grid = grid
 
         connectionsGridGraph = .fromGrid(grid)
-        solutionGridGraph = .fromGrid(grid, connectionMode: .connectedToProperty)
 
         _preprocessConnectionsGraph()
     }
@@ -110,21 +105,25 @@ public class Solver {
             repeat {
                 didChange = false
 
+                var solutionGridGraph = GridGraph.fromGrid(grid, connectionMode: .connectedToProperty)
+
                 for node in connectionsGridGraph.nodes {
-                    let from = _possibleNodesFrom(node: node)
-                    let to = _possibleNodesTo(node: node)
+                    let from = _possibleNodesFrom(node: node, in: solutionGridGraph)
+                    let to = _possibleNodesTo(node: node, in: solutionGridGraph)
 
                     if from.count == 1 {
                         let start = node
                         let end = from[0]
                         
                         didChange = _exclusiveConnect(start: start, end: end) || didChange
+                        solutionGridGraph.connectExclusive(start: start, end: end)
                     }
                     if to.count == 1 {
                         let start = to[0]
                         let end = node
 
                         didChange = _exclusiveConnect(start: start, end: end) || didChange
+                        solutionGridGraph.connectExclusive(start: start, end: end)
                     }
                 }
 
@@ -146,7 +145,16 @@ public class Solver {
             repeat {
                 didChange = false
 
-                let pairs = _collectNumberedPairs()
+                let pairs = 
+                    _collectNumberedPairs()
+                    // Pre-sort the numbered pairs by least to most distant
+                    // numbers so short sequences can contribute to less possible
+                    // paths to longer sequences later, improving graph traversal
+                    // speed.
+                    .sorted {
+                        ($0.endNumber - $0.startNumber) < ($1.endNumber - $1.startNumber)
+                    }
+
                 for pair in pairs {
                     didChange = _evaluatePathsBetween(numberedPair: pair) || didChange
                 }
@@ -164,13 +172,38 @@ public class Solver {
         }
     }
 
+    private func _postSolve() {
+        // Finish connecting sequentially numbered tiles
+        for tileCoord in grid.tileCoordinates {
+            guard grid[tileCoord].connectedTo == nil else {
+                continue
+            }
+            
+            guard let number = grid.effectiveNumberForTile(column: tileCoord.column, row: tileCoord.row) else {
+                continue
+            }
+
+            let nextCoords = grid.tileCoordsPointedBy(column: tileCoord.column, row: tileCoord.row)
+
+            for next in nextCoords {
+                if grid.effectiveNumberForTile(column: next.column, row: next.row) == number + 1 {
+                    grid[tileCoord].connectionState = .connectedTo(Coordinates(column: next.column, row: next.row))
+                    break
+                }
+            }
+        }
+    }
+
     /// Performs exhaustive path analysis between two pair of known numbered tiles.
+    ///
+    /// This function assumes that there are no numbered tiles between
+    /// `(numberedPair.startNumber, startNumber.endNumber)` on the grid.
     private func _evaluatePathsBetween(numberedPair: NumberedPair) -> Bool {
         let startTile = numberedPair.start
         let endTile = numberedPair.end
 
         // Number of nodes expected to be contained within the path between the
-        // numbered pair. Is +1 to account for the start/end nodes themselves.
+        // numbered pair. Is +1 to account for the start node itself.
         let targetLength = numberedPair.endNumber - numberedPair.startNumber + 1
 
         let paths = connectionsGridGraph
@@ -183,34 +216,13 @@ public class Solver {
                 case .start:
                     return true
 
-                case .edge(_, let from, let towards):
+                case .edge(_, _, let towards):
                     if towards == endTile && visit.length != targetLength {
                         return false
                     }
 
-                    guard let toNum = grid.effectiveNumberForTile(towards.coordinates) else {
-                        break
-                    }
-
-                    if let fromNum = grid.effectiveNumberForTile(from.node.coordinates), fromNum + 1 != toNum {
-                        return false
-                    }
-
-                    // Find earliest number in the sequence, and ensure that the
-                    // solution number on the next tile matches the sequence
-                    // properly
-                    guard let lastNumberedIndex = from.allNodes.lastIndex(where: { grid.effectiveNumberForTile($0.coordinates) != nil }) else {
-                        return false
-                    }
-                    let lastNumbered = from.allNodes[lastNumberedIndex]
-
-                    guard let lastNumber = grid.effectiveNumberForTile(lastNumbered.coordinates) else {
-                        return false
-                    }
-
-                    let diff = from.allNodes.count - lastNumberedIndex
-
-                    if lastNumber + diff != toNum {
+                    // Assume there should be no hinted tiles between start < end
+                    if let solution = grid[towards.coordinates].solution, solution != numberedPair.endNumber {
                         return false
                     }
                 }
@@ -221,26 +233,36 @@ public class Solver {
                 $0.count == targetLength
             }
         
-        // Numbers can only be connected if there are no ambiguous paths between
-        // them
-        if paths.count != 1 {
+        guard !paths.isEmpty else {
             return false
         }
-
+        
         var changed = false
-        outerLoop:
-        for path in paths {
-            for (i, node) in path.enumerated() {
-                let tile = grid[node.coordinates]
 
-                if let solution = tile.solution, solution != i + numberedPair.startNumber {
-                    continue outerLoop
-                }
-            }
-
-            for (node, next) in zip(path, path.dropFirst()) {
+        // For single viable paths, connect directly.
+        if paths.count == 1 {
+            for (node, next) in zip(paths[0], paths[0].dropFirst()) {
                 changed = _exclusiveConnect(start: node, end: next) || changed
             }
+
+            return changed
+        }
+
+        // For ambiguous paths, find a common prefix and suffix amongst paths
+        // that are guaranteed to be the same nodes in every case
+        let commonPrefix = paths.reduce(paths[0]) {
+            $0.commonPrefix(sharedWith: $1)
+        }
+        let commonSuffix = paths.reduce(paths[0]) {
+            $0.commonSuffix(sharedWith: $1)
+        }
+
+        for (node, next) in zip(commonPrefix, commonPrefix.dropFirst()) {
+            changed = _exclusiveConnect(start: node, end: next) || changed
+        }
+
+        for (node, next) in zip(commonSuffix, commonSuffix.dropFirst()) {
+            changed = _exclusiveConnect(start: node, end: next) || changed
         }
 
         return changed
@@ -254,7 +276,6 @@ public class Solver {
     /// - returns: `false` if the nodes where already previously connected on the
     /// internal grid state, `true` if they where not and a connection was made.
     private func _exclusiveConnect(start: GridGraph.Node, end: GridGraph.Node) -> Bool {
-        solutionGridGraph.connectExclusive(start: start, end: end)
         connectionsGridGraph.connectExclusive(start: start, end: end)
         
         if grid[start.coordinates].connectedTo == end.coordinates {
@@ -270,12 +291,13 @@ public class Solver {
     /// The function ignores nodes in the path of `node` that are either already
     /// exclusively connected to other nodes, or are already connected to `node`
     /// via an ancestor.
-    private func _possibleNodesFrom(node: GridGraph.Node) -> [GridGraph.Node] {
+    private func _possibleNodesFrom(node: GridGraph.Node, in solutionGridGraph: GridGraph) -> [GridGraph.Node] {
         if grid.tileConnectedFrom(column: node.column, row: node.row) != nil {
             return []
         }
         
         let subgraph = solutionGridGraph.subgraph(forNode: node)
+
         var nodes = connectionsGridGraph.nodesConnected(from: node)
 
         let solution = grid.effectiveNumberForTile(column: node.column, row: node.row)
@@ -314,12 +336,13 @@ public class Solver {
     /// The function ignores nodes pointing to `node` that are either already
     /// exclusively connected to other nodes, or are already connected to `node`
     /// via a successor node.
-    private func _possibleNodesTo(node: GridGraph.Node) -> [GridGraph.Node] {
+    private func _possibleNodesTo(node: GridGraph.Node, in solutionGridGraph: GridGraph) -> [GridGraph.Node] {
         if grid.tileConnectedFrom(column: node.column, row: node.row) != nil {
             return []
         }
-
+        
         let subgraph = solutionGridGraph.subgraph(forNode: node)
+
         var nodes = connectionsGridGraph.nodesConnected(towards: node)
 
         let solution = grid.effectiveNumberForTile(column: node.column, row: node.row)
@@ -375,29 +398,6 @@ public class Solver {
         print(viz.generateFile())
     }
 
-    private func _postSolve() {
-        // Finish connecting sequentially numbered tiles
-        for tileCoord in grid.tileCoordinates {
-            guard grid[tileCoord].connectedTo == nil else {
-                continue
-            }
-            
-            guard let number = grid.effectiveNumberForTile(column: tileCoord.column, row: tileCoord.row) else {
-                continue
-            }
-
-            let nextCoords = grid.tileCoordsPointedBy(column: tileCoord.column, row: tileCoord.row)
-
-            for next in nextCoords {
-                if grid.effectiveNumberForTile(column: next.column, row: next.row) == number + 1 {
-                    solutionGridGraph.connect(start: .init(tileCoord), end: .init(next))
-                    grid[tileCoord].connectionState = .connectedTo(Coordinates(column: next.column, row: next.row))
-                    break
-                }
-            }
-        }
-    }
-
     /// Returns a list of numbered pairs which represent gaps between known
     /// signpost numbers, ordered from lowest to highest.
     private func _collectNumberedPairs() -> [NumberedPair] {
@@ -407,7 +407,7 @@ public class Solver {
             guard let number = grid[tileCoord].solution else {
                 continue
             }
-
+            
             candidates.append((.init(tileCoord), number))
         }
 
@@ -424,10 +424,17 @@ public class Solver {
         // connected tiles, they are treated as one contiguous tile run.
         while !candidates.isEmpty {
             let candidate = candidates.removeFirst()
+            
+            // Travel back through the connected tiles to find the earliest
+            // numbered tile
+            var entry = candidate
+            while let prev = grid.tileConnectedTo(entry.node.coordinates) {
+                entry = (.init(prev), entry.number - 1)
+            }
 
             if let endOfLastRun = endOfLastRun {
                 result.append(
-                    .init(start: endOfLastRun.node, startNumber: endOfLastRun.number, end: candidate.node, endNumber: candidate.number)
+                    .init(start: endOfLastRun.node, startNumber: endOfLastRun.number, end: entry.node, endNumber: entry.number)
                 )
             }
 

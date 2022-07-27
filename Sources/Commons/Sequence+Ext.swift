@@ -89,6 +89,25 @@ extension Sequence where Iterator.Element: Equatable {
     public func count(_ value: Iterator.Element) -> Int {
         return count { $0 == value }
     }
+
+    /// Returns the largest common subsequence of initial elements that are
+    /// shared between `self` and `other`.
+    @inlinable
+    public func commonPrefix(sharedWith other: Self) -> [Element] {
+        zip(self, other)
+            .prefix(while: ==)
+            .map(\.0)
+    }
+
+    /// Returns the largest common subsequence of final elements that are
+    /// shared between `self` and `other`.
+    @inlinable
+    public func commonSuffix(sharedWith other: Self) -> [Element] {
+        zip(self.reversed(), other.reversed())
+            .prefix(while: ==)
+            .map(\.0)
+            .reversed()
+    }
 }
 
 // Original `stableSorted` implementation by Tom:
