@@ -178,13 +178,12 @@ extension GridGraph {
         var result = Self()
 
         var queue: [Node] = [node]
-        var visited: [Node] = []
+        var visited: Set<Node> = []
 
         while let next = queue.popLast() {
-            if visited.contains(next) {
+            if !visited.insert(next).inserted {
                 continue
             }
-            visited.append(next)
 
             result.nodes.append(next)
 
@@ -213,7 +212,7 @@ extension GridGraph {
     @inlinable
     func subgraphs() -> [Self] {
         var result: [Self] = []
-        var remaining = nodes
+        var remaining: Set<Node> = Set(nodes)
 
         while !remaining.isEmpty {
             let node = remaining.removeFirst()
@@ -221,7 +220,7 @@ extension GridGraph {
             let subgraph = self.subgraph(forNode: node)
             result.append(subgraph)
 
-            remaining.removeAll(where: subgraph.nodes.contains)
+            remaining.subtract(subgraph.nodes)
         }
 
         return result

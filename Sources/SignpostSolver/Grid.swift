@@ -132,6 +132,9 @@ public struct Grid {
     /// Effective numbers include numbers that are part of the original hints
     /// as well as numbers deduced from following blank signposts until a numbered
     /// one is reached.
+    ///
+    /// Result is `nil` if tile is not a hint and is not connected to a numbered
+    /// tile.
     public func effectiveNumberForTile(_ coordinates: Coordinates) -> Int? {
         effectiveNumberForTile(column: coordinates.column, row: coordinates.row)
     }
@@ -140,6 +143,9 @@ public struct Grid {
     /// Effective numbers include numbers that are part of the original hints
     /// as well as numbers deduced from following blank signposts until a numbered
     /// one is reached.
+    ///
+    /// Result is `nil` if tile is not a hint and is not connected to a numbered
+    /// tile.
     public func effectiveNumberForTile(column: Int, row: Int) -> Int? {
         let tile = self[column: column, row: row]
         if let solution = tile.solution {
@@ -177,6 +183,7 @@ public struct Grid {
 
             let tile = self[n]
             if let solution = tile.solution {
+                // Cache visited tiles too
                 while let visit = visitedNodes.first {
                     _=cacheAndReturn(visit, solution - visitedNodes.count)
                     visitedNodes.removeFirst()
@@ -200,6 +207,7 @@ public struct Grid {
 
             let tile = self[p]
             if let solution = tile.solution {
+                // Cache visited tiles too
                 while let visit = visitedNodes.last {
                     _=cacheAndReturn(visit, solution + visitedNodes.count)
                     visitedNodes.removeLast()
@@ -278,7 +286,7 @@ public struct Grid {
     }
 
     /// Returns a list of tiles, beginning from a given column/row, traveling
-    /// in a given orientation until the end of the grid is reached.
+    /// in a given orientation until the bounds of the grid are reached.
     ///
     /// The tile under (column, row) is not included in the result.
     private func _allTilesFrom(column: Int, row: Int, orientation: Tile.Orientation) -> [Coordinates] {

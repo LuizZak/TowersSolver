@@ -18,9 +18,8 @@ public class Solver {
     ///
     /// - 1- All tiles are numbered, from 1 to `grid.tileCount`, with each number
     /// showing up exactly once.
-    /// - 2- Each numbered tile N, except for the hightest tile number, must have
-    /// its subsequent tile numbered N+1 in the direction of its arrow in the
-    /// grid.
+    /// - 2- Each numbered tile N, except for the last tile, must have its
+    /// subsequent tile numbered N+1 in the direction of its arrow in the grid.
     public var isSolved: Bool {
         _isSolved()
     }
@@ -103,6 +102,7 @@ public class Solver {
     public func solve() {
         defer { _postSolve() }
 
+        // Connects tiles that only have one entry/exit edge
         func trivialSolverStep() -> Bool {
             var changesCount = 0
 
@@ -110,7 +110,6 @@ public class Solver {
             repeat {
                 didChange = false
 
-                // Connect tiles that have only one entry/exit edge
                 for node in connectionsGridGraph.nodes {
                     let from = _possibleNodesFrom(node: node)
                     let to = _possibleNodesTo(node: node)
@@ -137,6 +136,9 @@ public class Solver {
             return changesCount > 0
         }
 
+        // Perform pathfinding between known numbered tiles, connecting them if
+        // an unambiguous path with the required number of intermediary tiles is
+        // found
         func complexSolverStep() -> Bool {
             var changesCount = 0
 
@@ -144,7 +146,6 @@ public class Solver {
             repeat {
                 didChange = false
 
-                // Perform pathfinding between known numbered tiles
                 let pairs = _collectNumberedPairs()
                 for pair in pairs {
                     didChange = _evaluatePathsBetween(numberedPair: pair) || didChange
@@ -158,7 +159,6 @@ public class Solver {
             return changesCount > 0
         }
 
-        // Do a pre-pass of the grid to detect obvious connections
         while trivialSolverStep() && complexSolverStep() {
             // empty
         }
@@ -293,7 +293,7 @@ public class Solver {
                 continue
             }
 
-            // Exclude numbered nodes that cannot directly connect to one another
+            // Exclude numbered nodes that cannot connect directly to one another
             let nextSolution = grid.effectiveNumberForTile(column: next.column, row: next.row)
 
             switch (solution, nextSolution) {
@@ -309,8 +309,9 @@ public class Solver {
         return nodes
     }
 
-    /// Returns a list of potential paths that can be connected towards a given node.
-    /// The function ignores nodes in the path of `node` that are either already
+    /// Returns a list of potential paths that can be connected towards a given
+    /// node.
+    /// The function ignores nodes pointing to `node` that are either already
     /// exclusively connected to other nodes, or are already connected to `node`
     /// via a successor node.
     private func _possibleNodesTo(node: GridGraph.Node) -> [GridGraph.Node] {
