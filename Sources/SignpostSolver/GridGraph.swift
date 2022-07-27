@@ -55,20 +55,17 @@ struct GridGraph: DirectedGraph {
     }
 
     struct Node: DirectedGraphNode, CustomStringConvertible, Comparable {
-        var column: Int, row: Int
+        var coordinates: Coordinates
 
-        var coordinates: Grid.Coordinates {
-            (column, row)
-        }
+        var column: Int { coordinates.column }
+        var row: Int { coordinates.row }
 
         init(column: Int, row: Int) {
-            self.column = column
-            self.row = row
+            coordinates = .init(column: column, row: row)
         }
 
-        init(_ coord: Grid.Coordinates) {
-            self.column = coord.column
-            self.row = coord.row
+        init(_ coord: Coordinates) {
+            coordinates = coord
         }
 
         var description: String {
@@ -209,6 +206,9 @@ extension GridGraph {
     /// subgraph.
     ///
     /// If a node has no connections, it is present as a single-node subgraph.
+    ///
+    /// - note: The order of the results are not guaranteed to be the same across
+    /// function calls.
     @inlinable
     func subgraphs() -> [Self] {
         var result: [Self] = []

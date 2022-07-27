@@ -9,18 +9,18 @@ public struct Tile: Equatable {
     /// The connection state for this tile.
     public var connectionState: ConnectionState = .unconnected
 
-    public var connectedTo: Grid.Coordinates? {
+    public var connectedTo: Coordinates? {
         get {
             switch connectionState {
             case .unconnected:
                 return nil
-            case .connectedTo(let column, let row):
-                return (column, row)
+            case .connectedTo(let coords):
+                return coords
             }
         }
         set {
             if let newValue = newValue {
-                connectionState = .connectedTo(column: newValue.column, row: newValue.row)
+                connectionState = .connectedTo(newValue)
             } else {
                 connectionState = .unconnected
             }
@@ -36,6 +36,6 @@ public struct Tile: Equatable {
     /// Represents the connection state for this tile.
     public enum ConnectionState: Hashable {
         case unconnected
-        case connectedTo(column: Int, row: Int)
+        case connectedTo(Coordinates)
     }
 }

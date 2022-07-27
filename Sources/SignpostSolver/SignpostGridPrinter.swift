@@ -114,7 +114,9 @@ public class SignpostGridPrinter: ConsolePrintBuffer {
 
         func prepare(with grid: Grid, graph: GridGraph) {
             let seq =
-                graph.subgraphs().filter { $0.nodes.count > 1 }
+                graph.subgraphs()
+                .sorted { $0.nodes[0] < $1.nodes[0] } // Stabilize output
+                .filter { $0.nodes.count > 1 }
                 .compactMap {
                     $0.topologicalSorted()?
                         .map {

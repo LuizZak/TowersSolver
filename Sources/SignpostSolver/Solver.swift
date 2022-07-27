@@ -257,7 +257,7 @@ public class Solver {
         solutionGridGraph.connectExclusive(start: start, end: end)
         connectionsGridGraph.connectExclusive(start: start, end: end)
         
-        if grid[start.coordinates].connectionState == .connectedTo(column: end.column, row: end.row) {
+        if grid[start.coordinates].connectedTo == end.coordinates {
             return false
         }
 
@@ -391,7 +391,7 @@ public class Solver {
             for next in nextCoords {
                 if grid.effectiveNumberForTile(column: next.column, row: next.row) == number + 1 {
                     solutionGridGraph.connect(start: .init(tileCoord), end: .init(next))
-                    grid[tileCoord].connectionState = .connectedTo(column: next.column, row: next.row)
+                    grid[tileCoord].connectionState = .connectedTo(Coordinates(column: next.column, row: next.row))
                     break
                 }
             }
@@ -438,7 +438,7 @@ public class Solver {
             var counter = 0
             var next = candidate.node.coordinates
             while let n = grid.tileConnectedFrom(next) {
-                if case (n.column, n.row)? = candidates.first?.node.coordinates {
+                if n == candidates.first?.node.coordinates {
                     candidates.removeFirst()
                 }
 

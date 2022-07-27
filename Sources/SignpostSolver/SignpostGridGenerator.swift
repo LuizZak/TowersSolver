@@ -98,7 +98,7 @@ public class SignpostGridGenerator {
                 let nextTile = grid[next]
 
                 if nextTile.solution == solution + 1 {
-                    grid[tileCoord].connectionState = .connectedTo(column: next.column, row: next.row)
+                    grid[tileCoord].connectionState = .connectedTo(Coordinates(column: next.column, row: next.row))
                     break
                 }
             }

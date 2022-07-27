@@ -3,9 +3,6 @@ private let dys: [Int] = [ -1, -1, 0, 1, 1,  1,  0, -1 ]
 
 /// A Signpost game grid
 public struct Grid {
-    /// A typealias for the underlying coordinate type of each tile in this grid.
-    public typealias Coordinates = (column: Int, row: Int)
-
     private var _cache: InternalCache
 
     /// Matrix of tiles, stored as [columns][rows]
@@ -24,37 +21,44 @@ public struct Grid {
     /// Returns a list of the tiles from this grid laid out sequentially, where
     /// each tile maps as column + row * (columns)
     public var tilesSequential: [Tile] {
-        return (0..<tileCount).map {
-            self[sequential: $0]
-        }
+        (0..<tileCount).map { self[sequential: $0] }
     }
 
     /// Returns a list of coordinates for each tile in `self.tiles`.
     public var tileCoordinates: [Coordinates] {
-        return (0..<tileCount).map(_indexToColumnRow(_:))
+        (0..<tileCount).map(_indexToColumnRow(_:))
+    }
+
+    /// Returns a list of numbers, one per tile in the order of `self.tileCoordinates`,
+    /// with each entry representing the computed number of the tile based either
+    /// on its hint or its connection to another hinted tile.
+    ///
+    /// An entry is `nil` if it has no hints and is not connected to a hinted tile.
+    public var tileNumbers: [Int?] {
+        tileCoordinates.map(effectiveNumberForTile(_:))
     }
 
     /// Indexes into the list of tiles sequentially, where each tile maps as
     /// column + row * (columns)
     public subscript(sequential index: Int) -> Tile {
         get {
-            let (column, row) = _indexToColumnRow(index)
+            let coords = _indexToColumnRow(index)
 
-            return self[column: column, row: row]
+            return self[coords]
         }
         set {
             ensureUnique()
             _cache.invalidate()
             
-            let (column, row) = _indexToColumnRow(index)
+            let coords = _indexToColumnRow(index)
 
-            self[column: column, row: row] = newValue
+            self[coords] = newValue
         }
     }
 
     public subscript(column column: Int, row row: Int) -> Tile {
         get {
-            return self[column: column][row]
+            self[column: column][row]
         }
         set {
             ensureUnique()
@@ -66,7 +70,7 @@ public struct Grid {
 
     public subscript(coordinates: Coordinates) -> Tile {
         get {
-            return self[column: coordinates.column, row: coordinates.row]
+            self[column: coordinates.column, row: coordinates.row]
         }
         set {
             ensureUnique()
@@ -78,7 +82,7 @@ public struct Grid {
 
     public subscript(column column: Int) -> [Tile] {
         get {
-            return tiles[column]
+            tiles[column]
         }
         set {
             ensureUnique()
@@ -171,11 +175,11 @@ public struct Grid {
         }
 
         var counter: Int
-        var visitedNodes: [Grid.Coordinates]
+        var visitedNodes: [Coordinates]
 
         // Search forwards
         counter = -1
-        visitedNodes = [(column: column, row: row)]
+        visitedNodes = [Coordinates(column: column, row: row)]
 
         var next = tileConnectedFrom(column: column, row: row)
         while let n = next {
@@ -199,7 +203,7 @@ public struct Grid {
 
         // Search backwards
         counter = 1
-        visitedNodes = [(column: column, row: row)]
+        visitedNodes = [Coordinates(column: column, row: row)]
 
         var prev = tileConnectedTo(column: column, row: row)
         while let p = prev {
@@ -208,9 +212,9 @@ public struct Grid {
             let tile = self[p]
             if let solution = tile.solution {
                 // Cache visited tiles too
-                while let visit = visitedNodes.last {
+                while let visit = visitedNodes.first {
                     _=cacheAndReturn(visit, solution + visitedNodes.count)
-                    visitedNodes.removeLast()
+                    visitedNodes.removeFirst()
                 }
 
                 return cacheAndReturn(solution + counter)
@@ -274,10 +278,11 @@ public struct Grid {
     }
 
     func tileConnectedTo(column: Int, row: Int) -> Coordinates? {
-        for coord in tileCoordinates where coord != (column, row) {
+        let coordinates = Coordinates(column: column, row: row)
+        for coord in tileCoordinates where coord != coordinates {
             let tile = self[coord]
 
-            if let connected = tile.connectedTo, connected == (column, row) {
+            if tile.connectedTo == coordinates {
                 return coord
             }
         }
@@ -312,18 +317,18 @@ public struct Grid {
         let dx = dxs[orientation.rawValue]
         let dy = dys[orientation.rawValue]
 
-        let newCoord = (column + dx, row + dy)
+        let newCoord = Coordinates(column: column + dx, row: row + dy)
 
-        assert(newCoord != (column, row), "newCoord != (column, row)")
+        assert(newCoord != Coordinates(column: column, row: row), "newCoord != Coordinates(column: column, row: row)")
 
         return newCoord
     }
 
-    private func _indexToColumnRow(_ index: Int) -> (column: Int, row: Int) {
+    private func _indexToColumnRow(_ index: Int) -> Coordinates {
         let column = index % columns
         let row = index / columns
 
-        return (column, row)
+        return Coordinates(column: column, row: row)
     }
 
     private class InternalCache {

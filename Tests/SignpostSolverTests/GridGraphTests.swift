@@ -57,8 +57,8 @@ class GridGraphTests: XCTestCase {
         let gen = SignpostGridGenerator(rows: 3, columns: 3)
         gen.loadFromGameID("1deecaaag9a")
         var grid = gen.grid
-        grid[column: 1, row: 0].connectionState = .connectedTo(column: 1, row: 1)
-        grid[column: 0, row: 2].connectionState = .connectedTo(column: 0, row: 1)
+        grid[column: 1, row: 0].connectionState = .connectedTo(Coordinates(column: 1, row: 1))
+        grid[column: 0, row: 2].connectionState = .connectedTo(Coordinates(column: 0, row: 1))
         
         let graph = GridGraph.fromGrid(grid, connectionMode: .connectedToProperty)
 

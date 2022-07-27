@@ -43,6 +43,11 @@ class SolverTests: XCTestCase {
         let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
+        XCTAssertEqual(sut.grid.tileNumbers, [
+            1, 3, 8,
+            6, 2, 7,
+            5, 4, 9,
+        ])
     }
 
     func testSolve_4x4() {
@@ -56,6 +61,12 @@ class SolverTests: XCTestCase {
         let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
+        XCTAssertEqual(sut.grid.tileNumbers, [
+            1,  11, 2,  10,
+            8,  3,  9,  5,
+            7,  12, 4,  15,
+            13, 6,  14, 16,
+        ])
     }
 
     func testSolve_5x5() {
@@ -69,6 +80,13 @@ class SolverTests: XCTestCase {
         let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
+        XCTAssertEqual(sut.grid.tileNumbers, [
+            1,  17, 3,  4,  10,
+            7,  24, 5,  6,  8,
+            15, 14, 2,  18, 9,
+            12, 16, 13, 23, 22,
+            11, 19, 20, 21, 25,
+        ])
     }
 
     func testSolve_7x7() {
@@ -82,6 +100,15 @@ class SolverTests: XCTestCase {
         let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
+        XCTAssertEqual(sut.grid.tileNumbers, [
+            1,  5,  40, 24, 41, 4,  2,
+            45, 30, 6,  7,  17, 3,  44,
+            14, 31, 48, 47, 12, 36, 27,
+            25, 15, 46, 8,  34, 26, 35,
+            42, 18, 39, 43, 29, 22, 11,
+            19, 32, 38, 9,  33, 20, 10,
+            13, 37, 28, 23, 16, 21, 49,
+        ])
     }
 
     func testSolve_11x11() {
@@ -95,5 +122,18 @@ class SolverTests: XCTestCase {
         let printer = SignpostGridPrinter(bufferForGrid: sut.grid)
         printer.printGrid(grid: sut.grid)
         XCTAssertTrue(sut.isSolved)
+        XCTAssertEqual(sut.grid.tileNumbers, [
+            1,   75,  6,  14,  5,   48,  113, 20,  44,  74,  73,
+            2,   30,  39, 27,  18,  80,  19,  50,  28,  29,  51,
+            99,  55,  68, 58,  25,  67,  66,  118, 45,  22,  46,
+            62,  102, 17, 79,  59,  49,  15,  116, 117, 112, 16,
+            4,   76,  41, 13,  11,  40,  26,  21,  12,  77,  111,
+            3,   114, 63, 103, 119, 120, 52,  24,  53,  23,  47,
+            42,  56,  87, 57,  72,  96,  97,  38,  86,  95,  37,
+            8,   43,  69, 115, 10,  98,  84,  33,  34,  85,  9,
+            104, 108, 64, 106, 109, 92,  65,  32,  31,  105, 107,
+            100, 71,  7,  89,  70,  110, 91,  36,  54,  78,  90,
+            61,  101, 88, 82,  60,  81,  83,  93,  35,  94,  121,
+        ])
     }
 }

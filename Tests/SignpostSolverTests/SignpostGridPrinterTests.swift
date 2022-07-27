@@ -45,8 +45,8 @@ class SignpostGridPrinterTests: XCTestCase {
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#3x3:1deecaaag9a
         let gen = SignpostGridGenerator(rows: 3, columns: 3)
         gen.loadFromGameID("1deecaaag9a")
-        gen.grid[column: 1, row: 0].connectionState = .connectedTo(column: 1, row: 2)
-        gen.grid[column: 0, row: 2].connectionState = .connectedTo(column: 0, row: 1)
+        gen.grid[column: 1, row: 0].connectionState = .connectedTo(Coordinates(column: 1, row: 2))
+        gen.grid[column: 0, row: 2].connectionState = .connectedTo(Coordinates(column: 0, row: 1))
         let sut = SignpostGridPrinter(bufferWidth: 20, bufferHeight: 11)
         sut.target = target
         sut.printGrid(grid: gen.grid)
@@ -75,8 +75,8 @@ class SignpostGridPrinterTests: XCTestCase {
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#3x3:1deecaaag9a
         let gen = SignpostGridGenerator(rows: 3, columns: 3)
         gen.loadFromGameID("1deecaaag9a")
-        gen.grid[column: 0, row: 0].connectionState = .connectedTo(column: 1, row: 1)
-        gen.grid[column: 1, row: 1].connectionState = .connectedTo(column: 1, row: 0)
+        gen.grid[column: 0, row: 0].connectionState = .connectedTo(Coordinates(column: 1, row: 1))
+        gen.grid[column: 1, row: 1].connectionState = .connectedTo(Coordinates(column: 1, row: 0))
         let sut = SignpostGridPrinter(bufferWidth: 20, bufferHeight: 11)
         sut.target = target
         sut.printGrid(grid: gen.grid)
@@ -105,8 +105,8 @@ class SignpostGridPrinterTests: XCTestCase {
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#3x3:1deecaaag9a
         let gen = SignpostGridGenerator(rows: 3, columns: 3)
         gen.loadFromGameID("1deecaaag9a")
-        gen.grid[column: 2, row: 0].connectionState = .connectedTo(column: 2, row: 2)
-        gen.grid[column: 2, row: 1].connectionState = .connectedTo(column: 2, row: 0)
+        gen.grid[column: 2, row: 0].connectionState = .connectedTo(Coordinates(column: 2, row: 2))
+        gen.grid[column: 2, row: 1].connectionState = .connectedTo(Coordinates(column: 2, row: 0))
         let sut = SignpostGridPrinter(bufferWidth: 20, bufferHeight: 11)
         sut.target = target
         sut.printGrid(grid: gen.grid)
