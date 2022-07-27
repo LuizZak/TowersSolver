@@ -114,8 +114,9 @@ public class SignpostGridPrinter: ConsolePrintBuffer {
 
         func prepare(with grid: Grid, graph: GridGraph) {
             let seq =
-                graph.subgraphs()
-                .sorted { $0.nodes[0] < $1.nodes[0] } // Stabilize output
+                graph
+                .subgraphs()
+                .sorted { $0.nodes.sorted()[0] < $1.nodes.sorted()[0] } // Stabilize output
                 .filter { $0.nodes.count > 1 }
                 .compactMap {
                     $0.topologicalSorted()?
@@ -129,12 +130,17 @@ public class SignpostGridPrinter: ConsolePrintBuffer {
                 }
             
             // Add a letter label for each sequence, starting from [a, b, c, ...]
+            var counter = 0
             subsequences =
                 seq
                 .enumerated()
                 .compactMap {
-                    guard let letter = UnicodeScalar(ascii(for: "a") + $0.offset) else {
+                    guard let letter = UnicodeScalar(ascii(for: "a") + counter) else {
                         return nil
+                    }
+
+                    if grid.effectiveNumberForTile($0.element[0].node.coordinates) == nil {
+                        counter += 1
                     }
 
                     return .init(label: letter.description, nodes: $0.element)
