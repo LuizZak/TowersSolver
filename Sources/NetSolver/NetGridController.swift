@@ -1,3 +1,5 @@
+import Geometry
+
 public class NetGridController {
     private(set) public var grid: Grid
 
@@ -27,7 +29,7 @@ public class NetGridController {
 
     /// Returns whether a tile at a given column/row can be rotated.
     public func canRotateTile(atColumn column: Int, row: Int) -> Bool {
-        return !grid[row: row, column: column].isLocked
+        return !grid[column: column, row: row].isLocked
     }
 
     /// Rotates a tile at a given column/row a given direction.
@@ -48,15 +50,15 @@ public class NetGridController {
         ignoreIfLocked: Bool = true
     ) {
 
-        if ignoreIfLocked && grid[row: row, column: column].isLocked {
+        if ignoreIfLocked && grid[column: column, row: row].isLocked {
             return
         }
 
         switch direction {
         case .counterClockwise:
-            grid[row: row, column: column].orientation.rotateLeft()
+            grid[column: column, row: row].orientation.rotateLeft()
         case .clockwise:
-            grid[row: row, column: column].orientation.rotateRight()
+            grid[column: column, row: row].orientation.rotateRight()
         }
     }
 
@@ -68,21 +70,21 @@ public class NetGridController {
         orientation: Tile.Orientation
     ) {
 
-        grid[row: row, column: column].orientation = orientation
+        grid[column: column, row: row].orientation = orientation
     }
 
     /// Returns the orientations for all tiles on a given row.
     ///
     /// - precondition: `row >= 0 && row < rows`
     public func tileOrientations(forRow row: Int) -> [Tile.Orientation] {
-        return grid[row: row].map(\.orientation)
+        return grid.tilesInRow(row).map(\.orientation)
     }
 
     /// Returns the kinds for all tiles on a given row.
     ///
     /// - precondition: `row >= 0 && row < rows`
     public func tileKinds(forRow row: Int) -> [Tile.Kind] {
-        return grid[row: row].map(\.kind)
+        return grid.tilesInRow(row).map(\.kind)
     }
 
     /// Shuffle the rotation of the tiles, optionally specifying whether to
@@ -112,11 +114,11 @@ public class NetGridController {
 
         for y in 0..<columns {
             for x in 0..<rows {
-                if grid[row: y, column: x].isLocked && !rotateLockedTiles {
+                if grid[column: x, row: y].isLocked && !rotateLockedTiles {
                     continue
                 }
 
-                grid[row: y, column: x].orientation =
+                grid[column: x, row: y].orientation =
                     orientations.randomElement(using: &rng) ?? .north
             }
         }
@@ -133,7 +135,7 @@ public class NetGridController {
                 // Tile, encoded as an integer
                 var tile: Int = 0
 
-                for port in grid[row: y, column: x].ports {
+                for port in grid[column: x, row: y].ports {
                     switch port {
                     case .top:
                         tile |= EncodedTileConstants.upBitcode
@@ -158,7 +160,7 @@ public class NetGridController {
         // connecting ports between them
         for row in 0..<rows {
             for column in 0..<columns {
-                let tile = grid[row: row, column: column]
+                let tile = grid[column: column, row: row]
                 guard tile.isLocked else {
                     continue
                 }
@@ -173,7 +175,7 @@ public class NetGridController {
                     // Detect neighbor tiles that are locked as well but the current
                     // tile has an edge pointing towards them while they do not
                     let neighbor = grid.columnRowByMoving(column: column, row: row, direction: port)
-                    let neighborTile = grid[row: neighbor.row, column: neighbor.column]
+                    let neighborTile = grid[column: neighbor.column, row: neighbor.row]
                     if neighborTile.isLocked && !neighborTile.ports.contains(port.opposite) {
                         return true
                     }
@@ -197,8 +199,8 @@ public class NetGridController {
     // followed by a check on its structure, taking into consideration the
     // performance penalty that that may incur.
     private func checkIsSolved() -> Bool {
-        var tilesToCheck: [(x: Int, y: Int, incomingPort: EdgePort?)] = [(0, 0, nil)]
-        var tilesChecked: [(x: Int, y: Int)] = []
+        var tilesToCheck: [(Coordinates, incomingPort: EdgePort?)] = [(.zero, nil)]
+        var tilesChecked: [Coordinates] = []
 
         // Checks a tile into the tilesToCheck array in case it has a given port
         // available. Returns `true` if the tile has been checked before, signaling
@@ -208,12 +210,12 @@ public class NetGridController {
                 return false
             }
 
-            guard !tilesChecked.contains(where: { $0 == (x, y) }) else {
+            guard !tilesChecked.contains(where: { $0 == Coordinates(column: x, row: y) }) else {
                 return true
             }
 
-            if grid[row: y, column: x].ports.contains(port) {
-                tilesToCheck.append((x, y, port))
+            if grid[column: x, row: y].ports.contains(port) {
+                tilesToCheck.append((Coordinates(column: x, row: y), port))
             }
 
             return false
@@ -221,18 +223,18 @@ public class NetGridController {
 
         while !tilesToCheck.isEmpty {
             let current = tilesToCheck.removeFirst()
-            tilesChecked.append((current.x, current.y))
+            tilesChecked.append(current.0)
 
-            let tile = grid[row: current.y, column: current.x]
+            let tile = grid[current.0]
 
-            let barriers = grid.barriersForTile(atColumn: current.x, row: current.y)
+            let barriers = grid.barriersForTile(atColumn: current.0.column, row: current.0.row)
 
             // Check in all four directions if a tile with a matching port
             // is connected with an available port on the tile
             for port in tile.ports where port != current.incomingPort && !barriers.contains(port) {
                 let next = grid.columnRowByMoving(
-                    column: current.x,
-                    row: current.y,
+                    column: current.0.column,
+                    row: current.0.row,
                     direction: port
                 )
 
@@ -245,7 +247,7 @@ public class NetGridController {
         // Check all tiles are represented in the tiles that where traversed.
         for y in 0..<rows {
             for x in 0..<columns {
-                if !tilesChecked.contains(where: { $0 == (x, y) }) {
+                if !tilesChecked.contains(where: { $0 == Coordinates(column: x, row: y) }) {
                     return false
                 }
             }

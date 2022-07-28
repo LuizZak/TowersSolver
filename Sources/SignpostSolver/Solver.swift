@@ -1,4 +1,5 @@
 import Commons
+import Geometry
 
 /// A solver for a Signpost game
 public class Solver {

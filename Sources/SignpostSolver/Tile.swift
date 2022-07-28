@@ -1,3 +1,5 @@
+import Geometry
+
 /// A Signpost tile
 public struct Tile: Equatable {
     /// Represents the orientation of the tile.

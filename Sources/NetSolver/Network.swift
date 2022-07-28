@@ -261,7 +261,7 @@ struct Network: Equatable {
                 continue
             }
 
-            let tile = grid[row: item.row, column: item.column]
+            let tile = grid[column: item.column, row: item.row]
             result.insert(Coordinate(column: item.column, row: item.row, ports: tile.ports))
         }
 
@@ -289,7 +289,7 @@ extension Network {
         var result = Network(tiles: [])
 
         for coord in coordinates {
-            let tile = grid[row: coord.row, column: coord.column]
+            let tile = grid[column: coord.column, row: coord.row]
 
             let netCoord = Coordinate(column: coord.column, row: coord.row, ports: tile.ports)
             result.tiles.insert(netCoord)
@@ -306,7 +306,7 @@ extension Network {
 
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
-                let tile = grid[row: row, column: column]
+                let tile = grid[column: column, row: row]
 
                 network.tiles.insert(Coordinate(column: column, row: row, ports: tile.ports))
             }
@@ -321,7 +321,7 @@ extension Network {
 
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
-                let tile = grid[row: row, column: column]
+                let tile = grid[column: column, row: row]
                 guard tile.isLocked else {
                     continue
                 }
@@ -348,7 +348,7 @@ extension Network {
                 continue
             }
 
-            let tile = grid[row: current.row, column: current.column]
+            let tile = grid[column: current.column, row: current.row]
             let barriers = grid.barriersForTile(atColumn: current.column, row: current.row)
 
             tiles.insert(Coordinate(column: current.column, row: current.row, ports: tile.ports))
@@ -359,7 +359,7 @@ extension Network {
                     row: current.row,
                     direction: port
                 )
-                let neighborPorts = grid[row: neighbor.row, column: neighbor.column]
+                let neighborPorts = grid[column: neighbor.column, row: neighbor.row]
 
                 if neighborPorts.ports.contains(port.opposite) {
                     queue.append(neighbor)

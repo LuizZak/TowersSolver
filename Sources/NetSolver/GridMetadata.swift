@@ -21,7 +21,7 @@ struct GridMetadata {
             var r: [TileMetadata] = []
 
             for column in 0..<columns {
-                r.append(TileMetadata(tile: grid[row: row, column: column]))
+                r.append(TileMetadata(tile: grid[column: column, row: row]))
             }
 
             metadata.append(r)

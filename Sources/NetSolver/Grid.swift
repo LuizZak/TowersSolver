@@ -1,6 +1,8 @@
+import Geometry
+
 /// A Net game grid
-public struct Grid: Equatable {
-    /// Matrix of tiles, stored as [rows][columns]
+public struct Grid: GridType, Equatable {
+    /// Matrix of tiles, stored as [columns][rows]
     internal(set) public var tiles: [[Tile]] = []
 
     /// Whether the grid wraps around so tiles can connect with tiles on the
@@ -17,23 +19,32 @@ public struct Grid: Equatable {
     /// The number of vertical rows on this grid
     public let columns: Int
 
-    // TODO: Consider reverting indices order so it reads column x row as the rest
-    // of the APIs
-    public subscript(row row: Int, column column: Int) -> Tile {
+    public subscript(coordinates: Coordinates) -> Tile {
         get {
-            return self[row: row][column]
+            return self[column: coordinates.column][coordinates.row]
         }
-        set {
-            self[row: row][column] = newValue
+        set(newValue) {
+            self[column: coordinates.column][coordinates.row] = newValue
         }
     }
 
-    public subscript(row row: Int) -> [Tile] {
+    public subscript(column column: Int, row row: Int) -> Tile {
         get {
-            return tiles[row]
+            assert(isWithinBounds(column: column, row: row), "isWithinBounds(column: \(column), row: \(row))")
+
+            return self[column: column][row]
         }
         set {
-            tiles[row] = newValue
+            self[column: column][row] = newValue
+        }
+    }
+
+    public subscript(column column: Int) -> [Tile] {
+        get {
+            return tiles[column]
+        }
+        set {
+            tiles[column] = newValue
         }
     }
 
@@ -62,10 +73,10 @@ public struct Grid: Equatable {
     private mutating func initGrid() {
         tiles.removeAll()
 
-        for _ in 0..<rows {
-            let row = Array(repeating: Tile(kind: .I, orientation: .north), count: columns)
+        for _ in 0..<columns {
+            let column = Array(repeating: Tile(kind: .I, orientation: .north), count: rows)
 
-            tiles.append(row)
+            tiles.append(column)
         }
     }
 
@@ -125,7 +136,7 @@ public struct Grid: Equatable {
         func fetch(_ edgePort: EdgePort) -> (Tile, EdgePort) {
             let (c, r) = columnRowByMoving(column: column, row: row, direction: edgePort)
 
-            return (self[row: r, column: c], edgePort)
+            return (self[column: c, row: r], edgePort)
         }
 
         return [
@@ -264,16 +275,5 @@ public struct Grid: Equatable {
         }
 
         return nil
-    }
-}
-
-// MARK: Network <-> Grid interaction helper functions
-extension Grid {
-    /// Returns the tile for a given network coordinate.
-    ///
-    /// - precondition: ``coordinate.column``/``coordinate.row`` are within bounds
-    /// of grid size
-    func tile(fromCoordinate coordinate: Network.Coordinate) -> Tile {
-        return self[row: coordinate.row, column: coordinate.column]
     }
 }

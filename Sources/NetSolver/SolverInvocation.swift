@@ -17,7 +17,7 @@ class SolverInvocation {
     func resetPossibleOrientationsSet() {
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
-                let tile = grid[row: row, column: column]
+                let tile = grid[column: column, row: row]
 
                 let orientationSet =
                     Set(Tile.Orientation.allCases)
@@ -61,8 +61,8 @@ class SolverInvocation {
     }
 
     func lockOrientation(column: Int, row: Int, orientation: Tile.Orientation) {
-        grid[row: row, column: column].isLocked = true
-        grid[row: row, column: column].orientation = orientation
+        grid[column: column, row: row].isLocked = true
+        grid[column: column, row: row].orientation = orientation
 
         propagateTileCheck(column: column, row: row)
     }
@@ -79,7 +79,7 @@ class SolverInvocation {
             // Figure out which orientations require the ports mentioned and
             // remove them from the allowed set
             let possible = metadata.possibleOrientations(column: column, row: row)
-            let available = grid[row: row, column: column].orientations(excludingPorts: ports)
+            let available = grid[column: column, row: row].orientations(excludingPorts: ports)
             guard !available.isDisjoint(with: possible) else {
                 break
             }
@@ -98,7 +98,7 @@ class SolverInvocation {
                 break
             }
 
-            let tile = grid[row: row, column: column]
+            let tile = grid[column: column, row: row]
             let remaining =
                 possible
                 .subtracting(orientations)
@@ -191,7 +191,7 @@ class SolverInvocation {
     }
 
     private func enqueueGeneralTileCheck(column: Int, row: Int) {
-        guard !grid[row: row, column: column].isLocked else {
+        guard !grid[column: column, row: row].isLocked else {
             return
         }
         guard !hasEnqueuedGeneralTileCheck(column: column, row: row) else {
@@ -206,7 +206,7 @@ class SolverInvocation {
 
         for row in 0..<grid.rows {
             for column in 0..<grid.columns {
-                let tile = grid[row: row, column: column]
+                let tile = grid[column: column, row: row]
                 guard !tile.isLocked else { continue }
 
                 // Find orientations that match required and available ports
@@ -285,7 +285,7 @@ extension SolverInvocation: NetSolverDelegate {
             let backEdgePort = edgePort.opposite
 
             // Check locked tiles that face towards from the tile
-            let neighbor = grid[row: neighborCoordinates.row, column: neighborCoordinates.column]
+            let neighbor = grid[column: neighborCoordinates.column, row: neighborCoordinates.row]
             if neighbor.isLocked && neighbor.ports.contains(backEdgePort) {
                 return true
             }
@@ -331,7 +331,7 @@ extension SolverInvocation: NetSolverDelegate {
             let backEdgePort = edgePort.opposite
 
             // Check locked tiles that face away from the tile
-            let neighbor = grid[row: neighborCoordinates.row, column: neighborCoordinates.column]
+            let neighbor = grid[column: neighborCoordinates.column, row: neighborCoordinates.row]
             if neighbor.isLocked && !neighbor.ports.contains(backEdgePort) {
                 return true
             }
@@ -354,7 +354,7 @@ extension SolverInvocation: NetSolverDelegate {
     }
 
     func guaranteedOutgoingAvailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort> {
-        let tile = grid[row: row, column: column]
+        let tile = grid[column: column, row: row]
         if tile.isLocked {
             return tile.ports
         }
@@ -365,7 +365,7 @@ extension SolverInvocation: NetSolverDelegate {
 
     func guaranteedOutgoingUnavailablePortsForTile(atColumn column: Int, row: Int) -> Set<EdgePort>
     {
-        let tile = grid[row: row, column: column]
+        let tile = grid[column: column, row: row]
         if tile.isLocked {
             return tile.ports.symmetricDifference(EdgePort.allCases)
         }

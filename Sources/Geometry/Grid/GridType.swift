@@ -4,7 +4,7 @@ public protocol GridType {
     associatedtype TileType
 
     /// The type for representing coordinates within this grid.
-    associatedtype CoordinateType
+    associatedtype CoordinateType = Coordinates
 
     /// Returns the number of tiles on this grid
     var tileCount: Int { get }
@@ -35,6 +35,9 @@ public protocol GridType {
     /// Gets or sets a list of tiles within a given column within this grid.
     subscript(column column: Int) -> [TileType] { get set }
 
+    /// Returns all the tiles contained within a given row within this grid.
+    func tilesInRow(_ row: Int) -> [TileType]
+
     /// Returns `true` if the given column/row combination represents a valid
     /// tile in this grid.
     func isWithinBounds(column: Int, row: Int) -> Bool
@@ -53,7 +56,43 @@ public extension GridType {
         rows * columns
     }
 
+    var tilesSequential: [TileType] {
+        (0..<tileCount).map { self[sequential: $0] }
+    }
+
+    var tileCoordinates: [CoordinateType] {
+        (0..<tileCount).map(indexToColumnRow(_:))
+    }
+
+    subscript(sequential index: Int) -> TileType {
+        get {
+            let coords = indexToColumnRow(index)
+            return self[coords]
+        }
+        set {
+            let coords = indexToColumnRow(index)
+            self[coords] = newValue
+        }
+    }
+
+    func tilesInRow(_ row: Int) -> [TileType] {
+        (0..<columns).map { self[column: $0, row: row] }
+    }
+
     func isWithinBounds(column: Int, row: Int) -> Bool {
         return column >= 0 && row >= 0 && column < columns && row < rows
+    }
+}
+
+public extension GridType where CoordinateType == Coordinates {
+    func indexToColumnRow(_ index: Int) -> Coordinates {
+        let column = index % columns
+        let row = index / columns
+
+        return Coordinates(column: column, row: row)
+    }
+
+    func coordinatesToIndex(_ coordinates: Coordinates) -> Int {
+        coordinates.row * columns + coordinates.column
     }
 }

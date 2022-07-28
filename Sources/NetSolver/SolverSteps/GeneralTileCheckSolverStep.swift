@@ -11,7 +11,7 @@ struct GeneralTileCheckSolverStep: NetSolverStep {
     var row: Int
 
     func apply(on grid: Grid, delegate: NetSolverDelegate) -> [GridAction] {
-        let tile = grid[row: row, column: column]
+        let tile = grid[column: column, row: row]
         guard !tile.isLocked else {
             return []
         }

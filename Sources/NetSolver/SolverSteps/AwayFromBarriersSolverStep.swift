@@ -5,7 +5,7 @@ struct AwayFromBarriersSolverStep: NetSolverStep, Equatable {
     var row: Int
 
     func apply(on grid: Grid, delegate: NetSolverDelegate) -> [GridAction] {
-        let tile = grid[row: row, column: column]
+        let tile = grid[column: column, row: row]
         if tile.isLocked {
             return []
         }

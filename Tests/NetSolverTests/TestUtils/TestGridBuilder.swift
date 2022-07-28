@@ -19,8 +19,8 @@ class TestGridBuilder {
     func setAllTiles(kind: Tile.Kind, orientation: Tile.Orientation) -> TestGridBuilder {
         for row in 0..<generator.rows {
             for column in 0..<generator.columns {
-                generator.grid[row: row, column: column].kind = kind
-                generator.grid[row: row, column: column].orientation = orientation
+                generator.grid[column: column, row: row].kind = kind
+                generator.grid[column: column, row: row].orientation = orientation
             }
         }
 
@@ -41,7 +41,7 @@ class TestGridBuilder {
     }
 
     func setTileKind(_ column: Int, _ row: Int, kind: Tile.Kind) -> TestGridBuilder {
-        generator.grid[row: row, column: column].kind = kind
+        generator.grid[column: column, row: row].kind = kind
 
         return self
     }
@@ -49,13 +49,13 @@ class TestGridBuilder {
     func setTileOrientation(_ column: Int, _ row: Int, orientation: Tile.Orientation)
         -> TestGridBuilder
     {
-        generator.grid[row: row, column: column].orientation = orientation
+        generator.grid[column: column, row: row].orientation = orientation
 
         return self
     }
 
     func setTileLocked(_ column: Int, _ row: Int, _ locked: Bool) -> TestGridBuilder {
-        generator.grid[row: row, column: column].isLocked = locked
+        generator.grid[column: column, row: row].isLocked = locked
 
         return self
     }
@@ -63,7 +63,7 @@ class TestGridBuilder {
     func setAllTilesLocked(_ locked: Bool) -> TestGridBuilder {
         for row in 0..<generator.rows {
             for column in 0..<generator.columns {
-                generator.grid[row: row, column: column].isLocked = locked
+                generator.grid[column: column, row: row].isLocked = locked
             }
         }
 

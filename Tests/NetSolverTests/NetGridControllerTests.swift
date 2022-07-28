@@ -6,9 +6,9 @@ class NetGridControllerTests: XCTestCase {
     func testOrientationsForRow() {
         var grid = Grid(rows: 1, columns: 4)
         grid.tiles[0][0].orientation = .north
-        grid.tiles[0][1].orientation = .east
-        grid.tiles[0][2].orientation = .south
-        grid.tiles[0][3].orientation = .west
+        grid.tiles[1][0].orientation = .east
+        grid.tiles[2][0].orientation = .south
+        grid.tiles[3][0].orientation = .west
         let sut = NetGridController(grid: grid)
 
         XCTAssertEqual(sut.tileOrientations(forRow: 0), [.north, .east, .south, .west])
@@ -65,7 +65,7 @@ class NetGridControllerTests: XCTestCase {
 
     func testCanRotateTile_isLockedTile() {
         var grid = Grid(rows: 1, columns: 1)
-        grid[row: 0, column: 0].isLocked = true
+        grid[column: 0, row: 0].isLocked = true
         let sut = NetGridController(grid: grid)
 
         XCTAssertFalse(sut.canRotateTile(atColumn: 0, row: 0))
@@ -77,7 +77,7 @@ class NetGridControllerTests: XCTestCase {
 
         sut.rotateTile(atColumn: 0, row: 0, direction: .clockwise)
 
-        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .east)
+        XCTAssertEqual(sut.grid[column: 0, row: 0].orientation, .east)
     }
 
     func testRotateTile_counterClockwise() {
@@ -86,27 +86,27 @@ class NetGridControllerTests: XCTestCase {
 
         sut.rotateTile(atColumn: 0, row: 0, direction: .counterClockwise)
 
-        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .west)
+        XCTAssertEqual(sut.grid[column: 0, row: 0].orientation, .west)
     }
 
     func testRotateTile_ignoreLockedTile_true() {
         var grid = Grid(rows: 1, columns: 1)
-        grid[row: 0, column: 0].isLocked = true
+        grid[column: 0, row: 0].isLocked = true
         let sut = NetGridController(grid: grid)
 
         sut.rotateTile(atColumn: 0, row: 0, direction: .clockwise, ignoreIfLocked: true)
 
-        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .north)
+        XCTAssertEqual(sut.grid[column: 0, row: 0].orientation, .north)
     }
 
     func testRotateTile_ignoreLockedTile_false() {
         var grid = Grid(rows: 1, columns: 1)
-        grid[row: 0, column: 0].isLocked = true
+        grid[column: 0, row: 0].isLocked = true
         let sut = NetGridController(grid: grid)
 
         sut.rotateTile(atColumn: 0, row: 0, direction: .clockwise, ignoreIfLocked: false)
 
-        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .east)
+        XCTAssertEqual(sut.grid[column: 0, row: 0].orientation, .east)
     }
 
     func testSetTileOrientation() {
@@ -115,7 +115,7 @@ class NetGridControllerTests: XCTestCase {
 
         sut.setTileOrientation(atColumn: 0, row: 0, orientation: .south)
 
-        XCTAssertEqual(sut.grid[row: 0, column: 0].orientation, .south)
+        XCTAssertEqual(sut.grid[column: 0, row: 0].orientation, .south)
     }
 
     func testGameId() {

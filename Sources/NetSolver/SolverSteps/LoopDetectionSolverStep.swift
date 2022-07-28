@@ -37,7 +37,7 @@ struct LoopDetectionSolverStep: NetSolverStep {
                     direction: $0
                 )
 
-                let tile = grid[row: coordinate.row, column: coordinate.row]
+                let tile = grid[column: coordinate.column, row: coordinate.row]
 
                 return OpenPortTile(
                     column: coordinate.column,
@@ -83,8 +83,8 @@ struct LoopDetectionSolverStep: NetSolverStep {
         delegate: NetSolverDelegate
     ) -> [GridAction] {
 
-        let gridTile1 = grid.tile(fromCoordinate: tile1.coordinate)
-        let gridTile2 = grid.tile(fromCoordinate: tile2.coordinate)
+        let gridTile1 = grid[tile1.gridCoordinates]
+        let gridTile2 = grid[tile2.gridCoordinates]
 
         // Loop detection can only occur between T or L tiles
         guard gridTile1.kind == .T || gridTile1.kind == .L else {
@@ -138,6 +138,9 @@ struct LoopDetectionSolverStep: NetSolverStep {
         }
         var row: Int {
             return coordinate.row
+        }
+        var gridCoordinates: Grid.CoordinateType {
+            .init(column: column, row: row)
         }
         var ports: Set<EdgePort> {
             return coordinate.ports

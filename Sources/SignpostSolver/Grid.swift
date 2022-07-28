@@ -15,17 +15,6 @@ public struct Grid: GridType {
     /// The number of vertical rows on this grid
     public let columns: Int
 
-    /// Returns a list of the tiles from this grid laid out sequentially, where
-    /// each tile maps as column + row * (columns)
-    public var tilesSequential: [Tile] {
-        (0..<tileCount).map { self[sequential: $0] }
-    }
-
-    /// Returns a list of coordinates for each tile in `self.tiles`.
-    public var tileCoordinates: [Coordinates] {
-        (0..<tileCount).map(indexToColumnRow(_:))
-    }
-
     /// Returns a list of numbers, one per tile in the order of `self.tileCoordinates`,
     /// with each entry representing the computed number of the tile based either
     /// on its hint or its connection to another hinted tile.
@@ -254,17 +243,6 @@ public struct Grid: GridType {
         }
 
         return result
-    }
-
-    public func indexToColumnRow(_ index: Int) -> Coordinates {
-        let column = index % columns
-        let row = index / columns
-
-        return Coordinates(column: column, row: row)
-    }
-
-    public func coordinatesToIndex(_ coordinates: Coordinates) -> Int {
-        coordinates.row * columns + coordinates.column
     }
 
     /// Returns the coordinates of the tile that a tile at the given coordinates

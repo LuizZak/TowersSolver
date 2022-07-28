@@ -79,7 +79,7 @@ public final class Solver {
                 }
 
                 // Enqueue end-point checks
-                if grid[row: row, column: column].kind == .endPoint {
+                if grid[column: column, row: row].kind == .endPoint {
                     delegate.enqueue(EndPointNeighborsSolverStep(column: column, row: row))
                 }
             }

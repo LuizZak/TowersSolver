@@ -37,7 +37,7 @@ public class NetGridPrinter: ConsolePrintBuffer {
                 let isActive = centerNetwork.hasTile(forColumn: x, row: y)
 
                 printTile(
-                    grid[row: y, column: x],
+                    grid[column: x, row: y],
                     x: x * cellWidth,
                     y: y * cellHeight,
                     width: cellWidth,
