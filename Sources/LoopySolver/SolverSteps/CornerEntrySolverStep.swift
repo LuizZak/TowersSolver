@@ -5,7 +5,7 @@
 /// Ex: On the following grid, the top-right marked edge has to pass through the
 /// 1-hinted face to be able to continue. Since we know that it will have to cross
 /// the edges of the face, we know the left edge of the cell cannot be marked
-/// (since it would exceed the requiremet for the cell), and the right and bottom
+/// (since it would exceed the requirement for the cell), and the right and bottom
 /// edges of the face also cannot be marked, since it would require marking the
 /// two edges to make the corner, which would exceed the requirement, as well.
 ///
@@ -26,7 +26,7 @@
 /// (denoted by '\\') may either take a path going right (1), or going down to
 /// the left around the 4-cell (2), but if it takes the down-left path it will
 /// result in not enough enabled edges being available to complete the clue, thus
-/// resulting in the aformentioned down-left path to be an invalid play, and thus
+/// resulting in the aforementioned down-left path to be an invalid play, and thus
 /// discarded:
 ///
 /// ══•                               ══•
@@ -211,7 +211,7 @@ private class InternalSolver {
             - grid.edgeCount(withState: .disabled, onFace: faceId)
 
         // Look for edges perpendicular (i.e., sharing only one vertex with the
-        // face) and analyze the neighoring edges (which are connected to the face)
+        // face) and analyze the neighboring edges (which are connected to the face)
         for vertex in vertices {
             let edgesOnVertex = grid.edgesSharing(vertexIndex: vertex)
             guard

@@ -195,7 +195,7 @@ public class NetGridController {
 
     // TODO: Consider replacing implementation with simple a Network creation
     // followed by a check on its structure, taking into consideration the
-    // performance penalty that that may encur.
+    // performance penalty that that may incur.
     private func checkIsSolved() -> Bool {
         var tilesToCheck: [(x: Int, y: Int, incomingPort: EdgePort?)] = [(0, 0, nil)]
         var tilesChecked: [(x: Int, y: Int)] = []

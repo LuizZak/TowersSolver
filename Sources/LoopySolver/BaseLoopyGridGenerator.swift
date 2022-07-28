@@ -45,6 +45,6 @@ public class BaseLoopyGridGenerator: LoopyGridGenerator {
     }
 
     public func generate() -> LoopyGrid {
-        fatalError("Must be overriden by subclasses")
+        fatalError("Must be overridden by subclasses")
     }
 }

@@ -5,7 +5,7 @@ public protocol EdgeProtocol {
     var end: Int { get }
 }
 
-/// Describes an abstract Graph type
+/// Describes an abstract Graph type with vertices, edges, and faces.
 public protocol Graph {
     associatedtype VertexType: VectorType
     associatedtype EdgeType: EdgeProtocol
@@ -60,7 +60,7 @@ public protocol Graph {
     /// a vertex in such a way that the connected vertex has only two edges connected.
     ///
     /// This essentially returns a single unambiguous path from the starting
-    /// edge until it reaches a vertex that has more than a single ovious path
+    /// edge until it reaches a vertex that has more than a single obvious path
     /// to go through.
     ///
     /// - Parameters:
@@ -218,8 +218,7 @@ extension Graph {
                     seq.append(next)
                     rem.remove(at: i)
                     break
-                }
-                else if i == rem.count - 1 {
+                } else if i == rem.count - 1 {
                     return false
                 }
             }

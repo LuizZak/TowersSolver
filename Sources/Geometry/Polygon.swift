@@ -58,7 +58,7 @@ extension Polygon where T: FloatingPoint {
 
         // If the line lies to the left of the body, apply the test going from
         // the point to the left this way we may end up reducing the total
-        // ammount of edges to test against.
+        // amount of edges to test against.
         // This basic assumption may not hold for every body, but for most
         // bodies (specially round), this may hold true most of the time.
         for v2 in vertices {

@@ -272,7 +272,7 @@ extension SolverInvocation: NetSolverDelegate {
         var ports: Set<EdgePort> = []
 
         // Check surrounding tiles for guaranteed available ports and tiles that
-        // are locked while facing torwards the requested tile
+        // are locked while facing towards the requested tile
         let surrounding = EdgePort.allCases.filter { edgePort in
             let neighborCoordinates = grid.columnRowByMoving(
                 column: column,
@@ -284,7 +284,7 @@ extension SolverInvocation: NetSolverDelegate {
             // tile
             let backEdgePort = edgePort.opposite
 
-            // Check locked tiles that face torwards from the tile
+            // Check locked tiles that face towards from the tile
             let neighbor = grid[row: neighborCoordinates.row, column: neighborCoordinates.column]
             if neighbor.isLocked && neighbor.ports.contains(backEdgePort) {
                 return true
@@ -317,7 +317,7 @@ extension SolverInvocation: NetSolverDelegate {
         // Start with barriers
         var unavailable = grid.barriersForTile(atColumn: column, row: row)
 
-        // Check surrounding tiles for guaranteed unavailabilities and tiles that
+        // Check surrounding tiles for guaranteed unavailability and tiles that
         // are locked while facing away the requested tile
         let surrounding = EdgePort.allCases.filter { edgePort in
             let neighborCoordinates = grid.columnRowByMoving(

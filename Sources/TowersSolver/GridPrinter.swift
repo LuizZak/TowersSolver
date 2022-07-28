@@ -65,9 +65,9 @@ extension GridPrinter {
                     // Draw a small visual representation of the (relative) height
                     var offset = Int((Float(value) / Float(grid.size)) * Float(heights.count) - 1)
                     offset = max(0, min(heights.count - 1, offset))
-                    let hglyph = heights[offset]
+                    let hGlyph = heights[offset]
 
-                    fillRect(char: hglyph, x: x + 1, y: y + h - 1, w: w - 1, h: 1)
+                    fillRect(char: hGlyph, x: x + 1, y: y + h - 1, w: w - 1, h: 1)
 
                     putString(value.description, x: x + w / 2, y: y + h / 2)
                 }

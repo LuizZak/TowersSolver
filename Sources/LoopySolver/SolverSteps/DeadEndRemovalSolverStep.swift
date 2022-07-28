@@ -1,4 +1,4 @@
-/// Detects and removes deadends of edges that connect to vertices that don't have
+/// Detects and removes dead-ends of edges that connect to vertices that don't have
 /// another valid edge to connect to.
 ///
 /// For example, on the following grid, the top-left edge was marked as disabled

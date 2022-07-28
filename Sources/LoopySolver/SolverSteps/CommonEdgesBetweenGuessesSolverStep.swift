@@ -70,7 +70,7 @@ private class InternalSolver {
         var results: [LoopyGrid] = []
         var badEdges: [Edge.Id] = []
 
-        // Create sub-solvers with no guessings enabled to test the side effects
+        // Create sub-solvers with no guesses enabled to test the side effects
         for edge in candidate.edges where delegate.canSolverStepPerformGuessAttempt(solverStep) {
             var testGrid = grid
             testGrid.withEdge(edge) {

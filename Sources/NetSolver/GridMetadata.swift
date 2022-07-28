@@ -11,10 +11,10 @@ struct GridMetadata {
         columns = grid.columns
         metadata = []
 
-        initMedatada(grid: grid)
+        initMetadata(grid: grid)
     }
 
-    private mutating func initMedatada(grid: Grid) {
+    private mutating func initMetadata(grid: Grid) {
         metadata.removeAll()
 
         for row in 0..<rows {

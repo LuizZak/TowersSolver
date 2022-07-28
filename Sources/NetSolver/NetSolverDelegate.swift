@@ -1,5 +1,5 @@
 /// Delegate for a solver which can be used to query information about a grid and
-/// enqueuesolver steps.
+/// enqueue solver steps.
 protocol NetSolverDelegate {
     /// The metadata for the current solver grid.
     var metadata: GridMetadata { get }

@@ -47,7 +47,7 @@ struct LoopDetectionSolverStep: NetSolverStep {
                 )
             }
         }.sorted(by: {
-            // Sort by column/row to improve deterministics for testing
+            // Sort by column/row to make results deterministic for testing
             Network.Coordinate.isEarlierInTopBottomLeftRightSweep($0.coordinate, $1.coordinate)
         })
 

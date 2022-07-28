@@ -1,7 +1,7 @@
 /// Solver for a Loopy match
 public final class Solver {
     /// Shared metadata for step types
-    private var metadatas: [String: SolverStepMetadata] = [:]
+    private var metadataList: [String: SolverStepMetadata] = [:]
 
     /// Set to `true` when a solver step reports an invalid state before it can
     /// be detected by the solver via `isConsistent`.
@@ -94,13 +94,13 @@ public final class Solver {
 
     func mergeSolver(_ solver: Solver) {
         grid = solver.grid
-        metadatas = solver.metadatas
+        metadataList = solver.metadataList
     }
 
     private func makeSubsolver(grid: LoopyGrid) -> Solver {
         let solver = Solver(grid: grid)
         if self.grid == grid {
-            solver.metadatas = metadatas
+            solver.metadataList = metadataList
         }
         solver.maxNumberOfGuesses = guessesAvailable
         solver.isChildSolver = true
@@ -382,13 +382,13 @@ extension Solver: SolverStepDelegate {
     {
         let key = T.metadataKey
 
-        if let meta = metadatas[key] {
+        if let meta = metadataList[key] {
             return meta
         }
 
         let metadata = SolverStepMetadata()
 
-        metadatas[key] = metadata
+        metadataList[key] = metadata
 
         return metadata
     }

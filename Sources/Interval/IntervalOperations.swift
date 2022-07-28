@@ -1,7 +1,7 @@
 extension IntervalProtocol {
     /// Returns true if `self` overlaps `Interval`.
     ///
-    /// Unlike intersection, overlap only accounts for overlappings that result
+    /// Unlike intersection, overlap only accounts for overlaps that result
     /// in a > 0 resulting overlap interval
     public func overlaps<I: IntervalProtocol>(_ other: I) -> Bool where I.Bounds == Bounds {
         return start < other.end && other.start < end
@@ -46,7 +46,7 @@ extension Sequence where Element: ConstructibleIntervalProtocol {
     /// Returns a new array of intervals such that it covers the same interval
     /// ranges with the minimal number of intervals possible.
     ///
-    /// Effectively simplifies long interwinded interval lists with many overlapping
+    /// Effectively simplifies long interwind interval lists with many overlapping
     /// intervals into single, longer segments that cover the same interval ranges.
     public func compactIntervals() -> [Element] {
         // Sort intervals first

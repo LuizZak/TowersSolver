@@ -271,7 +271,7 @@ open class ConsolePrintBuffer {
         #endif
     }
 
-    /// Any print call made to this print grider while inside this block will
+    /// Any print call made to this console printer while inside this block will
     /// only modify the diff stored, and not print its contents to stdout.
     public func storingDiff(do block: () -> Void) {
         _storingDiff = true

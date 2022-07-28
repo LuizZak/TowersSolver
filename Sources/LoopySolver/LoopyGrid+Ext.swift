@@ -5,7 +5,7 @@ extension LoopyGrid {
     /// a vertex in such a way that the connected vertex has only two edges connected.
     ///
     /// This essentially returns a single unambiguous path from the starting
-    /// edge until it reaches a vertex that has more than a single ovious path
+    /// edge until it reaches a vertex that has more than a single obvious path
     /// to go through.
     ///
     /// - Parameters:

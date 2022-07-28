@@ -58,7 +58,7 @@ public struct Edge: Equatable, EdgeProtocol {
     }
 
     /// Returns `true` if this edge has the same vertex start/end values as a given
-    /// edge, without taking into acount the directionality of the start/end
+    /// edge, without taking into account the directionality of the start/end
     /// values.
     @inlinable
     public func matchesEdgeVertices(_ edge: Edge) -> Bool {

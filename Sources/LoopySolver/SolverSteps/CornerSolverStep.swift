@@ -110,7 +110,7 @@ private class InternalSolver {
         }
 
         // 2.
-        // If the number of edges that are shared ammount to less than the required
+        // If the number of edges that are shared amount to less than the required
         // edges for the solution, this means that all outer edges are part of the
         // solution, since at least one of the outer edges will have to be marked
         // to be part of the solution, and if a single outer edge is marked, all

@@ -34,7 +34,7 @@ public protocol SolverStepDelegate {
     /// Called to notify that a solver step performed a guessing attempt.
     func solverStepDidPerformGuess(_ step: SolverStep)
 
-    /// Called by a solver stpe to query whether any attempts at guessing can be
+    /// Called by a solver type to query whether any attempts at guessing can be
     /// performed.
     func canSolverStepPerformGuessAttempt(_ step: SolverStep) -> Bool
 

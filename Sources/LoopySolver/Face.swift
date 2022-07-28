@@ -13,7 +13,7 @@ public protocol FaceReferenceConvertible {
 /// A vertex may be shared by one or more faces, and an edge may be shared between
 /// one or two faces.
 ///
-/// Vertice of faces are always concave and never intersect, neither with other
+/// Vertices of faces are always concave and never intersect, neither with other
 /// faces nor with themselves.
 public struct Face: Equatable {
     public typealias Id = Key<Face, Int>
