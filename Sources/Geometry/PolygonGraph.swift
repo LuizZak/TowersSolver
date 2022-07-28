@@ -6,7 +6,7 @@ public protocol EdgeProtocol {
 }
 
 /// Describes an abstract Graph type with vertices, edges, and faces.
-public protocol Graph {
+public protocol PolygonGraph {
     associatedtype VertexType: VectorType
     associatedtype EdgeType: EdgeProtocol
 
@@ -97,7 +97,7 @@ public protocol Graph {
 }
 
 // MARK: - Default Implementations
-extension Graph {
+extension PolygonGraph {
     @inlinable
     public func vertexIndex(_ vertex: Vertex) -> Int? {
         return vertices.firstIndex(of: vertex)
@@ -111,7 +111,7 @@ extension Graph {
     }
 }
 
-extension Graph {
+extension PolygonGraph {
     @inlinable
     public func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>] {
         let edges = self.edges(forFace: face)

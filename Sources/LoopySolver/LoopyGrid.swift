@@ -170,7 +170,7 @@ final class BackingLoopyGrid: Equatable {
 /// A grid for a loopy game.
 /// Consists of a collection of vertices laid on a grid, connected with edges
 /// forming faces.
-public struct LoopyGrid: Equatable, Graph {
+public struct LoopyGrid: Equatable, PolygonGraph {
     @usableFromInline
     internal var _backing = BackingLoopyGrid()
 
