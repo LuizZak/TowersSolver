@@ -1,17 +1,14 @@
+import Geometry
+
 private let dxs: [Int] = [  0,  1, 1, 1, 0, -1, -1, -1 ]
 private let dys: [Int] = [ -1, -1, 0, 1, 1,  1,  0, -1 ]
 
 /// A Signpost game grid
-public struct Grid {
+public struct Grid: GridType {
     private var _cache: InternalCache
 
     /// Matrix of tiles, stored as [columns][rows]
     private(set) public var tiles: [[Tile]] = []
-
-    /// Returns the number of tiles on this grid
-    public var tileCount: Int {
-        return rows * columns
-    }
 
     /// The number of horizontal rows on this grid
     public let rows: Int
@@ -26,7 +23,7 @@ public struct Grid {
 
     /// Returns a list of coordinates for each tile in `self.tiles`.
     public var tileCoordinates: [Coordinates] {
-        (0..<tileCount).map(_indexToColumnRow(_:))
+        (0..<tileCount).map(indexToColumnRow(_:))
     }
 
     /// Returns a list of numbers, one per tile in the order of `self.tileCoordinates`,
@@ -42,7 +39,7 @@ public struct Grid {
     /// column + row * (columns)
     public subscript(sequential index: Int) -> Tile {
         get {
-            let coords = _indexToColumnRow(index)
+            let coords = indexToColumnRow(index)
 
             return self[coords]
         }
@@ -50,7 +47,7 @@ public struct Grid {
             ensureUnique()
             _cache.invalidate()
             
-            let coords = _indexToColumnRow(index)
+            let coords = indexToColumnRow(index)
 
             self[coords] = newValue
         }
@@ -228,12 +225,6 @@ public struct Grid {
         return cacheAndReturn(nil)
     }
 
-    /// Returns `true` if the given column/row combination represents a valid
-    /// tile in this grid.
-    public func isWithinBounds(column: Int, row: Int) -> Bool {
-        return column >= 0 && row >= 0 && column < columns && row < rows
-    }
-
     /// Returns a list of all tiles that a tile at a given column/row is pointing
     /// towards.
     public func tileCoordsPointedBy(column: Int, row: Int) -> [Coordinates] {
@@ -263,6 +254,17 @@ public struct Grid {
         }
 
         return result
+    }
+
+    public func indexToColumnRow(_ index: Int) -> Coordinates {
+        let column = index % columns
+        let row = index / columns
+
+        return Coordinates(column: column, row: row)
+    }
+
+    public func coordinatesToIndex(_ coordinates: Coordinates) -> Int {
+        coordinates.row * columns + coordinates.column
     }
 
     /// Returns the coordinates of the tile that a tile at the given coordinates
@@ -330,13 +332,6 @@ public struct Grid {
         assert(newCoord != Coordinates(column: column, row: row), "newCoord != Coordinates(column: column, row: row)")
 
         return newCoord
-    }
-
-    private func _indexToColumnRow(_ index: Int) -> Coordinates {
-        let column = index % columns
-        let row = index / columns
-
-        return Coordinates(column: column, row: row)
     }
 
     private class InternalCache {
