@@ -111,19 +111,20 @@ public final class Solver {
     private func addSteps() {
         steps.append(ZeroSolverStep())
         steps.append(DeadEndRemovalSolverStep())
-        steps.append(CornerSolverStep())
-        steps.append(ExactEdgeCountSolverStep())
         steps.append(TwoEdgesPerVertexSolverStep())
+        steps.append(ExactEdgeCountSolverStep())
         steps.append(SolePathEdgeExtenderSolverStep())
+        steps.append(CornerSolverStep())
         steps.append(CornerEntrySolverStep())
         steps.append(SinglePathSolverStep())
         steps.append(NeighboringSemiCompleteFacesSolverStep())
         steps.append(NeighboringShortFacesSolverStep())
         steps.append(InvalidLoopClosingDetectionSolverStep())
         steps.append(BifurcationSolverStep())
+        steps.append(PermutationSolverStep())
+        steps.append(VertexPropagationSolverStep())
 
         postSolveAttemptSteps.append(InsideOutsideSolverStep())
-        postSolveAttemptSteps.append(PermutationSolverStep())
         postSolveAttemptSteps.append(CommonEdgesBetweenGuessesSolverStep())
     }
 
@@ -206,7 +207,7 @@ public final class Solver {
             }
         }
 
-        return applySteps(steps, to: grid)
+        return applySteps(steps, to: grid, quitOnChange: true)
     }
 
     private func applyPostSolveAttemptSteps(to grid: LoopyGrid) -> LoopyGrid {
@@ -218,13 +219,19 @@ public final class Solver {
             }
         }
 
-        return applySteps(postSolveAttemptSteps, to: grid)
+        return applySteps(postSolveAttemptSteps, to: grid, quitOnChange: true)
     }
 
-    private func applySteps(_ steps: [SolverStep], to grid: LoopyGrid) -> LoopyGrid {
+    private func applySteps(_ steps: [SolverStep], to grid: LoopyGrid, quitOnChange: Bool) -> LoopyGrid {
         var grid = grid
         for step in steps where !_diagnosedInconsistentState {
-            grid = step.apply(to: grid, self)
+            let newGrid = step.apply(to: grid, self)
+
+            if quitOnChange && newGrid != grid {
+                return newGrid
+            }
+
+            grid = newGrid
         }
         return grid
     }

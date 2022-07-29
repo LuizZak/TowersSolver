@@ -27,8 +27,6 @@
 /// So both changes would be made accordingly.
 ///
 public class CommonEdgesBetweenGuessesSolverStep: SolverStep {
-    public static let metadataKey: String = "\(CommonEdgesBetweenGuessesSolverStep.self)"
-
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid, solverStep: self, delegate: delegate)
         solver.apply()

@@ -40,8 +40,6 @@
 /// ──•       •──                     ──•       •──
 ///
 public class CornerEntrySolverStep: SolverStep {
-    public static let metadataKey: String = "\(CornerEntrySolverStep.self)"
-
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))
 

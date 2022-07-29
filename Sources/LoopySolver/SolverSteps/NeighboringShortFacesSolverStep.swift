@@ -14,8 +14,6 @@
 /// since it would require detouring around one of the two `1` faces to continue,
 /// resulting in a guaranteed larger-than-one marked edges count for either face.
 public class NeighboringShortFacesSolverStep: SolverStep {
-    public static let metadataKey: String = "\(NeighboringShortFacesSolverStep.self)"
-
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))
 

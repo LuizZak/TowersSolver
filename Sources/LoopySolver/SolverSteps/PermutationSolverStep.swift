@@ -5,6 +5,8 @@ import Commons
 /// finds required/invalid edges by comparing the permutations.
 public class PermutationSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
+        let metadata = delegate.metadataForSolverStepClass(Self.self)
+
         var grid = grid
 
         @ConcurrentValue
@@ -16,6 +18,16 @@ public class PermutationSolverStep: SolverStep {
         let queue = OperationQueue()
 
         for faceId in grid.faceIds {
+            if grid.hintForFace(faceId) != nil && grid.isFaceSolved(faceId) {
+                continue
+            }
+            
+            // Skip face vertices that didn't change state
+            let vertices = grid.vertices(forFace: faceId)
+            if vertices.allSatisfy({ metadata.matchesStoredVertexState($0, from: grid) }) {
+                continue
+            }
+
             queue.addOperation {
                 let faceEdges = Set(grid.edges(forFace: faceId))
                 let permutations = grid.permuteSolutionsAsEdges(forFace: faceId)
@@ -35,6 +47,13 @@ public class PermutationSolverStep: SolverStep {
         }
 
         queue.waitUntilAllOperationsAreFinished()
+
+        // Cache work
+        for faceId in grid.faceIds {
+            for vertex in grid.vertices(forFace: faceId) {
+                metadata.storeVertexState(vertex, from: grid)
+            }
+        }
 
         grid.setEdges(state: .disabled, forEdges: toDisable)
         grid.setEdges(state: .marked, forEdges: toMark)

@@ -32,7 +32,7 @@ extension LoopyGrid {
     }
 
     /// Returns an array of all edges that enclose a face with a given id.
-    public func edges(forFace face: Int) -> [Edge.Id] {
-        return edges(forFace: Face.Id(face))
+    public func edges(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
+        return edges(forFace: face.id)
     }
 }

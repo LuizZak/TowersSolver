@@ -70,3 +70,7 @@ extension Key: FaceReferenceConvertible where T == Face, U == Int {
         return self
     }
 }
+
+public func == (lhs: FaceReferenceConvertible, rhs: FaceReferenceConvertible) -> Bool {
+    lhs.id.value == rhs.id.value
+}

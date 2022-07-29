@@ -1,7 +1,5 @@
 /// Trivial solver step that unmarks the edges of every zero-hinted cell.
 public class ZeroSolverStep: SolverStep {
-    public static let metadataKey: String = "\(ZeroSolverStep.self)"
-
     public var isEphemeral: Bool {
         return true
     }

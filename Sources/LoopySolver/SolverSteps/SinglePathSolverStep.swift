@@ -15,8 +15,6 @@
 /// The center cell which requires three edges must have its left, bottom and
 /// right edges marked as part of the solution.
 public class SinglePathSolverStep: SolverStep {
-    public static let metadataKey: String = "\(SinglePathSolverStep.self)"
-
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))
 

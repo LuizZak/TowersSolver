@@ -27,8 +27,6 @@
 /// This rule does not apply if the face in question shares one of the
 /// two vertices where the inner and outer path for the corner face join.
 public class CornerSolverStep: SolverStep {
-    public static let metadataKey: String = "\(CornerSolverStep.self)"
-
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let metadata = delegate.metadataForSolverStepClass(type(of: self))
 

@@ -110,3 +110,7 @@ extension Key: EdgeReferenceConvertible where T == Edge, U == Int {
         return value
     }
 }
+
+public func == (lhs: EdgeReferenceConvertible, rhs: EdgeReferenceConvertible) -> Bool {
+    lhs.edgeIndex == rhs.edgeIndex
+}

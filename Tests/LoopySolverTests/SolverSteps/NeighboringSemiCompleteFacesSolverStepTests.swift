@@ -14,7 +14,7 @@ class NeighboringSemiCompleteFacesSolverStepTests: XCTestCase {
     }
 
     func testIsEphemeral() {
-        XCTAssertFalse(sut.isEphemeral)
+        XCTAssertTrue(sut.isEphemeral)
     }
 
     func testTouchingEdgeWise() {

@@ -1,6 +1,10 @@
 /// Solver step that deals with cases of semi-complete (`hint == edge_count - 1`)
 /// faces that touch either edge-wise or across corners via a common vertex.
 public class NeighboringSemiCompleteFacesSolverStep: SolverStep {
+    public var isEphemeral: Bool {
+        true
+    }
+
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid)
         solver.apply()

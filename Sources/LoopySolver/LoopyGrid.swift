@@ -702,7 +702,7 @@ extension LoopyGrid {
     }
 
     @inlinable
-    internal func edgeReferenceFrom(_ edge: EdgeId) -> Edge {
+    internal func edgeReferenceFrom(_ edge: EdgeReferenceConvertible) -> Edge {
         return edges[edge.edgeIndex]
     }
 
@@ -719,14 +719,14 @@ extension LoopyGrid {
     }
 
     @inlinable
-    public func edgeState(forEdge edge: Edge.Id) -> Edge.State {
+    public func edgeState(forEdge edge: EdgeReferenceConvertible) -> Edge.State {
         let edge = edgeReferenceFrom(edge)
         return edge.state
     }
 
     /// Returns `true` if a given edge starts or ends at a given vertex.
     @inlinable
-    public func edgeSharesVertex(_ edge: EdgeId, vertex: Int) -> Bool {
+    public func edgeSharesVertex(_ edge: EdgeReferenceConvertible, vertex: Int) -> Bool {
         let edge = edgeReferenceFrom(edge)
         return edge.sharesVertex(vertex)
     }
@@ -746,7 +746,7 @@ extension LoopyGrid {
 
     /// Returns `true` if two edges have a vertex index in common.
     @inlinable
-    public func edgesShareVertex(_ first: Edge.Id, _ second: Edge.Id) -> Bool {
+    public func edgesShareVertex(_ first: EdgeId, _ second: EdgeId) -> Bool {
         let v = edgeVertices(forEdge: second)
 
         return edgeSharesVertex(first, vertex: v.start) || edgeSharesVertex(first, vertex: v.end)
@@ -754,7 +754,7 @@ extension LoopyGrid {
 
     /// Returns the two vertex indices for the start/end of a given edge.
     @inlinable
-    public func edgeVertices(forEdge edge: Edge.Id) -> (start: Int, end: Int) {
+    public func edgeVertices(forEdge edge: EdgeId) -> (start: Int, end: Int) {
         let edge = edgeReferenceFrom(edge)
 
         return (edge.start, edge.end)
@@ -892,6 +892,39 @@ extension LoopyGrid {
         return _facesPerEdge[edge.edgeIndex]
     }
 
+    /// Returns an array of faces that share an edge with a given face.
+    @inlinable
+    public func facesEdgeAdjacent(to face: FaceReferenceConvertible) -> Set<FaceId> {
+        var result: Set<FaceId> = []
+        
+        for edge in edges(forFace: face) {
+            let faces = facesSharing(edge: edge)
+            
+            for other in faces where other != face.id {
+                result.insert(other)
+            }
+        }
+
+        return result
+    }
+
+    /// Returns an array of faces that share a vertex, but not an edge, with a given
+    /// face.
+    @inlinable
+    public func facesVertexAdjacent(to face: FaceReferenceConvertible) -> Set<FaceId> {
+        var result: Set<FaceId> = []
+        
+        for vertex in vertices(forFace: face) {
+            let faces = facesSharing(vertexIndex: vertex)
+            
+            for other in faces where other != face.id && !facesShareEdge(face, other) {
+                result.insert(other)
+            }
+        }
+
+        return result
+    }
+
     /// Returns an array of all edges of a face on a grid that are not shared with
     /// any other face.
     public func nonSharedEdges(forFace face: FaceReferenceConvertible) -> [EdgeId] {
@@ -959,7 +992,7 @@ extension LoopyGrid {
     /// The return is a list, where each entry of the list is a set of edge ids
     /// that a loopy line would have to pass through to solve the face, taking in
     /// consideration its hint and pre-existing marked/disabled edges.
-    public func permuteSolutionsAsEdges(forFace face: FaceId) -> [Set<EdgeId>] {
+    public func permuteSolutionsAsEdges(forFace face: FaceReferenceConvertible) -> [Set<EdgeId>] {
         let faceEdges = edges(forFace: face)
         let hint = hintForFace(face)
 

@@ -287,7 +287,7 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 8, hints: [n, n, 3, 2, 2, 2, 1, 0, n, 2])
         gridGen.setHints(atRow: 9, hints: [3, n, n, n, n, 2, 3, 3, n, n])
         let solver = Solver(grid: gridGen.generate())
-        solver.maxNumberOfGuesses = 4
+        solver.maxNumberOfGuesses = 0
 
         let result = solver.solve()
 
@@ -304,6 +304,7 @@ class SolverTests: XCTestCase {
         gen.loadHints(from: "51b2a21b5b2a1a13c2b2a2133a3")
 
         let solver = Solver(grid: gen.generate())
+        solver.maxNumberOfGuesses = 0
 
         let result = solver.solve()
 
@@ -320,7 +321,7 @@ class SolverTests: XCTestCase {
         gen.loadHints(from: "53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d")
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 19
+        solver.maxNumberOfGuesses = 11
 
         let result = solver.solve()
 
@@ -338,7 +339,7 @@ class SolverTests: XCTestCase {
         gen.loadHints(from: "5c5a2b1b22a0e243b43b13c132b12e1212152f12c1114c2a1121b5b214a")
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 8
+        solver.maxNumberOfGuesses = 0
 
         let result = solver.solve()
 
@@ -358,7 +359,7 @@ class SolverTests: XCTestCase {
         )
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 71
+        solver.maxNumberOfGuesses = 0
 
         let result = solver.solve()
 
@@ -378,7 +379,7 @@ class SolverTests: XCTestCase {
         )
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 28
+        solver.maxNumberOfGuesses = 0
 
         let result = solver.solve()
 

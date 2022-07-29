@@ -22,7 +22,7 @@ extension SolverStep {
 
 /// A delegate for solver steps to call to report invalid states ahead of time
 /// during their analysis.
-public protocol SolverStepDelegate {
+public protocol SolverStepDelegate: AnyObject {
     /// Gets the shared metadata for a given solver step type.
     ///
     /// If no metadata is available, one is created for the solver step.

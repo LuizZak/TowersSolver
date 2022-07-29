@@ -33,6 +33,11 @@ public class LoopySquareGridGen: BaseLoopyGridGenerator {
         return hints[face]
     }
 
+    /// Returns the ID of the face that will be generated at a specified coordinate
+    public func faceId(atX x: Int, y: Int) -> LoopyGrid.FaceId {
+        .init(y * width + x)
+    }
+
     public override func generate() -> LoopyGrid {
         var grid = LoopyGrid()
 
@@ -40,7 +45,7 @@ public class LoopySquareGridGen: BaseLoopyGridGenerator {
             for x in 0..<width {
                 let hint = hintForFace(atX: x, y: y)
 
-                grid.createFace(
+                let faceId = grid.createFace(
                     withVertexIndices: [
                         grid.addOrGetVertex(x: x, y: y),
                         grid.addOrGetVertex(x: x + 1, y: y),
@@ -49,6 +54,8 @@ public class LoopySquareGridGen: BaseLoopyGridGenerator {
                     ],
                     hint: hint
                 )
+
+                assert(faceId == self.faceId(atX: x, y: y), "\(faceId) == \(self.faceId(atX: x, y: y))")
             }
         }
 

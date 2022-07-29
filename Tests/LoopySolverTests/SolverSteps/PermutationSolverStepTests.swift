@@ -42,6 +42,8 @@ class PermutationSolverStepTests: XCTestCase {
         XCTAssertEqual(result.edgeStatesForFace(0), [
             .marked, .marked, .marked, .marked,
         ])
+        let printer = LoopyGridPrinter(squareGridColumns: 1, rows: 1)
+        printer.printGrid(grid: grid)
     }
 
     func testPermuteSolutionsAsEdges_disableEdges_singleSquareGrid() {
@@ -53,6 +55,8 @@ class PermutationSolverStepTests: XCTestCase {
         XCTAssertEqual(result.edgeStatesForFace(0), [
             .disabled, .disabled, .disabled, .disabled,
         ])
+        let printer = LoopyGridPrinter(squareGridColumns: 1, rows: 1)
+        printer.printGrid(grid: grid)
     }
 
     func testPermuteSolutionsAsEdges_markedEdges_noHint() {
@@ -131,6 +135,8 @@ class PermutationSolverStepTests: XCTestCase {
         XCTAssertEqual(result.edgeStatesForFace(0), [
             .disabled, .disabled, .disabled, .disabled,
         ])
+        let printer = LoopyGridPrinter(squareGridColumns: 1, rows: 1)
+        printer.printGrid(grid: grid)
     }
 
     func testPermuteSolutionsAsEdges_neighborEdgeMarked() {
