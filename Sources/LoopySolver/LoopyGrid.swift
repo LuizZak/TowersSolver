@@ -1013,7 +1013,7 @@ extension LoopyGrid {
                 }
 
                 // Loop was cut off on edge of the face
-                if markedEdgesOnCopy > 0 && edgesPerVertex[vertex]?.filter({ gridCopy.edgeState(forEdge: $0) != .disabled }).count == 1 {
+                if markedEdgesOnCopy > 0 && edgesPerVertex[vertex]?.count(where: { gridCopy.edgeState(forEdge: $0).isEnabled }) == 1 {
                     return false
                 }
 
