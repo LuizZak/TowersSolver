@@ -122,8 +122,8 @@ private class InternalSolver {
 
         // Sort edges found such that we get an array of edges from start to end
         let sorted = nonShared.sorted(by: {
-            let e1 = grid.vertices(forEdge: $0)
-            let e2 = grid.vertices(forEdge: $1)
+            let e1 = grid.edgeVertices(forEdge: $0)
+            let e2 = grid.edgeVertices(forEdge: $1)
 
             return e1.end == e2.start
         })
@@ -185,9 +185,9 @@ private class InternalSolver {
             // filter the 'hijacking' faces and only apply to those that don't
             // share that vertex).
             let joinVertices =
-                Set(shared.map(grid.vertices).flatMap { [$0.start, $0.end] })
+                Set(shared.map(grid.edgeVertices).flatMap { [$0.start, $0.end] })
                 .intersection(
-                    nonShared.map(grid.vertices(forEdge:)).flatMap { [$0.start, $0.end] }
+                    nonShared.map(grid.edgeVertices(forEdge:)).flatMap { [$0.start, $0.end] }
                 )
 
             // Find vertices for inner edges (excluding vertices from join above)

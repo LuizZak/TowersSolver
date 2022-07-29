@@ -66,12 +66,4 @@ public class LoopyGridController {
             $0.state = state
         }
     }
-
-    /// Returns an array of all edges of a face on a grid that are not shared with
-    /// any other face.
-    public func nonSharedEdges(forFace face: FaceReferenceConvertible) -> [Edge.Id] {
-        return grid.edges(forFace: face.id).filter { edge in
-            grid.facesSharing(edge: edge) == [face.id]
-        }
-    }
 }

@@ -70,7 +70,7 @@ private class InternalSolver {
                 grid.setEdges(state: .marked, forEdges: normal)
 
                 for edge in edges {
-                    let vertices = grid.vertices(forEdge: edge)
+                    let vertices = grid.edgeVertices(forEdge: edge)
 
                     if grid.markedEdges(forVertex: vertices.start) == 1 {
                         stack.append(vertices.start)

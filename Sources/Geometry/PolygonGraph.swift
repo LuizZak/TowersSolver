@@ -54,7 +54,7 @@ public protocol PolygonGraph {
 
     /// Returns the two vertex indices for the start/end of a given edge.
     @inlinable
-    func vertices(forEdge edge: EdgeId) -> (start: Int, end: Int)
+    func edgeVertices(forEdge edge: EdgeId) -> (start: Int, end: Int)
 
     /// From a starting edge in this graph, extract all connected edges that share
     /// a vertex in such a way that the connected vertex has only two edges connected.
@@ -159,7 +159,7 @@ extension PolygonGraph {
             last = pivot
             result.insert(pivot)
 
-            let vertices = self.vertices(forEdge: pivot)
+            let vertices = self.edgeVertices(forEdge: pivot)
 
             let sharingStart = edgesSharing(vertexIndex: vertices.start)
             let sharingEnd = edgesSharing(vertexIndex: vertices.end)

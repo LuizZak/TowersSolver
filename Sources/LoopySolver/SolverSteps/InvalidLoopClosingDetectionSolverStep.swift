@@ -46,7 +46,7 @@ private class InternalSolver {
         // to two dead-end marked edges (in a 'doorway' or 'window' fashion)
         for edge in grid.edgeIds where grid.edgeState(forEdge: edge) == .normal {
             let edgesSharingStart =
-                grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).start)
+                grid.edgesSharing(vertexIndex: grid.edgeVertices(forEdge: edge).start)
 
             let _edgesInStart =
                 edgesSharingStart
@@ -57,7 +57,7 @@ private class InternalSolver {
             }
 
             let edgesSharingEnd =
-                grid.edgesSharing(vertexIndex: grid.vertices(forEdge: edge).end)
+                grid.edgesSharing(vertexIndex: grid.edgeVertices(forEdge: edge).end)
 
             let _edgesInEnd =
                 edgesSharingEnd

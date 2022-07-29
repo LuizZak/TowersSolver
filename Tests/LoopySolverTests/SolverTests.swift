@@ -1,6 +1,9 @@
 import LoopySolver
 import XCTest
 
+// TODO: Work on reducing the number of guesses required to solve some of these
+// puzzles
+
 class SolverTests: XCTestCase {
     func testIsSolved() {
         // Grid looks like this:
@@ -185,7 +188,7 @@ class SolverTests: XCTestCase {
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 14, bufferHeight: 7)
+        let printer = LoopyGridPrinter(squareGridColumns: 3, rows: 3)
         printer.printGrid(grid: solver.grid)
     }
 
@@ -205,7 +208,7 @@ class SolverTests: XCTestCase {
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 14, bufferHeight: 7)
+        let printer = LoopyGridPrinter(squareGridColumns: 3, rows: 3)
         printer.printGrid(grid: solver.grid)
     }
 
@@ -234,7 +237,7 @@ class SolverTests: XCTestCase {
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 58, bufferHeight: 29)
+        let printer = LoopyGridPrinter(squareGridColumns: 7, rows: 7, columnSize: 8, rowSize: 4)
         printer.printGrid(grid: solver.grid)
     }
 
@@ -249,12 +252,12 @@ class SolverTests: XCTestCase {
         gridGen.setHint(x: 0, y: 2, hint: 2)
         gridGen.setHint(x: 2, y: 2, hint: 2)
         let solver = Solver(grid: gridGen.generate())
-        solver.maxNumberOfGuesses = 1
+        solver.maxNumberOfGuesses = 0
 
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 14, bufferHeight: 7)
+        let printer = LoopyGridPrinter(squareGridColumns: 3, rows: 3)
         printer.printGrid(grid: solver.grid)
     }
 
@@ -284,12 +287,12 @@ class SolverTests: XCTestCase {
         gridGen.setHints(atRow: 8, hints: [n, n, 3, 2, 2, 2, 1, 0, n, 2])
         gridGen.setHints(atRow: 9, hints: [3, n, n, n, n, 2, 3, 3, n, n])
         let solver = Solver(grid: gridGen.generate())
-        solver.maxNumberOfGuesses = 12
+        solver.maxNumberOfGuesses = 4
 
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 62, bufferHeight: 41)
+        let printer = LoopyGridPrinter(squareGridColumns: 10, rows: 10, columnSize: 6, rowSize: 4)
         printer.printGrid(grid: solver.grid)
     }
 
@@ -317,7 +320,7 @@ class SolverTests: XCTestCase {
         gen.loadHints(from: "53b2b2b522d222b5e2b22a1a22a2a1e25b141e22d3b31a2a01c5a4a2d")
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 58
+        solver.maxNumberOfGuesses = 19
 
         let result = solver.solve()
 
@@ -335,7 +338,7 @@ class SolverTests: XCTestCase {
         gen.loadHints(from: "5c5a2b1b22a0e243b43b13c132b12e1212152f12c1114c2a1121b5b214a")
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 26
+        solver.maxNumberOfGuesses = 8
 
         let result = solver.solve()
 
@@ -355,12 +358,12 @@ class SolverTests: XCTestCase {
         )
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 108
+        solver.maxNumberOfGuesses = 71
 
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 64, bufferHeight: 43)
+        let printer = LoopyGridPrinter(honeycombGridColumns: 10, rows: 10)
         printer.printGrid(grid: solver.grid)
     }
 
@@ -375,12 +378,12 @@ class SolverTests: XCTestCase {
         )
 
         let solver = Solver(grid: gen.generate())
-        solver.maxNumberOfGuesses = 55
+        solver.maxNumberOfGuesses = 28
 
         let result = solver.solve()
 
         XCTAssertEqual(result, .solved)
-        let printer = LoopyGridPrinter(bufferWidth: 70, bufferHeight: 48)
+        let printer = LoopyGridPrinter(honeycombGridColumns: 11, rows: 11)
         printer.printGrid(grid: solver.grid)
     }
 }

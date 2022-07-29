@@ -122,7 +122,7 @@ private class InternalSolver {
             }
         }
 
-        let (vStart, vEnd) = grid.vertices(forEdge: edge)
+        let (vStart, vEnd) = grid.edgeVertices(forEdge: edge)
 
         // Pick connected edges (in both ends of the shared edge) and check if
         // they all belong to the two paired faces

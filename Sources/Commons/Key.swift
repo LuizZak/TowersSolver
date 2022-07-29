@@ -32,3 +32,17 @@ extension Key: Hashable where U: Hashable {
         value.hash(into: &hasher)
     }
 }
+
+extension Key: Comparable where U: Comparable {
+    @inlinable
+    public static func < (lhs: Self, rhs: Self) -> Bool {
+        lhs.value < rhs.value
+    }
+}
+
+extension Key: CustomStringConvertible where U: CustomStringConvertible {
+    @inlinable
+    public var description: String {
+        value.description
+    }
+}

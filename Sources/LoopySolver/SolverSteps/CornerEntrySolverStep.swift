@@ -9,15 +9,15 @@
 /// edges of the face also cannot be marked, since it would require marking the
 /// two edges to make the corner, which would exceed the requirement, as well.
 ///
-///     . _ . _ .
-///     ! _ ! _ ║
-///     ! _ ! 1 !
+///     .___.___.
+///     !___!___║
+///     !___!_1_!
 ///
 /// This solver step also deals with cases of semi-complete edges that have an
 /// entry point that enters through an edge:
-///     . _ . _ .
-///     ! _ ! _ ║
-///     ! _ ! 3 !
+///     .___.___.
+///     !___!___║
+///     !___!_3_!
 ///
 /// It also handles cases of corner entries that result in a split between possible
 /// paths taken around a face, one of which results in an invalid grid state, e.g.:
@@ -30,9 +30,9 @@
 /// discarded:
 ///
 /// ══•                               ══•
-///    \\ 1                              \\
+///    ⤡ (1)                             ⤡
 ///     •───•       Marking edge          •   •      Which leaves the 4-cell
-///   2/     \     (2) results in:       //          with not enough edges to
+/// (2)/     \     (2) results in:       ⤢           with not enough edges to
 /// ──•   4   •                       ──•   4   •    complete its hint!
 ///    \     /                           \
 ///     •───•                             •───•
@@ -71,6 +71,7 @@ private class InternalSolver {
                 continue
             }
 
+            analyzeVertexEntryPoints(for: face, hint: hint)
             analyzeForkingHintedEdgesPath(for: face, hint: hint)
         }
     }
@@ -197,6 +198,104 @@ private class InternalSolver {
 
             grid.setEdges(state: .disabled, forEdges: toDisable)
         }
+    }
+
+    /// Analyzes neighboring faces sharing vertices with `faceId`, noting whether
+    /// there are any guaranteed entrances from a neighbor into the face based on
+    /// line ends or if all possible solutions of the neighbor tile require that
+    /// the line cross from it to `faceId`.
+    func analyzeVertexEntryPoints(for faceId: Face.Id, hint: Int) {
+        if grid.isFaceSolved(faceId) {
+            return
+        }
+
+        let faceEdges = Set(grid.edges(forFace: faceId))
+
+        for vertex in grid.vertices(forFace: faceId) {
+            let edges = Set(grid.edgesSharing(vertexIndex: vertex))
+            let ourEdges = faceEdges.intersection(edges)
+
+            let faces = grid.facesSharing(vertexIndex: vertex)
+
+            // Analyze only faces that share a vertex, but not a whole edge
+            for other in faces where !grid.facesShareEdge(faceId, other) {
+                // Ensure every edge shared by the vertex is either from `faceId`
+                // _or_ `other`, to ensure that if the vertex is included in the
+                // line, it has to either pass through `faceId` or `other`.
+                // This is important for calculating which edges from `faceId`
+                // should be affected.
+                let theirEdges = Set(grid.edges(forFace: other)).filter {
+                    grid.edgeSharesVertex($0, vertex: vertex)
+                }
+                if edges.subtracting(theirEdges) != ourEdges || edges.subtracting(ourEdges) != theirEdges {
+                    continue
+                }
+
+                if isVertexSpilling(vertex, from: other, to: faceId) {
+                    redirectEntryVertex(vertex, from: other, to: faceId)
+                }
+            }
+        }
+    }
+
+    /// Returns `true` if an unfinished line is connecting from `start` to `end`,
+    /// or if the only possible solution paths for `start` include moving the
+    /// line across from its edge into another edge of `end`.
+    ///
+    /// Note: Assumes faces share `vertex`, but no edges.
+    func isVertexSpilling(_ vertex: Int, from start: Face.Id, to end: Face.Id) -> Bool {
+        let solutions =
+            grid.permuteSolutionsAsEdges(forFace: start)
+        
+        let startEdges =
+            grid.edges(forFace: start)
+            .filter { grid.edgeSharesVertex($0, vertex: vertex) }
+
+        guard !solutions.isEmpty else {
+            return false
+        }
+        guard startEdges.count == 2 else {
+            return false
+        }
+
+        // If all solutions include exactly one of the two edges that share the
+        // vertex in 'start', this implies the line has to cross from one face
+        // to the other.
+        for solution in solutions {
+            let inter = solution.intersection(startEdges)
+            if inter.count != 1 {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    // Forces the entry of the line from one face to another, going through a
+    // given vertex index shared amongst each face.
+    //
+    // Note: Assumes that the two faces do not share an edge.
+    func redirectEntryVertex(_ vertexIndex: Int, from start: LoopyGrid.FaceId, to faceId: LoopyGrid.FaceId) {
+        let faceEdges = Set(grid.edges(forFace: faceId))
+        let permutations = 
+            grid.permuteSolutionsAsEdges(forFace: faceId)
+            // Only consider solutions where exactly one edge of `faceId`
+            // participates in the vertex
+            .filter {
+                $0.count(where: { grid.edgeSharesVertex($0, vertex: vertexIndex) }) == 1
+            }
+        
+        // Find edges that are present across all solutions
+        let permanent = permutations.reduce(faceEdges) {
+            $0.intersection($1)
+        }
+        // Find edges that don't participate at all in any solution
+        let notPresent = permutations.reduce(faceEdges) {
+            $0.subtracting($1)
+        }
+
+        grid.setEdges(state: .disabled, forEdges: notPresent)
+        grid.setEdges(state: .marked, forEdges: permanent)
     }
 
     func analyzeForkingHintedEdgesPath(for faceId: Face.Id, hint: Int) {

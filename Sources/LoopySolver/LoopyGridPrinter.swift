@@ -16,6 +16,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     /// Whether to print the edges' indices in the center point of their span
     public var printEdgeIndices: Bool = false
 
+    /// Whether to print the vertices' indices in place of the dot symbol
+    public var printVertexIndices: Bool = false
+
     /// Color to use when printing the marked line path to the console
     private var lineColor: ConsoleColor = .magenta
 
@@ -23,10 +26,61 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         super.init(bufferWidth: bufferWidth, bufferHeight: bufferHeight)
     }
 
-    public init(bufferWidth: Int, bufferHeight: Int, printEdgeIndices: Bool) {
+    public init(bufferWidth: Int, bufferHeight: Int, printEdgeIndices: Bool, printFaceIndices: Bool = false, printVertexIndices: Bool = false) {
         super.init(bufferWidth: bufferWidth, bufferHeight: bufferHeight)
 
-        self.printEdgeIndices = true
+        self.printEdgeIndices = printEdgeIndices
+        self.printFaceIndices = printFaceIndices
+        self.printVertexIndices = printVertexIndices
+    }
+
+    /// Creates a buffer fit for printing a square grid of columnSize x rowSize
+    /// sized cells, with a given column/row count.
+    public convenience init(
+        squareGridColumns columns: Int,
+        rows: Int,
+        columnSize: Int = 4,
+        rowSize: Int = 2,
+        printEdgeIndices: Bool = false,
+        printFaceIndices: Bool = false,
+        printVertexIndices: Bool = false
+    ) {
+        let width = columns * columnSize + 2
+        let height = rows * rowSize + 1
+
+        self.init(
+            bufferWidth: width,
+            bufferHeight: height,
+            printEdgeIndices: printEdgeIndices,
+            printFaceIndices: printFaceIndices,
+            printVertexIndices: printVertexIndices
+        )
+    }
+
+    /// Creates a buffer fit for printing a honeycomb grid of columnSize x rowSize
+    /// sized cells, with a given column/row count.
+    ///
+    /// Column and row sizes are rounded up before being fed to the underlying
+    /// initializer as integers
+    public convenience init(
+        honeycombGridColumns columns: Int,
+        rows: Int,
+        columnSize: Double = 6.181818,
+        rowSize: Double = 4.2,
+        printEdgeIndices: Bool = false,
+        printFaceIndices: Bool = false,
+        printVertexIndices: Bool = false
+    ) {
+        let width = (Double(columns) * columnSize).rounded(.up) + 2
+        let height = (Double(rows) * rowSize).rounded(.up) + 1
+
+        self.init(
+            bufferWidth: Int(width),
+            bufferHeight: Int(height),
+            printEdgeIndices: printEdgeIndices,
+            printFaceIndices: printFaceIndices,
+            printVertexIndices: printVertexIndices
+        )
     }
 
     public func printGrid(grid: LoopyGrid) {
@@ -58,7 +112,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         }
 
         for edge in grid.edgeIds {
-            let (v1Index, v2Index) = grid.vertices(forEdge: edge)
+            let (v1Index, v2Index) = grid.edgeVertices(forEdge: edge)
             let (v1, v2) = (grid.vertices[v1Index], grid.vertices[v2Index])
 
             let (x1, y1) = toScreen(v1.x, v1.y)
@@ -107,17 +161,21 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         for (i, v) in grid.vertices.enumerated() {
             let (x, y) = toScreen(v.x, v.y)
 
+            if printVertexIndices {
+                putString(i.description, color: lineColor, x: Int(x), y: Int(y))
+                continue
+            }
+
             if grid.markedEdges(forVertex: i) > 1 {
                 putChar("•", color: lineColor, x: Int(x), y: Int(y))
-            }
-            else {
+            } else {
                 putChar("•", x: Int(x), y: Int(y))
             }
         }
 
         if printEdgeIndices {
             for edge in grid.edgeIds {
-                let (v1Index, v2Index) = grid.vertices(forEdge: edge)
+                let (v1Index, v2Index) = grid.edgeVertices(forEdge: edge)
                 let (v1, v2) = (grid.vertices[v1Index], grid.vertices[v2Index])
 
                 let center = (v1 + v2) / 2

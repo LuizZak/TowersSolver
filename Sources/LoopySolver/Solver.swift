@@ -122,6 +122,8 @@ public final class Solver {
         steps.append(InvalidLoopClosingDetectionSolverStep())
         steps.append(BifurcationSolverStep())
 
+        postSolveAttemptSteps.append(InsideOutsideSolverStep())
+        postSolveAttemptSteps.append(PermutationSolverStep())
         postSolveAttemptSteps.append(CommonEdgesBetweenGuessesSolverStep())
     }
 
@@ -278,8 +280,8 @@ public final class Solver {
         var vertEntries: [VertEntry] = []
 
         for e in grid.edgeIds where grid.edgeState(forEdge: e) == .normal {
-            let start = grid.vertices(forEdge: e).start
-            let end = grid.vertices(forEdge: e).end
+            let start = grid.edgeVertices(forEdge: e).start
+            let end = grid.edgeVertices(forEdge: e).end
 
             guard grid.markedEdges(forVertex: start) == 1 else {
                 continue

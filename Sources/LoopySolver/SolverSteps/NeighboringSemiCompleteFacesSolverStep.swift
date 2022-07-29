@@ -86,7 +86,7 @@ private class InternalSolver {
                 }
             }
 
-            let (sharedStart, sharedEnd) = grid.vertices(forEdge: shared)
+            let (sharedStart, sharedEnd) = grid.edgeVertices(forEdge: shared)
 
             // Now take the shared edge's vertices and disable any other edge that
             // shares those vertices, and is not part of either of the paired faces

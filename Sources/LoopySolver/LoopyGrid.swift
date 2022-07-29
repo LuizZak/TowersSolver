@@ -747,14 +747,14 @@ extension LoopyGrid {
     /// Returns `true` if two edges have a vertex index in common.
     @inlinable
     public func edgesShareVertex(_ first: Edge.Id, _ second: Edge.Id) -> Bool {
-        let v = vertices(forEdge: second)
+        let v = edgeVertices(forEdge: second)
 
         return edgeSharesVertex(first, vertex: v.start) || edgeSharesVertex(first, vertex: v.end)
     }
 
     /// Returns the two vertex indices for the start/end of a given edge.
     @inlinable
-    public func vertices(forEdge edge: Edge.Id) -> (start: Int, end: Int) {
+    public func edgeVertices(forEdge edge: Edge.Id) -> (start: Int, end: Int) {
         let edge = edgeReferenceFrom(edge)
 
         return (edge.start, edge.end)
@@ -854,8 +854,10 @@ extension LoopyGrid {
 
     /// Returns the number of edges of a given face that are in a specified state.
     @inlinable
-    public func edgeCount(withState state: Edge.State, onFace face: FaceReferenceConvertible) -> Int
-    {
+    public func edgeCount(
+        withState state: Edge.State,
+        onFace face: FaceReferenceConvertible
+    ) -> Int {
         return edges(forFace: face.id).count(where: { edgeState(forEdge: $0) == state })
     }
 
@@ -879,24 +881,62 @@ extension LoopyGrid {
 
     /// Returns an array of faces within this grid that share a given vertex index.
     @inlinable
-    public func facesSharing(vertexIndex: Int) -> [Face.Id] {
+    public func facesSharing(vertexIndex: Int) -> [FaceId] {
         return _facesPerVertex[vertexIndex]
     }
 
     /// Returns an array of faces within this grid that share a common edge.
     /// Either one or two faces share a common edge at all times.
     @inlinable
-    public func facesSharing(edge: EdgeReferenceConvertible) -> [Face.Id] {
+    public func facesSharing(edge: EdgeReferenceConvertible) -> [FaceId] {
         return _facesPerEdge[edge.edgeIndex]
     }
 
-    @inlinable
-    public func faceContainsEdge(face: Face.Id, edge: Edge.Id) -> Bool {
+    /// Returns an array of all edges of a face on a grid that are not shared with
+    /// any other face.
+    public func nonSharedEdges(forFace face: FaceReferenceConvertible) -> [EdgeId] {
+        return edges(forFace: face.id).filter { edge in
+            facesSharing(edge: edge) == [face.id]
+        }
+    }
 
+    /// Returns a list of all faces surrounding a given face such that the shared
+    /// edge is open (`.disabled`)
+    @inlinable
+    public func facesConnectedTo(_ face: FaceId) -> [FaceId] {
+        neighboringFaces(around: face, withEdgeStates: [.disabled])
+    }
+
+    /// Returns a list of all faces surrounding a given face such that the shared
+    /// edge is closed (`.marked`)
+    @inlinable
+    public func facesDisconnectedTo(_ face: FaceId) -> [FaceId] {
+        neighboringFaces(around: face, withEdgeStates: [.marked])
+    }
+
+    /// Returns a list of all faces surrounding a given face such that the shared
+    /// edge has one of the specified edge states.
+    @inlinable
+    public func neighboringFaces(around face: FaceId, withEdgeStates states: Set<Edge.State>) -> [FaceId] {
+        edges(forFace: face).filter {
+            states.contains(edgeState(forEdge: $0))
+        }.flatMap {
+            facesSharing(edge: $0).filter {
+                $0 != face
+            }
+        }
+    }
+
+    @inlinable
+    public func faceContainsEdge(face: FaceId, edge: EdgeId) -> Bool {
         let face = faces[face.id.value]
         let edgeId = edgeIds[edge.edgeIndex]
 
         return face.containsEdge(id: edgeId)
+    }
+
+    public func faceContainsVertex(face: FaceId, vertex: Int) -> Bool {
+        vertices(forFace: face).contains(vertex)
     }
 
     /// Returns `true` if two given faces share a common edge.
@@ -912,6 +952,96 @@ extension LoopyGrid {
         return !Set(face1.localToGlobalEdges).isDisjoint(with: face2.localToGlobalEdges)
     }
 
+    /// Returns a list of different combinations of edges representing how to
+    /// mark the edges of a given face such that it is solved. The non-presence
+    /// of an edge in the set indicates that it should not be marked.
+    ///
+    /// The return is a list, where each entry of the list is a set of edge ids
+    /// that a loopy line would have to pass through to solve the face, taking in
+    /// consideration its hint and pre-existing marked/disabled edges.
+    public func permuteSolutionsAsEdges(forFace face: FaceId) -> [Set<EdgeId>] {
+        let faceEdges = edges(forFace: face)
+        let hint = hintForFace(face)
+
+        let vertices = vertices(forFace: face)
+
+        var edgesPerVertex: [Int: [EdgeId]] = [:]
+        vertices.forEach {
+            edgesPerVertex[$0] = edgesSharing(vertexIndex: $0)
+        }
+
+        let markedEdges = Set(faceEdges.filter { edgeState(forEdge: $0) == .marked })
+        let disabledEdges = Set(faceEdges.filter { edgeState(forEdge: $0) == .disabled })
+
+        // Note: Assumes all edges in input belong to `face`.
+        func solvesTile(_ edges: Set<EdgeId>) -> Bool {
+            if let hint = hint, edges.count != hint {
+                return false
+            }
+
+            // Check for edge states that should be respected in the result
+            if !edges.intersection(disabledEdges).isEmpty {
+                return false
+            }
+            if edges.intersection(markedEdges) != markedEdges {
+                return false
+            }
+
+            // Ensure that lines are not continued into dead ends, or turns into
+            // a 3-point star in one of the vertices
+            var gridCopy = self
+            gridCopy.setEdges(state: .disabled, forEdges: faceEdges)
+            gridCopy.setEdges(state: .marked, forEdges: edges)
+            for vertex in vertices {
+                // 3-point star
+                let markedEdgesOnCopy = gridCopy.markedEdges(forVertex: vertex)
+                if self.markedEdges(forVertex: vertex) <= 2 && markedEdgesOnCopy > 2 {
+                    return false
+                }
+
+                // Loop was cut off on edge of the face
+                if markedEdgesOnCopy > 0 && edgesPerVertex[vertex]?.filter({ gridCopy.edgeState(forEdge: $0) != .disabled }).count == 1 {
+                    return false
+                }
+
+                // A vertex of degree 2 needs either none or both edges marked
+                // at the same time.
+                if let e = edgesPerVertex[vertex], e.count == 2 {
+                    let intersection = edges.intersection(e)
+                    if intersection.count == 1 {
+                        return false
+                    }
+                }
+            }
+
+            return true
+        }
+
+        var result: Set<Set<EdgeId>> = []
+
+        // Recursive permutation that flip-flops the presence of a vertex on a
+        // set.
+        func permute(at index: Int, current: Set<EdgeId>) {
+            if solvesTile(current) {
+                result.insert(current)
+            }
+
+            if index >= faceEdges.count {
+                return
+            }
+
+            let edge = faceEdges[index]
+            permute(at: index + 1, current: current.union([edge]))
+            permute(at: index + 1, current: current)
+        }
+
+        permute(at: 0, current: [])
+
+        return Array(result)
+    }
+
+    // MARK: Internals
+
     @usableFromInline
     internal mutating func _updateFaceResolved(_ faceId: FaceReferenceConvertible) {
         _faceIsSolved[faceId.id.value] = _internalIsFaceSolved(faceId)
@@ -926,5 +1056,60 @@ extension LoopyGrid {
 
         let edges = self.edges(forFace: faceId.id)
         return edges.count(hint) { edgeState(forEdge: $0) == .marked }
+    }
+}
+
+// MARK: - Face network querying methods
+extension LoopyGrid {
+    /// Returns a list of all faces that can be reached by crossing open (`.disabled`)
+    /// edges, recursively.
+    @inlinable
+    public func networkForFace(_ face: FaceId) -> Set<FaceId> {
+        var visited: Set<FaceId> = []
+        var queue: [FaceId] = [face]
+
+        var result: Set<FaceId> = []
+
+        while !queue.isEmpty {
+            let face = queue.removeFirst()
+            guard visited.insert(face).inserted else {
+                continue
+            }
+
+            result.insert(face)
+
+            for next in facesConnectedTo(face) {
+                queue.append(next)
+            }
+        }
+
+        return result
+    }
+
+    /// Returns a list of networks (faces that are connected to each other) that
+    /// are neighboring a given list of faces, but are not connected to any of
+    /// the faces on the input list.
+    ///
+    /// Neighboring networks are considered for edges that are closed (`.marked`)
+    /// only.
+    func neighboringNetworksFor<S: Sequence>(_ faces: S) -> [Set<FaceId>] where S.Element == FaceId {
+        let initialFaces: Set<FaceId> = Set(faces)
+
+        var result: [Set<FaceId>] = []
+
+        for face in faces {
+            for next in facesDisconnectedTo(face) {
+                guard !initialFaces.contains(next) else {
+                    continue
+                }
+
+                let network = self.networkForFace(next)
+                if !result.contains(network) {
+                    result.append(network)
+                }
+            }
+        }
+        
+        return result
     }
 }

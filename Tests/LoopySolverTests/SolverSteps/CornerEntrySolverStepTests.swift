@@ -180,4 +180,108 @@ class CornerEntrySolverStepTests: XCTestCase {
         let printer = LoopyGridPrinter(bufferWidth: 22, bufferHeight: 15)
         printer.printGrid(grid: result)
     }
+
+    func testSingleVertexExitCornerEntry_semiCompleteFace() {
+        // Given a grid configured as such: 
+        //
+        // •───•───•───•───•
+        // |   |   |   |   |
+        // •───•   •───•───•
+        // |     1 |   |   |
+        // •───•───•───•───•
+        // |   |   | 3 |   |
+        // •───•───•───•───•
+        // |   |   |   |   |
+        // •───•───•───•───•
+        //
+        // Ensure that the solver can detect that the shared vertex between
+        // the '1' and '3' hint is the only viable path to fulfill the '1' hint,
+        // leading to a corner entry transformation on the '3' hint:
+        //
+        // •───•───•───•───•
+        // |   |   |   |   |
+        // •───•   •───•───•
+        // |     1 |   |   |
+        // •───•───•───•───•
+        // |   |   | 3 ║*  |
+        // •───•───•═══•───•
+        // |   |   | * |   |
+        // •───•───•───•───•
+        let gridGen = LoopySquareGridGen(width: 4, height: 4)
+        gridGen.setHint(x: 1, y: 1, hint: 1)
+        gridGen.setHint(x: 2, y: 2, hint: 3)
+        let controller = LoopyGridController(grid: gridGen.generate())
+        controller.setEdges(state: .disabled, forFace: 5, edgeIndices: [0, 3]) // 1 hint
+        let grid = controller.grid
+
+        let result = sut.apply(to: grid, delegate)
+
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
+        }
+        // `1` face
+        XCTAssertEqual(edgeStatesForFace(5)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(5)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[3], .disabled)
+        // `3` face
+        XCTAssertEqual(edgeStatesForFace(10)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(10)[1], .marked)
+        XCTAssertEqual(edgeStatesForFace(10)[2], .marked)
+        XCTAssertEqual(edgeStatesForFace(10)[3], .normal)
+        let printer = LoopyGridPrinter(squareGridColumns: 4, rows: 4)
+        printer.printGrid(grid: result)
+    }
+
+    func testSingleVertexExitCornerEntry_oneHintedCell() {
+        // Given a grid configured as such: 
+        //
+        // •───•───•───•───•
+        // |   |   |   |   |
+        // •───•   •───•───•
+        // |     1 |   |   |
+        // •───•───•───•───•
+        // |   |   | 1 |   |
+        // •───•───•───•───•
+        // |   |   |   |   |
+        // •───•───•───•───•
+        //
+        // Ensure that the solver can detect that the shared vertex between
+        // the top and bottom hints is the only viable path to fulfill the bottom
+        // hint, leading to a corner entry transformation on the '1' hint:
+        //
+        // •───•───•───•───•
+        // |   |   |   |   |
+        // •───•   •───•───•
+        // |     1 |   |   |
+        // •───•───•───•───•
+        // |   |   | 1  *  |
+        // •───•───•   •───•
+        // |   |   | * |   |
+        // •───•───•───•───•
+        let gridGen = LoopySquareGridGen(width: 4, height: 4)
+        gridGen.setHint(x: 1, y: 1, hint: 1)
+        gridGen.setHint(x: 2, y: 2, hint: 1)
+        let controller = LoopyGridController(grid: gridGen.generate())
+        controller.setEdges(state: .disabled, forFace: 5, edgeIndices: [0, 3]) // Top 1 hint
+        let grid = controller.grid
+
+        let result = sut.apply(to: grid, delegate)
+
+        let edgeStatesForFace: (Int) -> [Edge.State] = {
+            result.edges(forFace: $0).map(result.edgeState(forEdge:))
+        }
+        // Top `1` face
+        XCTAssertEqual(edgeStatesForFace(5)[0], .disabled)
+        XCTAssertEqual(edgeStatesForFace(5)[1], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[2], .normal)
+        XCTAssertEqual(edgeStatesForFace(5)[3], .disabled)
+        // Bottom `1` face
+        XCTAssertEqual(edgeStatesForFace(10)[0], .normal)
+        XCTAssertEqual(edgeStatesForFace(10)[1], .disabled)
+        XCTAssertEqual(edgeStatesForFace(10)[2], .disabled)
+        XCTAssertEqual(edgeStatesForFace(10)[3], .normal)
+        let printer = LoopyGridPrinter(squareGridColumns: 4, rows: 4)
+        printer.printGrid(grid: result)
+    }
 }

@@ -2,18 +2,6 @@ import LoopySolver
 import XCTest
 
 class LoopyGridControllerTests: XCTestCase {
-    func testNonSharedEdges() {
-        let grid = LoopySquareGridGen(width: 3, height: 3).generate()
-        let sut = LoopyGridController(grid: grid)
-
-        // Center face shares all edges with all connecting faces
-        XCTAssert(sut.nonSharedEdges(forFace: 4).isEmpty)
-        // Corner faces share only two edges
-        XCTAssertEqual(sut.nonSharedEdges(forFace: 0), [0, 3])
-        // Lateral faces share three edges with neighboring faces
-        XCTAssertEqual(sut.nonSharedEdges(forFace: 1), [4])
-    }
-
     func testSetEdgeStateForFaceEdgeIndex() {
         // Produce a 2x2 grid that has the all top horizontal edges of the faces
         // disabled
