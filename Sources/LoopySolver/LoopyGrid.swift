@@ -987,6 +987,19 @@ extension LoopyGrid {
                 return false
             }
 
+            // Do a pre-vertex check on the current grid to short circuit before
+            // copying the grid if possible
+            for vertex in vertices {
+                // A vertex of degree 2 needs either none or both edges marked
+                // at the same time.
+                if let e = edgesPerVertex[vertex], e.count == 2 {
+                    let intersection = edges.intersection(e)
+                    if intersection.count == 1 {
+                        return false
+                    }
+                }
+            }
+
             // Ensure that lines are not continued into dead ends, or turns into
             // a 3-point star in one of the vertices
             var gridCopy = self
@@ -1006,9 +1019,13 @@ extension LoopyGrid {
 
                 // A vertex of degree 2 needs either none or both edges marked
                 // at the same time.
-                if let e = edgesPerVertex[vertex], e.count == 2 {
+                if let e = edgesPerVertex[vertex] {
+                    let countOnThisFace = e.count(where: {
+                        gridCopy.edgeState(forEdge: $0).isEnabled && faceEdges.contains($0)
+                    })
+
                     let intersection = edges.intersection(e)
-                    if intersection.count == 1 {
+                    if countOnThisFace == 2 && intersection.count == 1 {
                         return false
                     }
                 }
