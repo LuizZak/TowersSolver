@@ -7,6 +7,49 @@
 /// performed to find out vertex exits from the same face, propagating forwards
 /// until a non-hinted tile is found, or a line can be created with the present
 /// information.
+///
+/// This allows the solver to detect entrances to a face based on the neighboring
+/// faces' states:
+///
+/// input:
+///     •───•
+///   1 |   |
+/// •───•───•
+/// |   | 1 |
+/// •───•───•
+///
+/// result:
+///     •───•
+///   1 |   |
+/// •───•───•
+/// |   | 1  
+/// •───•   •
+///
+/// The recursive nature of the propagation also allows cascading of vertex
+/// entries across multiple faces:
+///
+/// input:
+///     •───•───•───•
+///   1 |   |   |   |
+/// •───•───•───•───•
+/// |   | 2 |   |   |
+/// •───•───•───•───•
+/// |   |   | 2 |   |
+/// •───•───•───•───•
+/// |   |   |       |
+/// •───•───•───•───•
+///
+/// result:
+///     •───•───•───•
+///   1 |   |   |   |
+/// •───•───•───•───•
+/// |   | 2 |   |   |
+/// •───•───•───•───•
+/// |   |   | 2 |   |
+/// •───•───•───•===•
+/// |   |   |       |
+/// •───•───•───•───•
+///
 public class VertexPropagationSolverStep: SolverStep {
     public func apply(to grid: LoopyGrid, _ delegate: SolverStepDelegate) -> LoopyGrid {
         let solver = InternalSolver(grid: grid, delegate: delegate)
