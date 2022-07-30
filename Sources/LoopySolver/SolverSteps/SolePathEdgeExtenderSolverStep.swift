@@ -69,15 +69,13 @@ private class InternalSolver {
             if normal.count == 1 && markedCount == 1 {
                 grid.setEdges(state: .marked, forEdges: normal)
 
-                for edge in edges {
-                    let vertices = grid.edgeVertices(forEdge: edge)
+                let vertices = grid.edgeVertices(forEdge: normal[0])
 
-                    if grid.markedEdges(forVertex: vertices.start) == 1 {
-                        stack.append(vertices.start)
-                    }
-                    if grid.markedEdges(forVertex: vertices.end) == 1 {
-                        stack.append(vertices.end)
-                    }
+                if grid.markedEdges(forVertex: vertices.start) == 1 {
+                    stack.append(vertices.start)
+                }
+                if grid.markedEdges(forVertex: vertices.end) == 1 {
+                    stack.append(vertices.end)
                 }
             }
         }

@@ -765,13 +765,10 @@ extension LoopyGrid {
     /// Returns `nil`, if no edge is present between the two edges.
     @inlinable
     public func edgeBetween(vertex1: Int, vertex2: Int) -> Edge.Id? {
-        return edges.enumerated()
-            .lazy
-            .filter { !self.shouldIgnore($0.element) }
-            .first { (i, edge) in
-                (edge.start == vertex1 && edge.end == vertex2)
-                    || (edge.start == vertex2 && edge.end == vertex1)
-            }.map { Edge.Id($0.offset) }
+        let v1 = edgesSharing(vertexIndex: vertex1)
+        let v2 = edgesSharing(vertexIndex: vertex2)
+
+        return v1.first(where: { v2.contains($0) })
     }
 
     /// Returns an array of all edges within this grid sharing a given common
@@ -780,8 +777,7 @@ extension LoopyGrid {
     public func edgesSharing(vertexIndex: Int) -> [Edge.Id] {
         if _ignoringDisabledEdges {
             return _nonDisabledEdgesPerVertex[vertexIndex]
-        }
-        else {
+        } else {
             return _edgesPerVertex[vertexIndex]
         }
     }
