@@ -50,6 +50,10 @@ public class PermutationSolverStep: SolverStep {
 
         // Cache work
         for faceId in grid.faceIds {
+            if grid.hintForFace(faceId) != nil && grid.isFaceSolved(faceId) {
+                continue
+            }
+            
             for vertex in grid.vertices(forFace: faceId) {
                 metadata.storeVertexState(vertex, from: grid)
             }

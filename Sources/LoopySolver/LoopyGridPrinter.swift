@@ -19,6 +19,9 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     /// Whether to print the vertices' indices in place of the dot symbol
     public var printVertexIndices: Bool = false
 
+    /// Whether to colorize output
+    public var colorized: Bool = true
+
     /// Color to use when printing the marked line path to the console
     private var lineColor: ConsoleColor = .magenta
 
@@ -83,6 +86,10 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         )
     }
 
+    private func _color(_ color: ConsoleColor?) -> ConsoleColor? {
+        colorized ? color : nil
+    }
+
     public func printGrid(grid: LoopyGrid) {
         printGrid(grid: grid, width: bufferWidth - 2, height: bufferHeight - 1)
     }
@@ -124,7 +131,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
                 bresenham(x1: x1, y1: y1, x2: x2, y2: y2) { plotX, plotY, angle in
                     let segment = normalLineSegment(forAngle: angle, angleSegments: scalars)
 
-                    putString(segment.symbol, color: segment.color, x: plotX, y: plotY)
+                    putString(segment.symbol, color: _color(segment.color), x: plotX, y: plotY)
                 }
             }
         }
@@ -138,23 +145,15 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             let (x, y) = toScreen(center.x, center.y)
 
             var label: String = ""
-            if printFaceIndices {
-                label = faceIndex.description
-            }
 
             if let hint = grid.hintForFace(Face.Id(faceIndex)) {
-                if printFaceIndices {
-                    label += " [\(hint.description)]"
-                }
-                else {
-                    label = hint.description
-                }
+                label = hint.description
             }
 
             let color: ConsoleColor? =
                 grid.isFaceSolved(Face.Id(faceIndex)) ? .magenta : nil
 
-            putString(label, color: color, x: x, y: y)
+            putString(label, color: _color(color), x: x, y: y)
         }
 
         // Draw vertices as small dots
@@ -162,14 +161,38 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
             let (x, y) = toScreen(v.x, v.y)
 
             if printVertexIndices {
-                putString(i.description, color: lineColor, x: Int(x), y: Int(y))
+                putString(i.description, color: _color(lineColor), x: Int(x), y: Int(y))
                 continue
             }
 
             if grid.markedEdges(forVertex: i) > 1 {
-                putChar("•", color: lineColor, x: Int(x), y: Int(y))
+                putChar("•", color: _color(lineColor), x: Int(x), y: Int(y))
             } else {
                 putChar("•", x: Int(x), y: Int(y))
+            }
+        }
+
+        // Print face and edge indices after vertices to avoid overlaps
+
+        if printFaceIndices {
+            for faceIndex in 0..<grid.faceIds.count {
+                let poly = grid.polygonFor(face: faceIndex)
+
+                // Print the face's hint at its geometrical center
+                let center = poly.reduce(into: Vertex(x: 0, y: 0), +=) / Float(poly.count)
+
+                let (x, y) = toScreen(center.x, center.y)
+
+                let color: ConsoleColor? =
+                    grid.isFaceSolved(Face.Id(faceIndex)) ? .magenta : nil
+
+                let label: String = "[\(faceIndex)]"
+
+                if grid.hintForFace(Face.Id(faceIndex)) != nil {
+                    putString(label, color: _color(color), x: x - 1, y: y + 1)
+                } else {
+                    putString(label, color: _color(color), x: x - 1, y: y)
+                }
             }
         }
 
@@ -181,7 +204,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
                 let center = (v1 + v2) / 2
                 let edgeIndexString = edge.edgeIndex.description
                 var (x, y) = toScreen(center.x, center.y)
-                x -= edgeIndexString.count / 2
+                x -= max(0, edgeIndexString.count / 2 - 1)
 
                 putString(edgeIndexString, x: x, y: y)
             }
@@ -213,33 +236,37 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     }
 
     private func lineCharacters(forState state: Edge.State) -> [LineSegmentChar] {
-
         #if !Xcode
+        let useColors = colorized
+        #else
+        let useColor = false
+        #endif
 
+        if useColors {
             switch state {
             case .normal:
                 return ["│", "/", "╱", "─", "╲", "\\", "│"]
+
             case .marked:
                 return ["│", "/", "╱", "─", "╲", "\\", "│"].map {
                     LineSegmentChar(symbol: $0, color: lineColor)
                 }
+
             case .disabled:
                 return [" "]
             }
-
-        #else
-
+        } else {
             switch state {
             case .normal:
                 return ["│", "/", "╱", "─", "╲", "\\", "│"]
+
             case .marked:
                 return ["║", "//", "═", "\\\\", "║"]
+
             case .disabled:
                 return [" "]
             }
-
-        #endif
-
+        }
     }
 
     internal func normalLineSegment<T>(forAngle angle: Float, angleSegments: [T]) -> T {

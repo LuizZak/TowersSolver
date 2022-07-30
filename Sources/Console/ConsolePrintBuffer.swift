@@ -284,15 +284,16 @@ open class ConsolePrintBuffer {
 
         if !_storingDiff {
             // Calc diff
-            if let last = lastPrintBuffer {
+            if diffingPrint, let last = lastPrintBuffer {
                 target.print(calculateDiffPrint(old: last, new: newBuffer))
-            }
-            else {
+            } else {
                 target.print(newBuffer)
             }
         }
 
-        lastPrintBuffer = newBuffer
+        if diffingPrint {
+            lastPrintBuffer = newBuffer
+        }
     }
 
     private func getPrintBuffer(trimming: Bool = true) -> String {

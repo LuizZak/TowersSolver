@@ -20,10 +20,16 @@ public final class Solver {
     private var hasRemovedPostSolveEphemeral = false
 
     /// Whether this solver was spawned by a solver when attempting to inspect
-    /// the results of a play isolatedly.
+    /// the results of a play in isolated fashion.
     var isChildSolver = false
 
     private(set) public var grid: LoopyGrid
+
+    /// The current interactive mode.
+    ///
+    /// When in interactive mode, the solver interrupts and prints the grid to
+    /// the console after each solver iteration.
+    public var interactionMode: InteractionMode = .nonInteractive
 
     /// When the solver gets stuck and requires guessing a possible next play,
     /// this counter controls how many guesses it can attempt before stopping
@@ -129,6 +135,12 @@ public final class Solver {
     }
 
     public func solve() -> Result {
+        if case .interactive(let printer, _) = interactionMode {
+            printer.printGrid(grid: grid)
+            print("^^ input grid")
+            _ = readLine()
+        } 
+
         basicSolveCycle()
 
         if isSolved {
@@ -195,6 +207,12 @@ public final class Solver {
             if grid == oldGrid {
                 break
             }
+
+            if case .interactive(let printer, _) = interactionMode {
+                printer.printGrid(grid: grid)
+                print("^^ after simple solver iteration")
+                _ = readLine()
+            }
         }
     }
 
@@ -207,7 +225,7 @@ public final class Solver {
             }
         }
 
-        return applySteps(steps, to: grid, quitOnChange: true)
+        return applySteps(steps, to: grid, quitOnChange: !interactionMode.isInteractive)
     }
 
     private func applyPostSolveAttemptSteps(to grid: LoopyGrid) -> LoopyGrid {
@@ -226,6 +244,16 @@ public final class Solver {
         var grid = grid
         for step in steps where !_diagnosedInconsistentState {
             let newGrid = step.apply(to: grid, self)
+            
+            if !isChildSolver && grid.isConsistent != newGrid.isConsistent {
+                print("Solver step produced inconsistent grid state: \(type(of: step))")
+            }
+
+            if newGrid != grid, case .interactive(let printer, true) = interactionMode {
+                printer.printGrid(grid: newGrid)
+                print("^^ after applying \(type(of: step)) solver iteration")
+                _ = readLine()
+            }
 
             if quitOnChange && newGrid != grid {
                 return newGrid
@@ -382,6 +410,21 @@ public final class Solver {
     public enum SpeculativePlay {
         case testIsInvalid(Edge)
         case play(Edge)
+    }
+
+    public enum InteractionMode {
+        case nonInteractive
+        case interactive(_ gridPrinter: LoopyGridPrinter, pauseOnSteps: Bool = false)
+
+        var isInteractive: Bool {
+            switch self {
+            case .nonInteractive:
+                return false
+
+            case .interactive:
+                return true
+            }
+        }
     }
 }
 

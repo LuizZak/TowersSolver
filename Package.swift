@@ -20,7 +20,7 @@ let package = Package(
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "SignpostSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
-        .target(name: "App", dependencies: ["TowersSolver"]),
+        .target(name: "App", dependencies: ["TowersSolver", "LoopySolver"]),
         // Tests
         .testTarget(
             name: "GeometryTests",

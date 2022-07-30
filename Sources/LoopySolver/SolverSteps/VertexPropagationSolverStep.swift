@@ -62,7 +62,7 @@ private class InternalSolver {
         // solutions as well as edges that don't show up in any solution
         if grid.hintForFace(entry.face) != nil && !grid.facesShareEdge(entry.face, entry.start) {
             var solutions = grid.permuteSolutionsAsEdges(forFace: entry.face)
-            solutions = filterSolutionsToEntranceVertex(solutions, vertex: entry.vertexIndex)
+            solutions = filterSolutionsToEntranceVertex(solutions, sharedEdges: entry.sharedEdges, vertex: entry.vertexIndex)
 
             let toMark = solutions.reduce(faceEdges) {
                 $0.intersection($1)
@@ -75,7 +75,7 @@ private class InternalSolver {
             grid.setEdges(state: .disabled, forEdges: toDisable)
         }
 
-        for candidate in inspectCandidate(face: entry.face, entry: entry.start, markingVertex: entry.vertexIndex) {
+        for candidate in inspectCandidate(face: entry.face, entry: entry.start, sharedEdges: entry.sharedEdges, markingVertex: entry.vertexIndex) {
             if visited.insert(candidate).inserted {
                 queue.append(candidate)
             }
@@ -92,7 +92,13 @@ private class InternalSolver {
         return result
     }
 
-    func inspectCandidate(face: FaceReferenceConvertible, entry: FaceReferenceConvertible?, markingVertex: Int? = nil) -> [FaceEntry] {
+    func inspectCandidate(
+        face: FaceReferenceConvertible,
+        entry: FaceReferenceConvertible?,
+        sharedEdges: Set<LoopyGrid.EdgeId> = [],
+        markingVertex: Int? = nil
+    ) -> [FaceEntry] {
+        
         guard hintedFaces.contains(face.id) else {
             return []
         }
@@ -108,20 +114,12 @@ private class InternalSolver {
         var solutions =
             grid.permuteSolutionsAsEdges(forFace: face)
         
-        // Remove from the solutions combinations that include edges shared by
-        // the entry face, if it is available
-        if let entry = entry {
-            solutions = solutions.filter { solution in
-                !solution.contains(where: {
-                    grid.faceContainsEdge(face: entry.id, edge: $0)
-                })
-            }
-        }
-
         // If `alternativeStartEntryVertex` is present, ensure that only
-        // permutations that take that vertex as an entry to 'start' are considered
+        // permutations that take that vertex as an entry to 'start' are considered.
+        // If any solution includes a shared edge, this restriction is lifted for
+        // those cases.
         if let markingVertex = markingVertex {
-            solutions = filterSolutionsToEntranceVertex(solutions, vertex: markingVertex)
+            solutions = filterSolutionsToEntranceVertex(solutions, sharedEdges: sharedEdges, vertex: markingVertex)
         }
         
         guard !solutions.isEmpty else {
@@ -153,7 +151,16 @@ private class InternalSolver {
                     continue
                 }
 
-                result.append(FaceEntry(face: other, start: face.id, vertexIndex: vertex))
+                let sharedEdgeInSolutions: Set<Edge.Id> =
+                    Set(faceEdges)
+                    .intersection(grid.edges(forFace: other))
+                    .filter { edge in
+                        solutions.contains { solution in
+                            solution.contains(edge)
+                        }
+                    }
+
+                result.append(FaceEntry(face: other, start: face.id, sharedEdges: sharedEdgeInSolutions, vertexIndex: vertex))
             }
         }
 
@@ -211,9 +218,18 @@ private class InternalSolver {
 
     /// From an input set of solutions, trim solutions that don't include exactly
     /// a single edge containing 'vertex' in the set.
-    func filterSolutionsToEntranceVertex(_ solutions: [Set<LoopyGrid.EdgeId>], vertex: Int) -> [Set<LoopyGrid.EdgeId>] {
-        solutions.filter { solution in
-            solution.count(1, where: { grid.edgeSharesVertex($0, vertex: vertex) })
+    func filterSolutionsToEntranceVertex(
+        _ solutions: [Set<LoopyGrid.EdgeId>],
+        sharedEdges: Set<LoopyGrid.EdgeId>,
+        vertex: Int
+    ) -> [Set<LoopyGrid.EdgeId>] {
+
+        return solutions.filter { solution in
+            if !solution.isDisjoint(with: sharedEdges) {
+                return true
+            }
+            
+            return solution.count(1, where: { grid.edgeSharesVertex($0, vertex: vertex) })
         }
     }
 }
@@ -225,6 +241,10 @@ private struct FaceEntry: Hashable {
 
     /// The ID of the face that the line is exiting from.
     var start: LoopyGrid.FaceId
+
+    /// Contains one or more edges that are common between the two faces that
+    /// where used in 'start' to produce this entry.
+    var sharedEdges: Set<LoopyGrid.EdgeId>
 
     /// The index of the vertex that is being propagated to this face.
     /// Is also shared by the start face.

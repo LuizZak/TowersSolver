@@ -19,6 +19,23 @@ public class LoopyHoneycombGridGenerator: BaseLoopyGridGenerator {
         super.init(facesCount: width * height)
     }
 
+    /// Returns the ID of the face that will be generated at a specified coordinate
+    public func faceId(atX x: Int, y: Int) -> LoopyGrid.FaceId {
+        .init(y * width + x)
+    }
+
+    public func setHint(x: Int, y: Int, hint: Int?) {
+        let face = x + y * width
+
+        super.setHint(faceIndex: face, hint: hint)
+    }
+
+    public func hintForFace(atX x: Int, y: Int) -> Int? {
+        let face = x + y * width
+
+        return hints[face]
+    }
+
     public override func generate() -> LoopyGrid {
         var grid = LoopyGrid()
 
@@ -31,7 +48,7 @@ public class LoopyHoneycombGridGenerator: BaseLoopyGridGenerator {
                 let cx = 3 * a * x
                 let cy = 2 * b * y + (x % 2) * b
 
-                grid.createFace(withVertexIndices: [
+                let faceId = grid.createFace(withVertexIndices: [
                     grid.addOrGetVertex(x: cx - a, y: cy - b),
                     grid.addOrGetVertex(x: cx + a, y: cy - b),
                     grid.addOrGetVertex(x: cx + 2 * a, y: cy),
@@ -39,6 +56,8 @@ public class LoopyHoneycombGridGenerator: BaseLoopyGridGenerator {
                     grid.addOrGetVertex(x: cx - a, y: cy + b),
                     grid.addOrGetVertex(x: cx - 2 * a, y: cy),
                 ])
+
+                assert(faceId == self.faceId(atX: x, y: y), "\(faceId) == \(self.faceId(atX: x, y: y))")
             }
         }
 

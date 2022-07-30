@@ -310,4 +310,92 @@ class VertexPropagationSolverStepTests: XCTestCase {
         let printer = LoopyGridPrinter(squareGridColumns: 4, rows: 3)
         printer.printGrid(grid: result)
     }
+
+    func testApplyToGrid_invalidEdgeMarksBug() {
+        // Test grid is an excerpt from the 10x10 Honeycomb Solver test:
+        //
+        //   •───•       •───•       •───•       •───•  
+        //  /     \     /     \     /     \     /     \ 
+        // •       •───•   4   •───•   2   •───•   4   •
+        //  \     /     \     /     \     /     \     / 
+        //   •───•   3   •───•       •───•   2   •───•  
+        //  /     \     /     \     /     \     /     \ 
+        // •   4   •───•       •───•       •───•       •
+        //  \     /     \     /                 \     / 
+        //   •───•   4   •───•   2   •   •   3   •/──•\ 
+        //  /     \     /     \                 //    \\
+        // •   4   •───•   4   •   •   2   •═══•/      •
+        //  \     /     \     /           //          //
+        //   •───•       •───•   2   •/══•/  4   •/══•/ 
+        //  /     \     /     \     //          //      
+        // •   4   •───•   4   •   •\  4   •═══•/      •
+        //  \     /     \     /     \\    //            
+        //   •───•       •───•       •/  •\  3   •   •  
+        //        \     /     \     //    \\            
+        //         •───•       •───•/      •   •
+        let gen = LoopyHoneycombGridGenerator(width: 7, height: 4)
+        // Row 0
+        gen.setHint(x: 1, y: 0, hint: 3)
+        gen.setHint(x: 2, y: 0, hint: 4)
+        gen.setHint(x: 4, y: 0, hint: 2)
+        gen.setHint(x: 5, y: 0, hint: 2)
+        gen.setHint(x: 6, y: 0, hint: 4)
+        // Row 1
+        gen.setHint(x: 0, y: 1, hint: 4)
+        gen.setHint(x: 1, y: 1, hint: 4)
+        gen.setHint(x: 3, y: 1, hint: 2)
+        gen.setHint(x: 5, y: 1, hint: 3)
+        // Row 2
+        gen.setHint(x: 0, y: 2, hint: 4)
+        gen.setHint(x: 2, y: 2, hint: 4)
+        gen.setHint(x: 3, y: 2, hint: 2)
+        gen.setHint(x: 4, y: 2, hint: 2)
+        gen.setHint(x: 5, y: 2, hint: 4)
+        // Row 3
+        gen.setHint(x: 0, y: 3, hint: 4)
+        gen.setHint(x: 2, y: 3, hint: 4)
+        gen.setHint(x: 4, y: 3, hint: 4)
+        gen.setHint(x: 5, y: 3, hint: 3)
+        // Controller
+        let controller = LoopyGridController(grid: gen.generate())
+        // Helper function
+        func setEdges(x: Int, y: Int, _ states: [Edge.State]) {
+            let face = gen.faceId(atX: x, y: y)
+            let edges = controller.grid.edges(forFace: face)
+            zip(edges, states).forEach { controller.grid.setEdge(state: $1, forEdge: $0) }
+        }
+        // Edge states
+        // Row 1
+        setEdges(x: 3, y: 1, [.normal, .disabled, .disabled, .disabled])
+        setEdges(x: 4, y: 1, [.normal, .normal, .disabled, .disabled, .disabled])
+        setEdges(x: 5, y: 1, [.normal, .normal, .marked, .marked, .disabled, .disabled])
+        // Row 2
+        setEdges(x: 3, y: 2, [.disabled, .disabled, .marked, .disabled])
+        setEdges(x: 4, y: 2, [.disabled, .disabled, .marked, .marked])
+        setEdges(x: 5, y: 2, [.marked, .disabled, .marked, .marked, .disabled, .marked])
+        setEdges(x: 6, y: 2, [.normal, .marked, .marked, .marked, .disabled])
+        // Row 3
+        setEdges(x: 3, y: 3, [.disabled, .marked, .marked])
+        setEdges(x: 4, y: 3, [.marked, .disabled, .marked, .disabled, .marked, .marked])
+        setEdges(x: 5, y: 3, [.marked, .disabled, .disabled, .disabled, .marked])
+        setEdges(x: 6, y: 3, [.marked, .disabled, .disabled, .disabled, .disabled, .marked])
+
+        // Act
+        let result = sut.apply(to: controller.grid, delegate)
+        
+        // Assert
+        let edgesForFace: (_ x: Int, _ y: Int) -> [Edge.Id] = {
+            let id = gen.faceId(atX: $0, y: $1)
+            return result.edges(forFace: id)
+        }
+        let edgeStatesForFace: (_ x: Int, _ y: Int) -> [Edge.State] = {
+            edgesForFace($0, $1).map(result.edgeState(forEdge:))
+        }
+        XCTAssertEqual(edgeStatesForFace(2, 3), [.normal, .normal, .normal, .normal, .normal, .normal])
+        let printer = LoopyGridPrinter(honeycombGridColumns: 7 * 2, rows: 4 * 2, columnSize: 6.3, rowSize: 4.4)
+        printer.printFaceIndices = true
+        printer.printVertexIndices = true
+        printer.printEdgeIndices = true
+        printer.printGrid(grid: result)
+    }
 }

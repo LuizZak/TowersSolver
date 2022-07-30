@@ -1,6 +1,14 @@
 import Foundation
+import LoopySolver
 import TowersSolver
 
+// TODO: Implement command line arguments to invoke certain solvers/load game ids.
+
+#if true
+
+typealias TSolver = TowersSolver.Solver
+
+// Towers mode
 do {
     print("See solving steps interactively? (y/n)")
     let interactive = (readLine()?.lowercased().first?.description ?? "n") == "y"
@@ -50,7 +58,7 @@ do {
     grid.markSolved(x: 1, y: 7, height: 5)
     grid.markSolved(x: 4, y: 7, height: 1)
 
-    let solver = Solver(grid: grid)
+    let solver = TSolver(grid: grid)
     solver.interactive = interactive
     solver.descriptive = descriptive
 
@@ -73,3 +81,51 @@ do {
     print("Total time: \(String(format: "%.2f", msec))s")
     print("Total backtracked guess(es): \(solver.totalGuesses)")
 }
+
+#else
+
+// Loopy mode
+do {
+    print("See solving steps interactively? (y/n)")
+    let interactive = (readLine()?.lowercased().first?.description ?? "n") == "y"
+    var descriptive = false
+
+    if interactive {
+        print("Use descriptive solving steps (i.e. stop after each solver step)? (y/n)")
+        descriptive = (readLine()?.lowercased().first?.description ?? "n") == "y"
+    }
+
+    // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html#10x10t2:2b35c5f442a4a5443c2b34444223d4a4244a433e3045a4435b2d4a3a4b3a4b4d4454b44a
+    let gen = LoopyHoneycombGridGenerator(width: 10, height: 10)
+    gen.loadHints(
+        from: "2b35c5f442a4a5443c2b34444223d4a4244a433e3045a4435b2d4a3a4b3a4b4d4454b44a"
+    )
+
+    let solver = Solver(grid: gen.generate())
+    let printer = LoopyGridPrinter(honeycombGridColumns: 10, rows: 10)
+    printer.colorized = false
+    printer.diffingPrint = true
+
+    if interactive {
+        solver.interactionMode = .interactive(printer, pauseOnSteps: descriptive)
+    }
+
+    let start = clock()
+
+    _=solver.solve()
+
+    let duration = clock() - start
+
+    print("")
+    print("After solve:")
+    print("")
+
+    printer.printGrid(grid: solver.grid)
+
+    let msec = Float(duration) / Float(CLOCKS_PER_SEC)
+
+    print("Total time: \(String(format: "%.2f", msec))s")
+    // print("Total backtracked guess(es): \(solver.totalGuesses)")
+}
+
+#endif
