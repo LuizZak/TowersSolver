@@ -46,22 +46,22 @@ private class InternalSolver {
             let edgesSharingStart =
                 grid.edgesSharing(vertexIndex: grid.edgeVertices(forEdge: edge).start)
 
-            let _edgesInStart =
+            let edgesInStart =
                 edgesSharingStart
                 .only { grid.edgeState(forEdge: $0) == .marked }
 
-            guard let edgesInStart = _edgesInStart else {
+            guard let edgesInStart = edgesInStart else {
                 continue
             }
 
             let edgesSharingEnd =
                 grid.edgesSharing(vertexIndex: grid.edgeVertices(forEdge: edge).end)
 
-            let _edgesInEnd =
+            let edgesInEnd =
                 edgesSharingEnd
                 .only { grid.edgeState(forEdge: $0) == .marked }
 
-            guard let edgesInEnd = _edgesInEnd else {
+            guard let edgesInEnd = edgesInEnd else {
                 continue
             }
 
