@@ -29,14 +29,55 @@ private class InnerSolver {
         while !remaining.isEmpty {
             var network = remaining.removeFirst()
 
-            processOuterEdges(network)
-
             for other in remaining {
                 if let newNetwork = processNeighbors(network, other) {
                     remaining.remove(other)
                     network = newNetwork
                 }
             }
+
+            processOuterEdges(network)
+        }
+
+        expandEnclosedSpaces()
+    }
+
+    func expandEnclosedSpaces() {
+        let outerFaces = outerFaces()
+        let outerNetworks = toFaceNetworks(outerFaces)
+
+        let networks =
+            outerNetworks.union(
+                allConnectedNetworks(outerNetworks)
+            )
+        
+        let insideNetworks = networks.filter {
+            $0.state == .inside
+        }
+        let outsideNetworks = networks.filter {
+            $0.state == .outside
+        }
+        
+        if insideNetworks.count > 1 {
+            for network in insideNetworks {
+                let normalEdges = network.outerEdges(withStates: [.normal], in: grid)
+                guard normalEdges.count == 1 else {
+                    continue
+                }
+
+                grid.setEdge(state: .disabled, forEdge: normalEdges[0])
+            }
+        }
+
+        for network in outsideNetworks {
+            let edges = network.outerEdges(withStates: [.normal, .disabled], in: grid)
+            let normalEdges = edges.filter { grid.edgeState(forEdge: $0) == .normal }
+            let disabledEdges = edges.filter { grid.edgeState(forEdge: $0) == .disabled }
+            guard normalEdges.count == 1 && disabledEdges.count == 0 else {
+                continue
+            }
+
+            grid.setEdge(state: .disabled, forEdge: normalEdges[0])
         }
     }
 
@@ -139,6 +180,10 @@ private class InnerSolver {
                     state = .inside
                     break
                 }
+            }
+
+            if network.count == 1 && state == .unknown {
+                continue
             }
 
             let entry = FaceNetwork(faces: network, state: state)
@@ -245,6 +290,31 @@ private class InnerSolver {
         /// state `self.state`.
         func merged(with other: FaceNetwork) -> FaceNetwork {
             FaceNetwork(faces: faces.union(other.faces), state: state)
+        }
+
+        /// Returns a list of edges from all faces in this network that match
+        /// a given state set.
+        ///
+        /// - note: Edges may be between internal faces and not necessarily at
+        /// the boundary of the network.
+        func edges(withStates states: Set<Edge.State>, in grid: LoopyGrid) -> [LoopyGrid.EdgeId] {
+            return faces.reduce([]) { (edges: [LoopyGrid.EdgeId], face: LoopyGrid.FaceId) in
+                return edges + grid.edges(forFace: face).filter { (edge: LoopyGrid.EdgeId) in
+                    states.contains(grid.edgeState(forEdge: edge))
+                }
+            }
+        }
+
+        /// Returns a list of edges from all faces in this network that don't
+        /// neighbor other faces within the network that match a given state set.
+        func outerEdges(withStates states: Set<Edge.State>, in grid: LoopyGrid) -> [LoopyGrid.EdgeId] {
+            let allEdges = edges(withStates: states, in: grid)
+
+            return allEdges.filter { edge in
+                let edgeFaces = grid.facesSharing(edge: edge)
+
+                return faces.intersection(edgeFaces).count == 1
+            }
         }
 
         /// The state of the face in regards to containment within the loop.
