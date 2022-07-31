@@ -1,3 +1,6 @@
+import Commons
+import MiniLexer
+
 private func ascii(for char: UnicodeScalar) -> Int {
     return Int(char.value)
 }
@@ -14,6 +17,21 @@ public class NetGridGenerator {
         self.rows = rows
 
         grid = Grid(columns: columns, rows: rows, wrapping: wrapping)
+    }
+
+    /// Loads a grid from a game ID with the regex format `(\d+)x(\d+)(w?):(.+)`
+    public convenience init(gameId: String) throws {
+        let parsed = try ParsedGame(string: gameId)
+        self.init(parsedGame: parsed)
+    }
+
+    init(parsedGame: ParsedGame) {
+        columns = parsedGame.width
+        rows = parsedGame.height
+
+        grid = Grid(columns: columns, rows: rows, wrapping: parsedGame.wrapping)
+
+        loadFromGameID(parsedGame.field)
     }
 
     public func loadFromGameID(_ state: String) {
@@ -84,6 +102,37 @@ public class NetGridGenerator {
                     grid[column: x, row: y] = tile
                 }
             }
+        }
+    }
+
+    struct ParsedGame {
+        var width: Int
+        var height: Int
+        var wrapping: Bool
+        var field: String
+
+        /// Initializes a parsed game from a game ID with the regex format
+        /// `(\d+)x(\d+)(w?):(.+)`
+        init(string: String) throws {
+            let lexer = Lexer(input: string)
+            
+            // Width x Height
+            width = try lexer.consumeInt("Expected width integer value")
+            try lexer.advance(expectingCurrent: "x")
+            height = try lexer.consumeInt("Expected height integer value")
+
+            // Wrapping flag
+            if lexer.advanceIf(equals: "w") {
+                wrapping = true
+            } else {
+                wrapping = false
+            }
+
+            // Separator
+            try lexer.advance(expectingCurrent: ":")
+            
+            // Game string
+            field = String(lexer.consumeRemaining())
         }
     }
 }

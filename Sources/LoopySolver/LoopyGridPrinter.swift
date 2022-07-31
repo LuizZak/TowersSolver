@@ -86,6 +86,32 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
         )
     }
 
+    /// Creates a buffer fit for printing a great-hexagon grid with a given
+    /// width and height configuration.
+    ///
+    /// Column and row sizes are rounded up before being fed to the underlying
+    /// initializer as integers.
+    public convenience init(
+        greatHexagonGridColumns columns: Int,
+        rows: Int,
+        columnSize: Double = 15.5,
+        rowSize: Double = 10.5,
+        printEdgeIndices: Bool = false,
+        printFaceIndices: Bool = false,
+        printVertexIndices: Bool = false
+    ) {
+        let width = (Double(columns) * columnSize).rounded(.up) + 2
+        let height = (Double(rows) * rowSize).rounded(.up) + 1
+
+        self.init(
+            bufferWidth: Int(width),
+            bufferHeight: Int(height),
+            printEdgeIndices: printEdgeIndices,
+            printFaceIndices: printFaceIndices,
+            printVertexIndices: printVertexIndices
+        )
+    }
+
     private func _color(_ color: ConsoleColor?) -> ConsoleColor? {
         colorized ? color : nil
     }

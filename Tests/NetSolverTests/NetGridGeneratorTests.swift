@@ -296,3 +296,169 @@ extension NetGridGeneratorTests {
         XCTAssertEqual(Set(ports), expected, line: line)
     }
 }
+
+// Game ID loading tests
+extension NetGridGeneratorTests {
+    func testInitWithGameId() throws {
+        let sut = try NetGridGenerator(gameId: "5x5:91424547aadcaec8ded14c8e3")
+
+        let result = sut.grid
+        
+        let controller = NetGridController(grid: result)
+        XCTAssertFalse(result.wrapping)
+        // Row 0
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 0),
+            [.east, .east, .west, .north, .west]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 0),
+            [.L, .endPoint, .endPoint, .endPoint, .endPoint]
+        )
+        // Row 1
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 1),
+            [.east, .west, .north, .north, .north]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 1),
+            [.I, .endPoint, .T, .I, .I]
+        )
+        // Row 2
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 2),
+            [.south, .south, .north, .west, .south]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 2),
+            [.T, .L, .I, .T, .L]
+        )
+        // Row 3
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 3),
+            [.south, .south, .west, .south, .east]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 3),
+            [.endPoint, .T, .T, .T, .endPoint]
+        )
+        // Row 4
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 4),
+            [.west, .south, .south, .west, .north]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 4),
+            [.endPoint, .L, .endPoint, .T, .L]
+        )
+    }
+
+    func testInitWithGameId_wrapping() throws {
+        let sut = try NetGridGenerator(gameId: "3x5w:8688aaab6d7c688")
+
+        let result = sut.grid
+        
+        let controller = NetGridController(grid: result)
+        XCTAssertTrue(result.wrapping)
+        // Row 0
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 0),
+            [.south, .west, .south]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 0),
+            [.endPoint, .L, .endPoint]
+        )
+        // Row 1
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 1),
+            [.south, .north, .north]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 1),
+            [.endPoint, .I, .I]
+        )
+        // Row 2
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 2),
+            [.north, .east, .west]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 2),
+            [.I, .T, .L]
+        )
+        // Row 3
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 3),
+            [.south, .north, .south]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 3),
+            [.T, .T, .L]
+        )
+        // Row 4
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 4),
+            [.west, .south, .south]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 4),
+            [.L, .endPoint, .endPoint]
+        )
+    }
+
+    // TODO: Add support for barriers
+    func testInitWithGameId_skipsBarriers() throws {
+        let sut = try NetGridGenerator(gameId: "5x5:91424h547aavdcahevc8ded1h4c8e3")
+
+        let result = sut.grid
+
+        let controller = NetGridController(grid: sut.grid)
+        XCTAssertFalse(result.wrapping)
+        // Row 0
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 0),
+            [.east, .east, .west, .north, .west]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 0),
+            [.L, .endPoint, .endPoint, .endPoint, .endPoint]
+        )
+        // Row 1
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 1),
+            [.east, .west, .north, .north, .north]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 1),
+            [.I, .endPoint, .T, .I, .I]
+        )
+        // Row 2
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 2),
+            [.south, .south, .north, .west, .south]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 2),
+            [.T, .L, .I, .T, .L]
+        )
+        // Row 3
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 3),
+            [.south, .south, .west, .south, .east]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 3),
+            [.endPoint, .T, .T, .T, .endPoint]
+        )
+        // Row 4
+        XCTAssertEqual(
+            controller.tileOrientations(forRow: 4),
+            [.west, .south, .south, .west, .north]
+        )
+        XCTAssertEqual(
+            controller.tileKinds(forRow: 4),
+            [.endPoint, .L, .endPoint, .T, .L]
+        )
+    }
+}

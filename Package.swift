@@ -10,11 +10,13 @@ let package = Package(
         .library(name: "LoopySolver", targets: ["LoopySolver"]),
         .library(name: "NetSolver", targets: ["NetSolver"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/LuizZak/MiniLexer.git", from: "0.11.0")
+    ],
     targets: [
         .target(name: "Console"),
         .target(name: "Interval"),
-        .target(name: "Commons"),
+        .target(name: "Commons", dependencies: ["MiniLexer"]),
         .target(name: "Geometry", dependencies: ["Commons"]),
         .target(name: "TowersSolver", dependencies: ["Console", "Geometry"]),
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),

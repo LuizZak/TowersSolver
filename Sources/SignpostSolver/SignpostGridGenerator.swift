@@ -1,3 +1,6 @@
+import Commons
+import MiniLexer
+
 /// A Signpost grid generator
 public class SignpostGridGenerator {
     private static let dirMax = 9
@@ -12,6 +15,15 @@ public class SignpostGridGenerator {
         self.columns = columns
 
         grid = Grid(rows: rows, columns: columns)
+    }
+
+    /// Loads a Signpost grid from a given game ID.
+    public convenience init(gameId: String) throws {
+        let parsedGame = try ParsedGame(string: gameId)
+
+        self.init(rows: parsedGame.width, columns: parsedGame.height)
+
+        loadFromGameID(parsedGame.field)
     }
 
     public func loadFromGameID(_ gameId: String) {
@@ -102,6 +114,29 @@ public class SignpostGridGenerator {
                     break
                 }
             }
+        }
+    }
+
+    struct ParsedGame {
+        var width: Int
+        var height: Int
+        var field: String
+
+        /// Initializes a parsed game from a game ID with the regex format
+        /// `(\d+)x(\d+):(.+)`
+        init(string: String) throws {
+            let lexer = Lexer(input: string)
+            
+            // Width x Height
+            width = try lexer.consumeInt("Expected width integer value")
+            try lexer.advance(expectingCurrent: "x")
+            height = try lexer.consumeInt("Expected height integer value")
+
+            // Separator
+            try lexer.advance(expectingCurrent: ":")
+            
+            // Game string
+            field = String(lexer.consumeRemaining())
         }
     }
 }

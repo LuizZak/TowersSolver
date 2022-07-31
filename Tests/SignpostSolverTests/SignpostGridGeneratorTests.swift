@@ -61,4 +61,40 @@ class SignpostGridGeneratorTests: XCTestCase {
             (0, 1), (0, 2)
         ], by: { $0 == .init($1) }))
     }
+
+    func testInitWithGameId() throws {
+        // Game available at: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html#4x4:1efdgedbe12bafebca16a
+        let sut = try SignpostGridGenerator(gameId: "4x4:1efdgedbe12bafebca16a")
+
+        let result = sut.grid
+        let tiles = result.tilesSequential
+        let solutions = tiles.map(\.solution)
+        let orientations = tiles.map(\.orientation)
+        let isStartTile = tiles.map(\.isStartTile)
+        let isEndTile = tiles.map(\.isEndTile)
+        XCTAssertEqual(orientations, [
+            .south, .southWest, .southEast, .west,
+            .south, .southEast, .northEast, .south,
+            .northEast, .north, .southWest, .south,
+            .northEast, .east, .north, .north
+        ])
+        XCTAssertEqual(solutions, [
+            1, nil, nil, nil,
+            nil, nil, nil, nil,
+            12, nil, nil, nil,
+            nil, nil, nil, 16,
+        ])
+        XCTAssertEqual(isStartTile, [
+            true, false, false, false,
+            false, false, false, false,
+            false, false, false, false,
+            false, false, false, false,
+        ])
+        XCTAssertEqual(isEndTile, [
+            false, false, false, false,
+            false, false, false, false,
+            false, false, false, false,
+            false, false, false, true,
+        ])
+    }
 }
