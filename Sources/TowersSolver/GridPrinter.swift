@@ -3,7 +3,6 @@ import Foundation
 
 /// Helper for printing grids to the console using ASCII text.
 public class GridPrinter: ConsolePrintBuffer {
-
     public static func cellWidth(for grid: Grid) -> Int {
         return 6
     }
@@ -14,7 +13,6 @@ public class GridPrinter: ConsolePrintBuffer {
 }
 
 extension GridPrinter {
-
     public func printGrid(grid: Grid) {
         resetBuffer()
 
@@ -96,7 +94,12 @@ extension GridPrinter {
     }
 
     public static func printGrid(grid: Grid) {
-        let printer = GridPrinter(bufferWidth: 80, bufferHeight: 35)
+        // Padding represents padding required for the visibility clues along
+        // the edge of the grid
+        let width = 2 + GridPrinter.cellWidth(for: grid) * grid.size + 4
+        let height = 1 + GridPrinter.cellHeight(for: grid) * grid.size + 2
+
+        let printer = GridPrinter(bufferWidth: width, bufferHeight: height)
         printer.printGrid(grid: grid)
     }
 }

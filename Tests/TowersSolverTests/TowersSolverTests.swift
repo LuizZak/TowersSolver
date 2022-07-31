@@ -247,4 +247,32 @@ class TowersSolverTests: XCTestCase {
             ]
         )
     }
+
+    func testSolve_9x9_extreme() throws {
+        let gen = try GridGenerator(gameId: "9:3/4//1///3/5/5/3///2//2/4///3/2//2/4/1///5///3/4/3///2/,d3f1f2n7g2i6_8c3h8a7a5f1d")
+
+        let solver = Solver(grid: gen.grid)
+        solver.solve()
+
+        GridPrinter.printGrid(grid: solver.grid)
+
+        XCTAssert(solver.grid.isSolved)
+        XCTAssert(solver.isConsistent())
+        XCTAssertFalse(solver.hasEmptySolutionCells())
+
+        XCTAssertEqual(
+            solver.grid.cells.solutionHeights(),
+            [
+                6, 2, 7, 9, 3, 8, 4, 1, 5,
+                5, 3, 1, 4, 9, 7, 8, 2, 6,
+                2, 8, 4, 7, 5, 9, 3, 6, 1,
+                8, 1, 9, 5, 6, 4, 7, 3, 2,
+                4, 7, 6, 1, 8, 2, 9, 5, 3,
+                9, 5, 2, 3, 4, 1, 6, 8, 7,
+                7, 9, 3, 6, 2, 5, 1, 4, 8,
+                1, 6, 8, 2, 7, 3, 5, 9, 4,
+                3, 4, 5, 8, 1, 6, 2, 7, 9,
+            ]
+        )
+    }
 }
