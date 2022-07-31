@@ -84,5 +84,7 @@ public final class Solver {
                 }
             }
         }
+
+        delegate.enqueue(FlankedTileCheckerSolverStep())
     }
 }

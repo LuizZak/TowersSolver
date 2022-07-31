@@ -109,6 +109,19 @@ class SolverTests: XCTestCase {
 
         printGrid(sut.grid)
     }
+
+    func testSolve_7x7_wrapping() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#7x7w:64e843a1eb85a18e4ae7a7d8a7eb2a2dbb6171a997441a429
+        let gridGen = NetGridGenerator(rows: 7, columns: 7, wrapping: true)
+        gridGen.loadFromGameID("64e843a1eb85a18e4ae7a7d8a7eb2a2dbb6171a997441a429")
+        let sut = Solver(grid: gridGen.grid)
+        sut.maxGuesses = 0
+
+        XCTAssertTrue(sut.solve())
+
+        printGrid(sut.grid)
+    }
 }
 
 extension SolverTests {
