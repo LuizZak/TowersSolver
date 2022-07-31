@@ -4,16 +4,16 @@ private func ascii(for char: UnicodeScalar) -> Int {
 
 /// Generator for Net game grids.
 public class NetGridGenerator {
-    public let rows: Int
     public let columns: Int
+    public let rows: Int
 
     internal(set) public var grid: Grid
 
-    public init(rows: Int, columns: Int, wrapping: Bool = false) {
-        self.rows = rows
+    public init(columns: Int, rows: Int, wrapping: Bool = false) {
         self.columns = columns
+        self.rows = rows
 
-        grid = Grid(rows: rows, columns: columns, wrapping: wrapping)
+        grid = Grid(columns: columns, rows: rows, wrapping: wrapping)
     }
 
     public func loadFromGameID(_ state: String) {

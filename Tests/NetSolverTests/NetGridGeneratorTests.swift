@@ -4,7 +4,7 @@ import XCTest
 
 class NetGridGeneratorTests: XCTestCase {
     func testLoadFromGameID() {
-        let sut = NetGridGenerator(rows: 5, columns: 5)
+        let sut = NetGridGenerator(columns: 5, rows: 5)
         sut.loadFromGameID("91424547aadcaec8ded14c8e3")
         let controller = NetGridController(grid: sut.grid)
 
@@ -57,7 +57,7 @@ class NetGridGeneratorTests: XCTestCase {
 
     // TODO: Add support for barriers
     func testLoadFromGameID_skipsBarriers() {
-        let sut = NetGridGenerator(rows: 5, columns: 5)
+        let sut = NetGridGenerator(columns: 5, rows: 5)
         sut.loadFromGameID("91424h547aavdcahevc8ded1h4c8e3")
         let controller = NetGridController(grid: sut.grid)
 

@@ -36,7 +36,7 @@ class SolverInvcationTests: XCTestCase {
     }
 
     func testPossibleOrientationsForTile() {
-        let grid = Grid(rows: 1, columns: 1)
+        let grid = Grid(columns: 1, rows: 1)
         let sut = SolverInvocation(grid: grid)
 
         sut.metadata.setPossibleOrientations(column: 0, row: 0, [.east, .south])
@@ -45,7 +45,7 @@ class SolverInvcationTests: XCTestCase {
     }
 
     func testPossibleOrientationsForTile_startWithAllOrientations() {
-        let grid = Grid(rows: 1, columns: 1)
+        let grid = Grid(columns: 1, rows: 1)
         let sut = SolverInvocation(grid: grid)
 
         XCTAssertEqual(

@@ -5,7 +5,7 @@ class SolverTests: XCTestCase {
     func testSolve_4x4_trivial() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#4x4:48225b3556d73a64
-        let gridGen = NetGridGenerator(rows: 4, columns: 4)
+        let gridGen = NetGridGenerator(columns: 4, rows: 4)
         gridGen.loadFromGameID("48225b3556d73a64")
         let sut = Solver(grid: gridGen.grid)
 
@@ -55,7 +55,7 @@ class SolverTests: XCTestCase {
     func testSolve_5x5_trivial() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#5x5:85b2225e8bc17be6be5546284
-        let gridGen = NetGridGenerator(rows: 5, columns: 5)
+        let gridGen = NetGridGenerator(columns: 5, rows: 5)
         gridGen.loadFromGameID("85b2225e8bc17be6be5546284")
         let sut = Solver(grid: gridGen.grid)
 
@@ -67,7 +67,7 @@ class SolverTests: XCTestCase {
     func testSolve_7x7_trivial() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#7x7:84387c8c5e8b859ade369c88dab9c5bb18b86be4878647b41
-        let gridGen = NetGridGenerator(rows: 7, columns: 7)
+        let gridGen = NetGridGenerator(columns: 7, rows: 7)
         gridGen.loadFromGameID("84387c8c5e8b859ade369c88dab9c5bb18b86be4878647b41")
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 0
@@ -80,7 +80,7 @@ class SolverTests: XCTestCase {
     func testSolve_13x11_complex() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#13x11:2e213351914861b57bb82e2a1587aca9dde5b7d268471a111e141151deb5c7e547b77dc7bd7752593d987344b31515124b613ee258daed7d8a3752de217171e2d92c978187881e1
-        let gridGen = NetGridGenerator(rows: 11, columns: 13)
+        let gridGen = NetGridGenerator(columns: 13, rows: 11)
         gridGen.loadFromGameID(
             """
             2e213351914861b57bb82e2a1587aca9dde5\
@@ -100,7 +100,7 @@ class SolverTests: XCTestCase {
     func testSolve_5x5_wrapping_trivial() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#5x5w:9db42c3ade3c2ba4e81a4468b
-        let gridGen = NetGridGenerator(rows: 5, columns: 5, wrapping: true)
+        let gridGen = NetGridGenerator(columns: 5, rows: 5, wrapping: true)
         gridGen.loadFromGameID("9db42c3ade3c2ba4e81a4468b")
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 0
@@ -113,10 +113,23 @@ class SolverTests: XCTestCase {
     func testSolve_7x7_wrapping() {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#7x7w:64e843a1eb85a18e4ae7a7d8a7eb2a2dbb6171a997441a429
-        let gridGen = NetGridGenerator(rows: 7, columns: 7, wrapping: true)
+        let gridGen = NetGridGenerator(columns: 7, rows: 7, wrapping: true)
         gridGen.loadFromGameID("64e843a1eb85a18e4ae7a7d8a7eb2a2dbb6171a997441a429")
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 0
+
+        XCTAssertTrue(sut.solve())
+
+        printGrid(sut.grid)
+    }
+
+    func testSolve_13x11_wrapping() {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#13x11w:25b15d9884739de82e6251678646aa61c59d7d31bc218daa848244d3a2bb7cea4c4e3bb778eb2616c977675d7d6761ee41de3a698dae7d3a888497ccc581bba48b82b2e641b3448
+        let gridGen = NetGridGenerator(columns: 13, rows: 11, wrapping: true)
+        gridGen.loadFromGameID("25b15d9884739de82e6251678646aa61c59d7d31bc218daa848244d3a2bb7cea4c4e3bb778eb2616c977675d7d6761ee41de3a698dae7d3a888497ccc581bba48b82b2e641b3448")
+        let sut = Solver(grid: gridGen.grid)
+        sut.maxGuesses = 10
 
         XCTAssertTrue(sut.solve())
 

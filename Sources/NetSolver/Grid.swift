@@ -59,12 +59,12 @@ public struct Grid: GridType, Equatable {
     ///   tiles on the opposite end of the grid.
     ///
     /// - precondition: `rows > 0 && columns > 0`
-    public init(rows: Int, columns: Int, wrapping: Bool = false) {
+    public init(columns: Int, rows: Int, wrapping: Bool = false) {
         precondition(rows > 0, "Must have at least one row")
         precondition(columns > 0, "Must have at least one column")
 
-        self.rows = rows
         self.columns = columns
+        self.rows = rows
         self.wrapping = wrapping
 
         initGrid()

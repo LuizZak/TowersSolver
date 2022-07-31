@@ -5,7 +5,7 @@ class TestGridBuilder {
     let generator: NetGridGenerator
 
     init(columns: Int, rows: Int) {
-        self.generator = NetGridGenerator(rows: rows, columns: columns)
+        self.generator = NetGridGenerator(columns: columns, rows: rows)
     }
 
     func fromGameID(_ gameId: String) -> TestGridBuilder {

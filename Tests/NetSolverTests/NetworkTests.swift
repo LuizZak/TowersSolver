@@ -91,7 +91,7 @@ class NetworkTests: XCTestCase {
     }
 
     func testIsClosed_emptyNetwork() {
-        let grid = Grid(rows: 1, columns: 1)
+        let grid = Grid(columns: 1, rows: 1)
         let sut = Network(tiles: [])
 
         XCTAssertTrue(sut.isClosed(onGrid: grid))
@@ -156,7 +156,7 @@ class NetworkTests: XCTestCase {
     }
 
     func testHasLoops_emptyNetwork() {
-        let grid = Grid(rows: 1, columns: 1)
+        let grid = Grid(columns: 1, rows: 1)
         let sut = Network(tiles: [])
 
         XCTAssertFalse(sut.hasLoops(onGrid: grid))
