@@ -34,6 +34,7 @@ public class NetGridGenerator {
         loadFromGameID(parsedGame.field)
     }
 
+    // TODO: Refactor to use MiniLexer library for the string parsing
     public func loadFromGameID(_ state: String) {
         var index = state.startIndex
 

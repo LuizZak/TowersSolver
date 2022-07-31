@@ -10,6 +10,7 @@ public class BaseLoopyGridGenerator: LoopyGridGenerator {
         hints[index] = hint
     }
 
+    // TODO: Refactor to use MiniLexer library for the string parsing
     public func loadHints(from gameId: String) {
         hints = [:]
 

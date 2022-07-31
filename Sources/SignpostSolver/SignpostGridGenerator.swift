@@ -26,6 +26,7 @@ public class SignpostGridGenerator {
         loadFromGameID(parsedGame.field)
     }
 
+    // TODO: Refactor to use MiniLexer library for the string parsing
     public func loadFromGameID(_ gameId: String) {
         var index = gameId.startIndex
 

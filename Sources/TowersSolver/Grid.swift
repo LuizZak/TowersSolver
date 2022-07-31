@@ -124,6 +124,67 @@ public struct Grid {
         public var bottom: [Int]
         public var left: [Int]
 
+        /// Gets or sets the hint at a specified index.
+        /// Indices are mapped into sides top -> bottom -> left -> right, where
+        /// at every (gridSize) count the next index wraps into the first index
+        /// in next side array.
+        ///
+        /// - precondition: `index < top.count + bottom.count + left.count + right.count`
+        public subscript(index: Int) -> Int {
+            get {
+                var index = index
+
+                if index < top.count {
+                    return top[index]
+                }
+                index -= top.count
+
+                if index < bottom.count {
+                    return bottom[index]
+                }
+                index -= bottom.count
+
+                if index < left.count {
+                    return left[index]
+                }
+                index -= left.count
+
+                if index < right.count {
+                    return right[index]
+                }
+
+                preconditionFailure("\(index) <= \(top.count + bottom.count + left.count + right.count)")
+            }
+            set {
+                var index = index
+
+                if index < top.count {
+                    top[index] = newValue
+                    return
+                }
+                index -= top.count
+
+                if index < bottom.count {
+                    bottom[index] = newValue
+                    return
+                }
+                index -= bottom.count
+
+                if index < left.count {
+                    left[index] = newValue
+                    return
+                }
+                index -= left.count
+
+                if index < right.count {
+                    right[index] = newValue
+                    return
+                }
+
+                preconditionFailure("\(index) <= \(top.count + bottom.count + left.count + right.count)")
+            }
+        }
+
         public init(size: Int) {
             // Init with all zeroes on all corners
             let runs = Array(repeating: 0, count: size)
