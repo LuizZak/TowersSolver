@@ -124,6 +124,12 @@ public struct Grid {
         public var bottom: [Int]
         public var left: [Int]
 
+        /// Returns a sequential array containing the combination of
+        /// `top + bottom + left + right`
+        public var asArray: [Int] {
+            top + bottom + left + right
+        }
+
         /// Gets or sets the hint at a specified index.
         /// Indices are mapped into sides top -> bottom -> left -> right, where
         /// at every (gridSize) count the next index wraps into the first index
@@ -132,28 +138,7 @@ public struct Grid {
         /// - precondition: `index < top.count + bottom.count + left.count + right.count`
         public subscript(index: Int) -> Int {
             get {
-                var index = index
-
-                if index < top.count {
-                    return top[index]
-                }
-                index -= top.count
-
-                if index < bottom.count {
-                    return bottom[index]
-                }
-                index -= bottom.count
-
-                if index < left.count {
-                    return left[index]
-                }
-                index -= left.count
-
-                if index < right.count {
-                    return right[index]
-                }
-
-                preconditionFailure("\(index) <= \(top.count + bottom.count + left.count + right.count)")
+                asArray[index]
             }
             set {
                 var index = index

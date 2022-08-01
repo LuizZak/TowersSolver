@@ -3,16 +3,31 @@ import Foundation
 
 /// Helper for printing grids to the console using ASCII text.
 public class GridPrinter: ConsolePrintBuffer {
-    public static func cellWidth(for grid: Grid) -> Int {
-        return 6
-    }
-
-    public static func cellHeight(for grid: Grid) -> Int {
-        return 4
+    public convenience init(forGrid grid: Grid) {
+        self.init(
+            bufferWidth: GridPrinter.bufferWidth(for: grid),
+            bufferHeight: GridPrinter.bufferHeight(for: grid)
+        )
     }
 }
 
 extension GridPrinter {
+    public static func cellWidth(for grid: Grid) -> Int {
+        6
+    }
+
+    public static func cellHeight(for grid: Grid) -> Int {
+        4
+    }
+
+    public static func bufferWidth(for grid: Grid) -> Int {
+        2 + cellWidth(for: grid) * grid.size + 4
+    }
+
+    public static func bufferHeight(for grid: Grid) -> Int {
+        1 + GridPrinter.cellHeight(for: grid) * grid.size + 2
+    }
+
     public func printGrid(grid: Grid) {
         resetBuffer()
 
@@ -93,13 +108,9 @@ extension GridPrinter {
         print()
     }
 
-    public static func printGrid(grid: Grid) {
-        // Padding represents padding required for the visibility clues along
-        // the edge of the grid
-        let width = 2 + GridPrinter.cellWidth(for: grid) * grid.size + 4
-        let height = 1 + GridPrinter.cellHeight(for: grid) * grid.size + 2
-
-        let printer = GridPrinter(bufferWidth: width, bufferHeight: height)
+    public static func printGrid(grid: Grid, colorized: Bool = true) {
+        let printer = GridPrinter(forGrid: grid)
+        printer.colorized = colorized
         printer.printGrid(grid: grid)
     }
 }

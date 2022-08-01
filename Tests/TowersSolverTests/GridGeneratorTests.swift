@@ -40,4 +40,38 @@ class GridGeneratorTests: XCTestCase {
             0, 0, 0, 0, 0, 0,
         ])
     }
+
+    func testGameIdForGrid_noHints() {
+        var grid = Grid(size: 5)
+        grid.visibilities.top = [4, 0, 0, 3, 2]
+        grid.visibilities.left = [0, 0, 0, 0, 0]
+        grid.visibilities.right = [0, 0, 0, 3, 3]
+        grid.visibilities.bottom = [1, 4, 0, 2, 3]
+
+        let result = GridGenerator.gameId(for: grid)
+
+        XCTAssertEqual(result, "5:4///3/2/1/4//2/3/////////3/3")
+    }
+
+    func testGameIdForGrid_withHints() {
+        var grid = Grid(size: 8)
+        grid.visibilities.top = [0, 0, 3, 1, 5, 0, 0, 4]
+        grid.visibilities.left = [3, 3, 2, 1, 0, 4, 0, 3]
+        grid.visibilities.right = [0, 0, 0, 3, 3, 0, 4, 0]
+        grid.visibilities.bottom = [0, 0, 1, 4, 0, 2, 0, 0]
+        grid.markSolved(x: 5, y: 0, height: 3)
+        grid.markSolved(x: 0, y: 2, height: 4)
+        grid.markSolved(x: 6, y: 2, height: 3)
+        grid.markSolved(x: 2, y: 3, height: 4)
+        grid.markSolved(x: 1, y: 4, height: 1)
+        grid.markSolved(x: 7, y: 4, height: 4)
+        grid.markSolved(x: 2, y: 5, height: 6)
+        grid.markSolved(x: 7, y: 6, height: 2)
+        grid.markSolved(x: 1, y: 7, height: 5)
+        grid.markSolved(x: 4, y: 7, height: 1)
+
+        let result = GridGenerator.gameId(for: grid)
+
+        XCTAssertEqual(result, "8://3/1/5///4///1/4//2///3/3/2/1//4//3////3/3//4/,e3j4e3c4f1e4b6l2a5b1c")
+    }
 }

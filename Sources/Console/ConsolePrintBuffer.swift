@@ -18,6 +18,9 @@ open class ConsolePrintBuffer {
     /// text, green for added text, and white for unchanged)
     public var diffingPrint = false
 
+    /// Whether to allow colors in the output string.
+    public var colorized: Bool = true
+
     public init(target: ConsolePrintTarget, bufferWidth: Int, bufferHeight: Int) {
         self.target = target
         self.bufferWidth = bufferWidth
@@ -300,7 +303,7 @@ open class ConsolePrintBuffer {
         if !trimming {
             return
                 buffer
-                .map { $0.string(colorized: target.supportsTerminalColors) }
+                .map { $0.string(colorized: colorized && target.supportsTerminalColors) }
                 .joined()
         }
 
@@ -333,7 +336,7 @@ open class ConsolePrintBuffer {
         let offNext = offsetNext - 1
 
         return buffer[offset..<offNext]
-            .map { $0.string(colorized: target.supportsTerminalColors) }
+            .map { $0.string(colorized: colorized && target.supportsTerminalColors) }
             .joined()
     }
 

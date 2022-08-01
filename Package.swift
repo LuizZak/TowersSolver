@@ -11,7 +11,8 @@ let package = Package(
         .library(name: "NetSolver", targets: ["NetSolver"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/LuizZak/MiniLexer.git", from: "0.11.0")
+        .package(url: "https://github.com/LuizZak/MiniLexer.git", from: "0.11.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", .exact("1.1.3")),
     ],
     targets: [
         .target(name: "Console"),
@@ -22,7 +23,13 @@ let package = Package(
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "SignpostSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
-        .target(name: "App", dependencies: ["TowersSolver", "LoopySolver"]),
+        .target(name: "App", dependencies: [
+            "TowersSolver",
+            "LoopySolver",
+            "NetSolver",
+            "SignpostSolver",
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+        ]),
         // Tests
         .testTarget(
             name: "GeometryTests",
@@ -58,6 +65,10 @@ let package = Package(
             name: "SignpostSolverTests",
             dependencies: ["SignpostSolver"],
             path: "Tests/SignpostSolverTests"
+        ),
+        .testTarget(
+            name: "AppTests",
+            dependencies: ["App", "MiniLexer"]
         ),
     ],
     swiftLanguageVersions: [.v5]

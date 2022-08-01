@@ -1,6 +1,6 @@
 # TowersSolver
 
-A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 5.0](https://swift.org). The project also features an in-progress [Loopy](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html) (or 'Slitherlink'), [Net](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html), and [Signpost](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html) solvers.
+A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 5.0](https://swift.org). The project also features experimental [Loopy](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html) (or 'Slitherlink'), [Net](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html), and [Signpost](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html) solvers.
 
 Towers is a logic game where a _at most_ half-filled grid is presented and is to be filled with towers of height 1 through N _(N = length of square grid's side)_, such that all lines and columns have all possible tower heights, but no line or column has repeated tower heights.
 
@@ -55,14 +55,36 @@ Solution:
             1   4       2              
 ```
 
-But other puzzle combinations can be fed by changing the initial grid in `main.swift` and they'll all (most likely) be solved correctly as well.
+But other puzzle combinations can be fed by utilizing the command line arguments:
+
+```
+OVERVIEW: 
+Invokes a solver for one of Simon Tatham's puzzles available within this program.
+
+USAGE: TowersSolver <subcommand>
+
+OPTIONS:
+  -h, --help              Show help information.
+
+SUBCOMMANDS:
+  towers
+  net
+  loopy
+  signpost
+
+  See 'TowersSolver help <subcommand>' for detailed help.
+```
+
+Each solver takes in as argument a game ID for the appropriate game, and optionally a maximum number of guesses to use when solving the grid.
 
 ## Building and Running
 
 Requires: Xcode 10.2 & Swift 5.0
 
 - Clone the project and run `$ swift build`
-- Run the resulting App that was built, optionally opting-in running in interactive mode (which I recommend, cause it's cool to see the solver's thought process).
+- Run the resulting App that was built
+  - Run `swift run App` with no arguments to start a demo solve of a Towers game, optionally enabling interactive/descriptive mode.
+  - Run `swift run App --help` to check command line options for other solvers.
 
 ## Discussion
 

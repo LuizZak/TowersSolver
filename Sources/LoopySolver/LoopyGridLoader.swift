@@ -6,7 +6,7 @@ public class LoopyGridLoader {
     /// Attempts to load a Loopy grid from a given game ID.
     /// Note: Currently, only square (t0), honeycomb (t2), and great-hexagonal
     /// (t5) game configurations are recognized.
-    static func loadFromGameID(_ gameID: String) throws -> LoopyGrid {
+    public static func loadFromGameID(_ gameID: String) throws -> LoopyGrid {
         let parsed = try ParsedGame(string: gameID)
         guard let type = GridType(rawValue: parsed.type) else {
             throw Error.unsupportedGridType(parsed.type)
@@ -19,7 +19,7 @@ public class LoopyGridLoader {
         return generator.generate()
     }
 
-    enum Error: Swift.Error {
+    public enum Error: Swift.Error {
         case unsupportedGridType(_ type: Int)
     }
 
@@ -52,10 +52,23 @@ public class LoopyGridLoader {
         }
     }
 
-    private enum GridType: Int {
+    enum GridType: Int {
         case square = 0
         case honeycomb = 2
         case greatHexagon = 5
+
+        func makeGridPrinter(width: Int, height: Int) -> LoopyGridPrinter {
+            switch self {
+            case .square:
+                return LoopyGridPrinter(squareGridColumns: width, rows: height)
+            
+            case .honeycomb:
+                return LoopyGridPrinter(honeycombGridColumns: width, rows: height)
+
+            case .greatHexagon:
+                return LoopyGridPrinter(greatHexagonGridColumns: width, rows: height)
+            }
+        }
 
         func makeGenerator(width: Int, height: Int) -> BaseLoopyGridGenerator {
             switch self {
@@ -69,5 +82,17 @@ public class LoopyGridLoader {
                 return LoopyGreatHexagonGridGenerator(width: width, height: height)
             }
         }
+    }
+}
+
+public extension LoopyGridPrinter {
+    /// Returns a grid printer configured to print a game with a given ID.
+    static func forGameId(_ gameId: String) throws -> LoopyGridPrinter {
+        let parsed = try LoopyGridLoader.ParsedGame(string: gameId)
+        guard let type = LoopyGridLoader.GridType(rawValue: parsed.type) else {
+            throw LoopyGridLoader.Error.unsupportedGridType(parsed.type)
+        }
+
+        return type.makeGridPrinter(width: parsed.width, height: parsed.height)
     }
 }

@@ -30,7 +30,7 @@
 		],
 		"tasks": [
             {
-				"label": "Build (debug)",
+				"label": "Build All",
 				"type": "swift",
 				"command": "swift",
 				"group": {
@@ -48,7 +48,7 @@
 				],
 			},
             {
-				"label": "Build (release)",
+				"label": "Build Release",
 				"type": "swift",
 				"command": "swift",
 				"group": {
@@ -118,7 +118,7 @@
 				"program": "${workspaceFolder:TowersSolver}/.build/debug/TowersSolver",
 				"args": [],
 				"cwd": "${workspaceFolder:TowersSolver}",
-				"preLaunchTask": "Build (debug)"
+				"preLaunchTask": "Build All"
 			},
 			{
 				"type": "lldb",
@@ -127,7 +127,7 @@
 				"program": "${workspaceFolder:TowersSolver}/.build/release/TowersSolver",
 				"args": [],
 				"cwd": "${workspaceFolder:TowersSolver}",
-				"preLaunchTask": "Build (release)"
+				"preLaunchTask": "Build Release"
 			},
 			{
 				"type": "lldb",
@@ -135,7 +135,7 @@
 				"name": "Test TowersSolver",
 				"program": "./.build/debug/TowersSolverPackageTests.xctest",
 				"cwd": "${workspaceFolder:TowersSolver}",
-				"preLaunchTask": "Build (debug)"
+				"preLaunchTask": "Build All"
 			},
 			{
 				"type": "lldb",
@@ -146,7 +146,7 @@
 					"${input:test_filter}"
 				],
 				"cwd": "${workspaceFolder:TowersSolver}",
-				"preLaunchTask": "Build (debug)"
+				"preLaunchTask": "Build All"
 			},
 			{
 				"type": "lldb",
@@ -155,7 +155,7 @@
 				"program": "${workspaceFolder}/.build/debug/App",
 				"args": [],
 				"cwd": "${workspaceFolder:TowersSolver}",
-				"preLaunchTask": "Build (debug)"
+				"preLaunchTask": "Build All"
 			},
 			{
 				"type": "lldb",
@@ -164,7 +164,7 @@
 				"program": "${workspaceFolder}/.build/release/App",
 				"args": [],
 				"cwd": "${workspaceFolder:TowersSolver}",
-				"preLaunchTask": "Build (release)"
+				"preLaunchTask": "Build Release"
 			}
 		]
 	},
@@ -204,7 +204,7 @@
 				"scope": "file"
 			},
 		],
-		"ShortcutMenuBar.userButton01Command": "workbench.action.tasks.runTask|Build (debug)",
+		"ShortcutMenuBar.userButton01Command": "workbench.action.tasks.runTask|Build All",
 		"ShortcutMenuBar.userButton02Command": "workbench.action.tasks.runTask|Test",
 		"ShortcutMenuBar.userButton03Command": "workbench.action.tasks.runTask|Test (release)",
 	},

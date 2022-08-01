@@ -32,15 +32,20 @@ public class Solver {
     /// to improve legibility of the terminal output.
     private var _description = ""
 
-    /// Only really used when `self.interactive == true`
-    private(set) public var gridPrinter: GridPrinter = GridPrinter(
-        bufferWidth: 80,
-        bufferHeight: 35
-    )
+    /// Used when `self.interactive == true` to print grid changes to the terminal.
+    private(set) public var gridPrinter: GridPrinter
 
     public init(grid: Grid, maxGuessAttempts: Int = 3) {
         self.grid = grid
         self.maxGuessAttempts = maxGuessAttempts
+
+        gridPrinter = GridPrinter(
+            forGrid: grid
+        )
+        gridPrinter.diffingPrint = true
+        gridPrinter.storingDiff {
+            gridPrinter.printGrid(grid: grid)
+        }
     }
 
     /// Removes a height from the possibility set of a cell.

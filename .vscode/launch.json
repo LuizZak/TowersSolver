@@ -1,0 +1,59 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug TowersSolver",
+            "program": "${workspaceFolder:TowersSolver}/.build/debug/TowersSolver",
+            "args": [],
+            "cwd": "${workspaceFolder:TowersSolver}",
+            "preLaunchTask": "Build All"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release TowersSolver",
+            "program": "${workspaceFolder:TowersSolver}/.build/release/TowersSolver",
+            "args": [],
+            "cwd": "${workspaceFolder:TowersSolver}",
+            "preLaunchTask": "Build Release"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test TowersSolver",
+            "program": "./.build/debug/TowersSolverPackageTests.xctest",
+            "cwd": "${workspaceFolder:TowersSolver}",
+            "preLaunchTask": "Build All"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Test TowersSolver (filtered)",
+            "program": "./.build/debug/TowersSolverPackageTests.xctest",
+            "args": [
+                "${input:test_filter}"
+            ],
+            "cwd": "${workspaceFolder:TowersSolver}",
+            "preLaunchTask": "Build All"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug App",
+            "program": ".build/debug/App",
+            "args": [],
+            "cwd": "${workspaceFolder:TowersSolver}",
+            "preLaunchTask": "swift: Build Debug App"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release App",
+            "program": ".build/release/App",
+            "args": [],
+            "cwd": "${workspaceFolder:TowersSolver}",
+            "preLaunchTask": "swift: Build Release App"
+        }
+    ]
+}

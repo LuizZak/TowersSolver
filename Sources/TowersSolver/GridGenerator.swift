@@ -15,9 +15,6 @@ public class GridGenerator {
 
     public func loadHints(_ gameId: String) {
         do {
-            func ascii(for char: UnicodeScalar) -> Int {
-                return Int(char.value)
-            }
 
             let lexer = Lexer(input: gameId)
             
@@ -84,6 +81,56 @@ public class GridGenerator {
         }
     }
 
+    public static func gameId(for grid: Grid) -> String {
+        // 9:3/4//1///3/5/5/3///2//2/4///3/2//2/4/1///5///3/4/3///2/,d3f1f2n7g2i6_8c3h8a7a5f1d
+
+        // Visibilities
+        let visibilities = grid.visibilities.asArray.map {
+            $0 == 0 ? "" : $0.description
+        }.joined(separator: "/")
+
+        // Hints
+        var hints = ""
+
+        if grid.cells.contains(where: { $0.hasSolution }) {
+            hints += ","
+
+            var run = 0
+            for i in 0...grid.cells.count {
+                let n = i < grid.cells.count ? (grid.cells[i].solution ?? 0) : -1
+
+                if n == 0 {
+                    run += 1
+                    continue
+                }
+
+                if run > 0 {
+                    while run > 0 {
+                        let r = min(UInt8(run), 26)
+                        let scalar: UInt8 = r - 1 + asciiByte(for: "a")
+                        run -= Int(r)
+                        
+                        hints.append(
+                            Character(Unicode.Scalar(scalar))
+                        )
+                    }
+                } else {
+                    if i > 0 && n > 0 {
+                        hints += "_"
+                    }
+                }
+
+                if n > 0 {
+                    hints += n.description
+                }
+
+                run = 0
+            }
+        }
+
+        return "\(grid.size):\(visibilities)\(hints)"
+    }
+
     enum Error: Swift.Error {
         case invalidGameId
     }
@@ -107,4 +154,14 @@ public class GridGenerator {
             field = String(lexer.consumeRemaining())
         }
     }
+}
+
+private func ascii(for char: UnicodeScalar) -> Int {
+    return Int(char.value)
+}
+
+/// - precondition: 'char' represents an ASCII character that can be fit within
+/// a single byte (8 bits).
+private func asciiByte(for char: UnicodeScalar) -> UInt8 {
+    return UInt8(char.value)
 }
