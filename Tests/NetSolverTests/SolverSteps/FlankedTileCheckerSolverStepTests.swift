@@ -86,4 +86,38 @@ class FlankedTileCheckerSolverStepTests: BaseSolverStepTestClass {
             ),
         ])
     }
+
+    func testApply_flankedLTile_twoEndpoints() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTileKind(1, 1, kind: .L)
+            .setTileKind(0, 1, kind: .endPoint)
+            .setTileKind(1, 2, kind: .endPoint)
+            .build()
+        let sut = FlankedTileCheckerSolverStep()
+        mockDelegate.mock_prepare(forGrid: grid)
+
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+
+        XCTAssertEqual(result, [
+            .markImpossibleOrientations(
+                column: 1,
+                row: 1,
+                [.south]
+            ),
+        ])
+    }
+
+    func testApply_flankedLTile_twoEndpoints_ignoreIfEndpointsOnOppositeEdges() {
+        let grid = TestGridBuilder(columns: 3, rows: 3)
+            .setTileKind(1, 1, kind: .L)
+            .setTileKind(0, 1, kind: .endPoint)
+            .setTileKind(2, 2, kind: .endPoint)
+            .build()
+        let sut = FlankedTileCheckerSolverStep()
+        mockDelegate.mock_prepare(forGrid: grid)
+
+        let result = sut.apply(on: grid, delegate: mockDelegate)
+
+        XCTAssertEqual(result, [])
+    }
 }
