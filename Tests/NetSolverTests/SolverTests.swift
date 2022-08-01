@@ -103,7 +103,7 @@ class SolverTests: XCTestCase {
         let gridGen = NetGridGenerator(columns: 5, rows: 5, wrapping: true)
         gridGen.loadFromGameID("9db42c3ade3c2ba4e81a4468b")
         let sut = Solver(grid: gridGen.grid)
-        sut.maxGuesses = 0
+        sut.maxGuesses = 1
 
         XCTAssertTrue(sut.solve())
 
@@ -127,7 +127,13 @@ class SolverTests: XCTestCase {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html#13x11w:25b15d9884739de82e6251678646aa61c59d7d31bc218daa848244d3a2bb7cea4c4e3bb778eb2616c977675d7d6761ee41de3a698dae7d3a888497ccc581bba48b82b2e641b3448
         let gridGen = NetGridGenerator(columns: 13, rows: 11, wrapping: true)
-        gridGen.loadFromGameID("25b15d9884739de82e6251678646aa61c59d7d31bc218daa848244d3a2bb7cea4c4e3bb778eb2616c977675d7d6761ee41de3a698dae7d3a888497ccc581bba48b82b2e641b3448")
+        gridGen.loadFromGameID(
+            """
+            25b15d9884739de82e6251678646aa61c59d\
+            7d31bc218daa848244d3a2bb7cea4c4e3bb7\
+            78eb2616c977675d7d6761ee41de3a698dae\
+            7d3a888497ccc581bba48b82b2e641b3448
+            """)
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 10
 
