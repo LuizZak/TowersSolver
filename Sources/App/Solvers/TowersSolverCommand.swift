@@ -23,8 +23,9 @@ struct TowersSolverCommand: ParsableCommand {
     var descriptive: Bool = false
     
     func run() throws {
-        let gridGen = try GridGenerator(gameId: gameId)
-        let solver = Solver(grid: gridGen.grid)
+        let game = TowersGame()
+
+        let solver = try game.createSolver(fromGameId: gameId)
         solver.gridPrinter.diffingPrint = interactive
         solver.gridPrinter.colorized = colorized
         solver.interactive = interactive

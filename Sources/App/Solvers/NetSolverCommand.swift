@@ -20,8 +20,9 @@ struct NetSolverCommand: ParsableCommand {
     var colorized: Bool = false
     
     func run() throws {
-        let gridGen = try NetGridGenerator(gameId: gameId)
-        let solver = Solver(grid: gridGen.grid)
+        let game = NetGame()
+
+        let solver = try game.createSolver(fromGameId: gameId)
         let printer = NetGridPrinter(bufferForGridWidth: solver.grid.columns, height: solver.grid.rows)
         printer.colorized = colorized
         solver.maxGuesses = maxGuesses
@@ -29,7 +30,7 @@ struct NetSolverCommand: ParsableCommand {
         var isSolved = false
 
         let timer = Stopwatch.timing {
-            isSolved = solver.solve()
+            isSolved = solver.solve() == .solved
         }
 
         if isSolved {

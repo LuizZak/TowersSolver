@@ -1,6 +1,6 @@
-import Foundation
+import Commons
 
-public class Solver {
+public class Solver: GameSolverType {
     public var grid: Grid
 
     /// Maximum number of times the solver can try making a guess on a cell and
@@ -34,6 +34,8 @@ public class Solver {
 
     /// Used when `self.interactive == true` to print grid changes to the terminal.
     private(set) public var gridPrinter: GridPrinter
+
+    private(set) public var state: SolverState = .unsolved
 
     public init(grid: Grid, maxGuessAttempts: Int = 3) {
         self.grid = grid
@@ -546,7 +548,7 @@ extension Solver {
     /// Runs as many solving steps as possible before either solving the whole
     /// grid, or stopping after not being able to make any more attempts.
     @discardableResult
-    public func solve() -> Bool {
+    public func solve() -> SolverState {
         if resetGrid {
             // Fill in hints- these are required and are the basis for solving the
             // cells of the grid.
@@ -572,7 +574,8 @@ extension Solver {
         }
 
         if grid.isSolved {
-            return true
+            state = .solved
+            return state
         }
 
         if interactive {
@@ -666,11 +669,13 @@ extension Solver {
                 _ = readLine()
             }
 
-            if subSolver.solve() {
+            if subSolver.solve() == .solved {
                 // We solved this guy!
                 if subSolver.isConsistent() {
                     grid = subSolver.grid
-                    return true
+
+                    state = .solved
+                    return state
                 }
 
                 if interactive {
@@ -687,7 +692,10 @@ extension Solver {
             guesses += 1
         }
 
-        return grid.isSolved
+        if grid.isSolved {
+            state = .solved
+        }
+        return state
     }
 
     /// Performs a single step of the solver.

@@ -2,7 +2,7 @@ import Commons
 import Geometry
 
 /// A solver for a Signpost game
-public class Solver {
+public class Solver: GameSolverType {
     private(set) public var grid: Grid
 
     /// Graph with all potential connections between tiles.
@@ -19,6 +19,14 @@ public class Solver {
     /// subsequent tile numbered N+1 in the direction of its arrow in the grid.
     public var isSolved: Bool {
         _isSolved()
+    }
+
+    public var state: SolverState {
+        if _isSolved() {
+            return .solved
+        }
+
+        return .unsolved
     }
 
     public init(grid: Grid) {
@@ -95,7 +103,8 @@ public class Solver {
         return true
     }
 
-    public func solve() {
+    @discardableResult
+    public func solve() -> SolverState {
         defer { _postSolve() }
 
         // Connects tiles that only have one entry/exit edge
@@ -171,6 +180,8 @@ public class Solver {
         while trivialSolverStep() && complexSolverStep() {
             // empty
         }
+
+        return state
     }
 
     private func _postSolve() {

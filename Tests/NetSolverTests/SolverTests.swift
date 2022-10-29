@@ -9,7 +9,7 @@ class SolverTests: XCTestCase {
         gridGen.loadFromGameID("48225b3556d73a64")
         let sut = Solver(grid: gridGen.grid)
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         let controller = NetGridController(grid: sut.grid)
         // Row 0
@@ -59,7 +59,7 @@ class SolverTests: XCTestCase {
         gridGen.loadFromGameID("85b2225e8bc17be6be5546284")
         let sut = Solver(grid: gridGen.grid)
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         printGrid(sut.grid)
     }
@@ -72,7 +72,7 @@ class SolverTests: XCTestCase {
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 0
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         printGrid(sut.grid)
     }
@@ -92,7 +92,7 @@ class SolverTests: XCTestCase {
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 0
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         printGrid(sut.grid)
     }
@@ -105,7 +105,7 @@ class SolverTests: XCTestCase {
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 1
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         printGrid(sut.grid)
     }
@@ -118,7 +118,7 @@ class SolverTests: XCTestCase {
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 0
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         printGrid(sut.grid)
     }
@@ -137,7 +137,7 @@ class SolverTests: XCTestCase {
         let sut = Solver(grid: gridGen.grid)
         sut.maxGuesses = 10
 
-        XCTAssertTrue(sut.solve())
+        XCTAssertEqual(sut.solve(), .solved)
 
         printGrid(sut.grid)
     }

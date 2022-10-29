@@ -1,7 +1,11 @@
+import Commons
+
 /// Solver for a Net game
-public final class Solver {
+public final class Solver: GameSolverType {
     private(set) public var grid: Grid
     public var maxGuesses: Int = 0
+
+    private(set) public var state: SolverState = .unsolved
 
     public init(grid: Grid) {
         self.grid = grid
@@ -9,7 +13,7 @@ public final class Solver {
 
     /// Attempts to solve the grid for this solver, returning a boolean value
     /// indicating whether the solve attempt succeeded.
-    public func solve() -> Bool {
+    public func solve() -> SolverState {
         let solverInvocation = SolverInvocation(grid: grid)
         solverInvocation.resetPossibleOrientationsSet()
         solverInvocation.maxGuesses = maxGuesses
@@ -21,23 +25,22 @@ public final class Solver {
 
     /// Performs solver cycles for a given solver, returning a boolean indicating
     /// whether or not the grid has been solved.
-    func performSolverCycles(_ solver: SolverInvocation) -> Bool {
+    func performSolverCycles(_ solver: SolverInvocation) -> SolverState {
         let result = solver.apply()
         grid = result.grid
 
         switch result.state {
-        case .solved:
-            return true
         case .unsolved:
             return performLoopDetectionSolverStep(solver)
-        case .invalid:
-            return false
+
+        case .solved, .invalid, .unsolvable:
+            return result.state
         }
     }
 
     /// Performs loop detection solving step and returns a boolean indicating
     /// whether the function made changes to the solver's grid.
-    func performLoopDetectionSolverStep(_ solver: SolverInvocation) -> Bool {
+    func performLoopDetectionSolverStep(_ solver: SolverInvocation) -> SolverState {
         let preGrid = solver.grid
 
         let step = LoopDetectionSolverStep()
@@ -48,7 +51,7 @@ public final class Solver {
         switch result.state {
         case .solved:
             self.grid = result.grid
-            return true
+            return .solved
         default:
             break
         }
@@ -60,13 +63,13 @@ public final class Solver {
         switch solver.performGuessMoves() {
         case .gridSolved(let grid):
             self.grid = grid
-            return true
+            return .solved
 
         case .gridChanged:
             return performSolverCycles(solver)
 
         case .guessesExhausted:
-            return false
+            return .unsolved
         }
     }
 

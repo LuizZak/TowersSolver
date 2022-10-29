@@ -17,8 +17,9 @@ struct SignpostSolverCommand: ParsableCommand {
     var colorized: Bool = false
     
     func run() throws {
-        let gridGen = try SignpostGridGenerator(gameId: gameId)
-        let solver = Solver(grid: gridGen.grid)
+        let game = SignpostGame()
+
+        let solver = try game.createSolver(fromGameId: gameId)
         let printer = SignpostGridPrinter(bufferForGrid: solver.grid)
         printer.colorized = colorized
 

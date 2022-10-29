@@ -20,11 +20,11 @@ struct LoopySolverCommand: ParsableCommand {
     var colorized: Bool = false
     
     func run() throws {
-        let grid = try LoopyGridLoader.loadFromGameID(gameId)
+        let game = LoopyGame()
+
+        let solver = try game.createSolver(fromGameId: gameId)
         let printer = try LoopyGridPrinter.forGameId(gameId)
         printer.colorized = colorized
-        
-        let solver = Solver(grid: grid)
         solver.maxNumberOfGuesses = maxGuesses
 
         var isSolved = false

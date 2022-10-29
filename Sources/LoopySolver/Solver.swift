@@ -1,5 +1,7 @@
+import Commons
+
 /// Solver for a Loopy match
-public final class Solver {
+public final class Solver: GameSolverType {
     /// Shared metadata for step types
     private var metadataList: [String: SolverStepMetadata] = [:]
 
@@ -90,6 +92,18 @@ public final class Solver {
         return grid.isConsistent
     }
 
+    public var state: SolverState {
+        if isSolved {
+            return .solved
+        }
+
+        if isConsistent {
+            return .unsolved
+        }
+
+        return .unsolvable
+    }
+
     public init(grid: LoopyGrid) {
         self.grid = grid
         guessesAvailable = maxNumberOfGuesses
@@ -134,7 +148,7 @@ public final class Solver {
         postSolveAttemptSteps.append(CommonEdgesBetweenGuessesSolverStep())
     }
 
-    public func solve() -> Result {
+    public func solve() -> SolverState {
         if case .interactive(let printer, _) = interactionMode {
             printer.printGrid(grid: grid)
             print("^^ input grid")
@@ -153,11 +167,9 @@ public final class Solver {
                     }
                 }
             }
-
-            return .solved
         }
 
-        return .unsolved
+        return state
     }
 
     private func basicSolveCycle() {
@@ -393,11 +405,6 @@ public final class Solver {
         }
 
         return plays
-    }
-
-    public enum Result {
-        case solved
-        case unsolved
     }
 
     /// Represents one of the possible speculative play strategies to apply.

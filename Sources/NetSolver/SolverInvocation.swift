@@ -1,3 +1,5 @@
+import Commons
+
 class SolverInvocation {
     private typealias GuessMove = (column: Int, row: Int, orientation: Tile.Orientation)
 
@@ -32,14 +34,13 @@ class SolverInvocation {
     func apply() -> SolverInvocationResult {
         performSolverSteps()
 
-        let state: ResultState
+        let state: SolverState
         let controller = NetGridController(grid: grid)
 
         if isValid && !controller.isInvalid {
             state = controller.isSolved ? .solved : .unsolved
-        }
-        else {
-            state = .invalid
+        } else {
+            state = .unsolvable
         }
 
         return SolverInvocationResult(state: state, grid: grid)
@@ -143,7 +144,7 @@ class SolverInvocation {
                 self.grid = result.grid
                 return .gridSolved(result.grid)
 
-            case .invalid:
+            case .invalid, .unsolvable:
                 performGridAction(
                     .markImpossibleOrientations(
                         column: next.column,
@@ -234,14 +235,8 @@ class SolverInvocation {
     }
 
     struct SolverInvocationResult {
-        var state: ResultState
+        var state: SolverState
         var grid: Grid
-    }
-
-    enum ResultState {
-        case solved
-        case unsolved
-        case invalid
     }
 
     enum GuessMovesResult {
