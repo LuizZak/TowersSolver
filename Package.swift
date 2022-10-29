@@ -23,7 +23,7 @@ let package = Package(
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "SignpostSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
-        .target(name: "PatternSolver", dependencies: ["Console", "Interval", "Commons"]),
+        .target(name: "PatternSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "App", dependencies: [
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
             "TowersSolver",
