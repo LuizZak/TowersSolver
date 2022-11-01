@@ -71,6 +71,10 @@ public class PatternGridGenerator {
         // TODO: Implement clue tile parsing
     }
 
+    public func setTileState(column: Int, row: Int, _ state: PatternTile.State) {
+        grid[column: column, row: row].state = state
+    }
+
     struct ParsedGame {
         var width: Int
         var height: Int
