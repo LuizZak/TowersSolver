@@ -14,4 +14,3 @@ public class PatternGame: GameDescriptor {
         return createSolver(gen.grid)
     }
 }
-

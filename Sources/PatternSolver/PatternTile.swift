@@ -13,5 +13,10 @@ public struct PatternTile: Hashable {
 
         /// Tile is dark.
         case dark
+
+        /// Returns `true` iff `self == .light`.
+        public var isSeparator: Bool {
+            self == .light
+        }
     }
 }

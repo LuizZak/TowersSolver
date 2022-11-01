@@ -27,22 +27,24 @@ public class PatternGridGenerator {
         // 15x15:6/3.5/6.7/4.7/3.1.5/3.7/3.8/2.1.1.1/2.1.1.2/1.1/1.2.1/3.3.1/3.2/4.4/3.5/8.1.1/7.4/5.4/3.1.3/3/3/1.1/3.1.1.5/7.5/4.4.2/6.2/6.1/6/5.1/9
         let lexer = Lexer(input: gameId)
 
-        func readRunHints(lexer: Lexer, maximum: Int) throws -> PatternGrid.RunHints {
-            var hints = PatternGrid.RunHints(runs: [])
+        func readRunHints(lexer: Lexer, maximum: Int) throws -> PatternGrid.RunsHint {
+            var hint = PatternGrid.RunsHint(runs: [])
 
             while lexer.safeNextCharPasses(with: Lexer.isDigit) {
-                hints.runs.append(try lexer.consumeInt())
+                hint.runs.append(try lexer.consumeInt())
 
                 if !lexer.advanceIf(equals: ".") {
                     break
                 }
             }
 
-            if hints.requiredEmptySpace > maximum {
-                throw ParseError.invalidHints(message: "Number of hints exceeds available space. Can fit up to \(maximum) but found \(hints.requiredEmptySpace)")
+            if hint.requiredEmptySpace > maximum {
+                throw ParseError.invalidHints(
+                    message: "Number of hints exceeds available space. Can fit up to \(maximum) but found \(hint.requiredEmptySpace)"
+                )
             }
 
-            return hints
+            return hint
         }
 
         // Fill hints for columns and rows

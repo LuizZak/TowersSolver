@@ -9,7 +9,7 @@ public struct PatternGrid: GridType {
 
     /// List of hints for this Pattern grid, stored as
     /// [column0, column1, ..., columnN, row0, row1, ..., rowN]
-    public var hints: [RunHints] = []
+    public var hints: [RunsHint] = []
 
     public let rows: Int
     public let columns: Int
@@ -77,7 +77,7 @@ public struct PatternGrid: GridType {
     /// Returns the run hints for a given column index on this grid.
     ///
     /// - precondition: `column >= 0 && column <= self.columns`
-    func hintsForColumn(_ column: Int) -> RunHints {
+    func hintForColumn(_ column: Int) -> RunsHint {
         precondition(column >= 0 && column <= columns, "\(column) >= 0 && \(column) <= columns")
 
         return hints[column]
@@ -86,7 +86,7 @@ public struct PatternGrid: GridType {
     /// Returns the run hints for a given row index on this grid.
     ///
     /// - precondition: `row >= 0 && row <= self.rows`
-    func hintsForRow(_ row: Int) -> RunHints {
+    func hintForRow(_ row: Int) -> RunsHint {
         precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= rows")
 
         return hints[columns + row]
@@ -94,11 +94,17 @@ public struct PatternGrid: GridType {
 }
 
 extension PatternGrid {
-    /// Describes the hint of a column or row of a Pattern grid.
-    public struct RunHints: Equatable {
+    /// Describes the hint of a column or row of a Pattern grid as a sequence of
+    /// numbers that describe the length of individual runs of dark tiles.
+    public struct RunsHint: Equatable {
         /// A sequence of positive, non-zero numbers that describe the runs of
         /// dark squares within a column or row of a Pattern grid.
         public var runs: [Int]
+
+        /// Returns the number of runs in this runs hint object.
+        public var runCount: Int {
+            return runs.count
+        }
 
         /// Returns the number of empty spaces that are required to properly
         /// fill this list of hints.
@@ -108,5 +114,17 @@ extension PatternGrid {
         public var requiredEmptySpace: Int {
             max(0, runs.reduce(0, +) + (runs.count - 1))
         }
+
+        /// Returns a hint containing the same runs as this hint, but in reverse
+        /// order.
+        public var reversed: Self {
+            Self(runs: runs.reversed())
+        }
+    }
+}
+
+extension PatternGrid.RunsHint: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: Int...) {
+        self.runs = elements
     }
 }

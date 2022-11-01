@@ -36,6 +36,14 @@ public struct Interval<Bounds: Comparable>: ConstructibleIntervalProtocol {
     }
 }
 
+public extension Interval where Bounds: Numeric {
+    /// Returns the magnitude (or positive distance) between the start and end
+    /// of this interval.
+    var distance: Bounds.Magnitude {
+        (end - start).magnitude
+    }
+}
+
 extension Interval: Hashable where Bounds: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(start)
