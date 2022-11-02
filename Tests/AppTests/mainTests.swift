@@ -198,6 +198,40 @@ class mainTests: XCTestCase {
         XCTAssertEqual(result.standardError, "")
         XCTAssertEqual(result.terminationStatus, 0)
     }
+
+    func testPatternSolver() throws {
+        guard #available(macOS 10.13, *) else {
+            return
+        }
+
+        let result = try runSolver(commands: [
+            "pattern",
+            "5x5:1/2/1.1/2.2/2.2/4/1.2/1/2/3",
+        ])
+
+        assertMultilineContains(result.standardOutput, """
+            After solve:
+            
+                          1   2   2
+                  1   2   1   2   2
+                ╭───┬───┬───┬───┬───╮
+              4 │   │▋▋▋│▋▋▋│▋▋▋│▋▋▋│
+                ├───┼───┼───┼───┼───┤
+            1 2 │   │▋▋▋│   │▋▋▋│▋▋▋│
+                ├───┼───┼───┼───┼───┤
+              1 │▋▋▋│   │   │   │   │
+                ├───┼───┼───┼───┼───┤
+              2 │   │   │   │▋▋▋│▋▋▋│
+                ├───┼───┼───┼───┼───┤
+              3 │   │   │▋▋▋│▋▋▋│▋▋▋│
+                ╰───┴───┴───┴───┴───╯
+            
+            Total time: 0.00s
+            """)
+        
+        XCTAssertEqual(result.standardError, "")
+        XCTAssertEqual(result.terminationStatus, 0)
+    }
 }
 
 private func runSolver(commands: [String]) throws -> ProcessResult {

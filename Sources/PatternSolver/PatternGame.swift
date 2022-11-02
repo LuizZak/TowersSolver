@@ -4,6 +4,10 @@ public class PatternGame: GameDescriptor {
     public typealias GameState = PatternGrid
     public typealias SolverType = PatternSolver
 
+    public init() {
+        
+    }
+
     public func createSolver(_ state: PatternGrid) -> PatternSolver {
         PatternSolver(grid: state)
     }
