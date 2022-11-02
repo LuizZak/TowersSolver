@@ -2,7 +2,7 @@ extension IntervalProtocol {
     /// Returns true if `self` overlaps `Interval`.
     ///
     /// Unlike intersection, overlap only accounts for overlaps that result
-    /// in a > 0 resulting overlap interval
+    /// in a > 0 resulting overlap interval.
     public func overlaps<I: IntervalProtocol>(_ other: I) -> Bool where I.Bounds == Bounds {
         return start < other.end && other.start < end
     }
@@ -19,6 +19,9 @@ extension IntervalProtocol {
 
 extension ConstructibleIntervalProtocol {
     /// Returns the overlap with a given interval.
+    ///
+    /// Unlike intersection, overlap only accounts for overlaps that result
+    /// in a > 0 resulting overlap interval.
     ///
     /// Returns `nil`, in case no overlap is found.
     public func overlap<I: IntervalProtocol>(_ other: I) -> Self? where I.Bounds == Bounds {

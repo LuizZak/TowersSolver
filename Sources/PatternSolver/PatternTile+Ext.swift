@@ -21,6 +21,23 @@ extension Sequence where Element == PatternTile {
 }
 
 extension Collection where Element == PatternTile {
+    /// Returns every sequential list of dark tiles in this tile collection.
+    func darkTileRuns() -> [Range<Index>] {
+        var intervals: [Interval<Index>] = []
+
+        for index in indices {
+            if self[index].state == .dark {
+                intervals.append(
+                    .init(start: index, end: self.index(after: index))
+                )
+            }
+        }
+
+        intervals = intervals.compactIntervals()
+
+        return intervals.map { ($0.start..<$0.end) }
+    }
+
     /// If this collection contains any dark tiles, returns the index of the
     /// first dark tile that precedes a non-dark tile immediately after it.
     ///

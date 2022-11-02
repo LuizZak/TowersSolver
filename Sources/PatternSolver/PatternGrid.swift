@@ -74,10 +74,24 @@ public struct PatternGrid: GridType {
         )
     }
 
+    /// Returns a flat array of all tile states, organized in row-major order.
+    public func statesForTiles() -> [PatternTile.State] {
+        tilesSequential.map(\.state)
+    }
+
+    /// Returns the state for each tile in a specified row of this grid.
+    ///
+    /// - precondition: `row >= 0 && row <= self.rows`
+    public func statesForRow(_ row: Int) -> [PatternTile.State] {
+        precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= rows")
+
+        return tilesInRow(row).map(\.state)
+    }
+
     /// Returns the run hints for a given column index on this grid.
     ///
     /// - precondition: `column >= 0 && column <= self.columns`
-    func hintForColumn(_ column: Int) -> RunsHint {
+    public func hintForColumn(_ column: Int) -> RunsHint {
         precondition(column >= 0 && column <= columns, "\(column) >= 0 && \(column) <= columns")
 
         return hints[column]
@@ -86,11 +100,15 @@ public struct PatternGrid: GridType {
     /// Returns the run hints for a given row index on this grid.
     ///
     /// - precondition: `row >= 0 && row <= self.rows`
-    func hintForRow(_ row: Int) -> RunsHint {
+    public func hintForRow(_ row: Int) -> RunsHint {
         precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= rows")
 
         return hints[columns + row]
     }
+}
+
+extension PatternGrid: Equatable {
+    
 }
 
 extension PatternGrid {
@@ -113,6 +131,11 @@ extension PatternGrid {
         /// the list, for the expected light tile separators in between.
         public var requiredEmptySpace: Int {
             max(0, runs.reduce(0, +) + (runs.count - 1))
+        }
+
+        /// Returns the number of dark tiles for the runs in this hint.
+        public var requiredDarkTiles: Int {
+            runs.reduce(0, +)
         }
 
         /// Returns a hint containing the same runs as this hint, but in reverse

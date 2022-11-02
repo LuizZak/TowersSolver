@@ -48,6 +48,30 @@ class TileFitterTests: XCTestCase {
         ])
     }
 
+    func testFitRunsEarliest_partialFill_lastHintFilled_singleHint() {
+        // Runs:
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][ ][ ][ ][O]
+        //
+        // Expected result:
+        // nil
+        let sut = makeSut(hint: [2], tiles: tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark
+        ))
+
+        let result = sut.fitRunsEarliest()
+
+        XCTAssertEqual(result, [
+            .init(start: 3, end: 4),
+        ])
+    }
+
     func testFitRunsEarliest_prefilledTiles() {
         // Runs:
         // [O][O][O]
@@ -84,6 +108,79 @@ class TileFitterTests: XCTestCase {
             .init(start: 0, end: 2),
             .init(start: 5, end: 8),
             .init(start: 11, end: 12),
+        ])
+    }
+
+    func testFitRunsEarliest_singleTileFits() {
+        // Runs:
+        // [O][O][O][O]
+        // [O]
+        // [O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][O][O][ ][ ][ ][O][▋][▋]
+        //
+        // Expected result:
+        // [O][O][O][O][ ][O][ ][O][▋][▋]
+        let sut = makeSut(hint: [4, 1, 1], tiles: tiles(
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark,
+            .light,
+            .light
+        ))
+
+        let result = sut.fitRunsEarliest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 3),
+            .init(start: 5, end: 5),
+            .init(start: 7, end: 7),
+        ])
+    }
+
+    func testFitRunsEarliest_undecidedSpaceFit() {
+        // Runs:
+        // [O]
+        // [O][O][O][O]
+        // [O]
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][ ][ ][ ][▋][O][O][O][O][O][▋][ ][▋][O][O]
+        //
+        // Expected result:
+        // [O][ ][ ][ ][▋][O][O][O][O][O][▋][O][▋][O][O]
+        let sut = makeSut(hint: [1, 5, 1, 2], tiles: tiles(
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .light,
+            .dark,
+            .dark
+        ))
+
+        let result = sut.fitRunsEarliest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 0),
+            .init(start: 5, end: 9),
+            .init(start: 11, end: 11),
+            .init(start: 13, end: 14),
         ])
     }
 
@@ -228,6 +325,79 @@ class TileFitterTests: XCTestCase {
             .init(start: 1, end: 3),
             .init(start: 5, end: 8),
             .init(start: 12, end: 13),
+        ])
+    }
+
+    func testFitRunsLatest_singleTileFits() {
+        // Runs:
+        // [O][O][O][O]
+        // [O]
+        // [O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][O][O][ ][ ][ ][O][▋][▋]
+        //
+        // Expected result:
+        // [O][O][O][O][ ][O][ ][O][▋][▋]
+        let sut = makeSut(hint: [4, 1, 1], tiles: tiles(
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark,
+            .light,
+            .light
+        ))
+
+        let result = sut.fitRunsLatest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 3),
+            .init(start: 5, end: 5),
+            .init(start: 7, end: 7),
+        ])
+    }
+
+    func testFitRunsLatest_undecidedSpaceFit() {
+        // Runs:
+        // [O]
+        // [O][O][O][O]
+        // [O]
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][ ][ ][ ][▋][O][O][O][O][O][▋][ ][▋][O][O]
+        //
+        // Expected result:
+        // [O][ ][ ][ ][▋][O][O][O][O][O][▋][O][▋][O][O]
+        let sut = makeSut(hint: [1, 5, 1, 2], tiles: tiles(
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .light,
+            .dark,
+            .dark
+        ))
+
+        let result = sut.fitRunsLatest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 0),
+            .init(start: 5, end: 9),
+            .init(start: 11, end: 11),
+            .init(start: 13, end: 14),
         ])
     }
 
@@ -399,6 +569,64 @@ class TileFitterTests: XCTestCase {
         let result = sut.latestDarkTile()
 
         XCTAssertEqual(result, 13)
+    }
+
+    func testOverlappingIntervals_singleTile() {
+        // Runs:
+        // [O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][ ]
+        let sut = makeSut(hint: [1], tiles: tiles(
+            .dark,
+            .undecided
+        ))
+
+        let result = sut.overlappingIntervals()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 0),
+        ])
+    }
+
+    func testOverlappingIntervals_undecidedSpaceFit() {
+        // Runs:
+        // [O]
+        // [O][O][O][O]
+        // [O]
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][ ][ ][ ][▋][O][O][O][O][O][▋][ ][▋][O][O]
+        //
+        // Expected result:
+        // [O][ ][ ][ ][▋][O][O][O][O][O][▋][O][▋][O][O]
+        let sut = makeSut(hint: [1, 5, 1, 2], tiles: tiles(
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .light,
+            .dark,
+            .dark
+        ))
+
+        let result = sut.overlappingIntervals()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 0),
+            .init(start: 5, end: 9),
+            .init(start: 11, end: 11),
+            .init(start: 13, end: 14),
+        ])
     }
 
     // MARK: - Private test factory methods

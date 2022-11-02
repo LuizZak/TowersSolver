@@ -37,6 +37,34 @@ class TileFitter {
         }
     }
 
+    /// For each run in this tile fitter, returns an interval representing the
+    /// tiles that that run overlap when it is laid out in earliest/latest order
+    /// on the tile list.
+    ///
+    /// If no overlap is known to occur for that run entry, its entry is `nil`
+    /// instead.
+    func overlappingIntervals() -> [Interval<Int>?] {
+        return runs.map { runEntry in
+            guard let earliest = runEntry.earliestStartIndex else {
+                return nil
+            }
+            guard let latest = runEntry.latestStartIndex else {
+                return nil
+            }
+
+            let earliestInterval =
+                Interval(start: earliest, end: earliest + runEntry.count)
+            let latestInterval =
+                Interval(start: latest, end: latest + runEntry.count)
+
+            guard let overlap = earliestInterval.overlap(latestInterval) else {
+                return nil
+            }
+
+            return .init(start: overlap.start, end: overlap.end - 1)
+        }
+    }
+
     /// Returns the earliest possible dark tile in this run.
     ///
     /// Returns `nil` if `self.isValid == false`.
@@ -91,93 +119,21 @@ class TileFitter {
         }
     }
 
-    private static func fitRunsRecursive(
-        hint: PatternGrid.RunsHint,
-        tiles: [PatternTile],
-        state: (startHintIndex: Int, startTileIndex: Int)? = nil
-    ) -> [Interval<Int>]? {
-
-        var result: [Interval<Int>] = []
-
-        // For each run index, look for the next available space capable of
-        // containing the required run.
-        var currentIndex = 0
-        outerLoop:
-        for run in hint.runs {
-            // 0-length runs are not allowed
-            if run == 0 {
-                return nil
-            }
-
-            if currentIndex >= tiles.count {
-                break
-            }
-
-            while let nextSpaceInterval = tiles.nextAvailableSpace(fromIndex: currentIndex) {
-                let nextSpaceTiles = tiles[nextSpaceInterval]
-                
-                let spaceLength = nextSpaceTiles.count
-
-                guard spaceLength >= run else {
-                    // If there are any dark tiles in this section, not being
-                    // able to place the next necessary run results in a failure
-                    if nextSpaceTiles.darkTileCount() > 0 {
-                        return nil
-                    }
-
-                    currentIndex = nextSpaceInterval.endIndex
-                    
-                    continue
-                }
-
-                let latestFit = currentIndex + spaceLength - run
-
-                // Attempt to fill the tiles, encompassing any dark tiles that
-                // are neighboring the run, until we can fully fit the run.
-                var index = currentIndex
-                while index < latestFit {
-                    let end = index + run
-                    if end == tiles.count || nextSpaceTiles[end].state != .dark {
-                        break
-                    } else {
-                        index += 1
-                    }
-                }
-
-                let end = index + run
-                if end <= tiles.count {
-                    result.append(.init(start: index, end: end - 1))
-                    currentIndex = end + 1
-
-                    // If the run of tiles succeeds a dark tile, it means this
-                    // run is too long
-                    if index > 0 && tiles[index - 1].state == .dark {
-                        return nil
-                    }
-                    
-                    continue outerLoop
-                }
-
-                // Cannot fit tiles!
-                return nil
-            }
-        }
-
-        if result.count != hint.runCount {
-            return nil
-        } else {
-            return result
-        }
-    }
-
     private static func _fitRunsRecursive(
         hint: PatternGrid.RunsHint,
         tiles: [PatternTile],
         state: (startHintIndex: Int, startTileIndex: Int)? = nil
     ) -> [Interval<Int>]? {
 
+        var currentIndex = state?.startTileIndex ?? 0
+
         // Hints have been satisfied
         if state?.startHintIndex == hint.runCount {
+            // Check if remaining tiles have no dark tiles
+            if currentIndex < tiles.count && tiles[currentIndex...].darkTileCount() > 0 {
+                return nil
+            }
+
             return []
         }
         // No tiles available to fit!
@@ -198,7 +154,6 @@ class TileFitter {
 
         // For each run index, look for the next available space capable of
         // containing the required run.
-        var currentIndex = state?.startTileIndex ?? 0
         let lastIndex = currentIndex + tiles.count - currentRunLength
 
         var result: [Interval<Int>] = []
@@ -222,7 +177,7 @@ class TileFitter {
 
             // Attempt to fill the tiles, encompassing any dark tiles that
             // are neighboring the run, until we can fully fit the run.
-            var index = currentIndex
+            var index = nextSpaceInterval.startIndex
             while index < lastIndex {
                 let end = index + currentRunLength
                 if end == tiles.count || tiles[end].state != .dark {
@@ -257,7 +212,7 @@ class TileFitter {
                 }
 
                 // If tiles cannot fit here, increment index and try again
-                currentIndex += 1
+                currentIndex = nextSpaceInterval.startIndex + 1
                 continue
             }
 
@@ -278,11 +233,3 @@ class TileFitter {
         var latestStartIndex: Int?
     }
 }
-
-// [ ][O][ ][ ][O][ ][O][O][▋][ ][O][O][ ][ ]
-// --
-// [O][O][O]
-// [O][O][O][O]
-// [O][O]
-
-// [O][O][O][▋][O][O][O][O][▋][▋][O][O][▋][▋]
