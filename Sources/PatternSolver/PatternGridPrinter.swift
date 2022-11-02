@@ -88,7 +88,7 @@ public class PatternGridPrinter: ConsolePrintBuffer {
         
         case .dark:
             fillRect(
-                char: "▋",
+                char: "█",
                 color: nil,
                 x: x,
                 y: y,
