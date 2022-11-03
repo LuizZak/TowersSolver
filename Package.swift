@@ -23,12 +23,14 @@ let package = Package(
         .target(name: "LoopySolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "SignpostSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
+        .target(name: "PatternSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "App", dependencies: [
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
             "TowersSolver",
             "LoopySolver",
             "NetSolver",
             "SignpostSolver",
-            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            "PatternSolver",
         ]),
         // Tests
         .testTarget(
@@ -65,6 +67,11 @@ let package = Package(
             name: "SignpostSolverTests",
             dependencies: ["SignpostSolver"],
             path: "Tests/SignpostSolverTests"
+        ),
+        .testTarget(
+            name: "PatternSolverTests",
+            dependencies: ["PatternSolver"],
+            path: "Tests/PatternSolverTests"
         ),
         .testTarget(
             name: "AppTests",

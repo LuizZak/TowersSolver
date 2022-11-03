@@ -34,11 +34,33 @@ public struct Interval<Bounds: Comparable>: ConstructibleIntervalProtocol {
         self.start = interval.start
         self.end = interval.end
     }
+
+    /// Returns `true` if `value` is contained within the inclusive span
+    /// (start, end) defined by this interval.
+    public func contains(_ value: Bounds) -> Bool {
+        start <= value && end >= value
+    }
+}
+
+public extension Interval where Bounds: Numeric {
+    /// Returns the magnitude (or positive distance) between the start and end
+    /// of this interval.
+    var distance: Bounds.Magnitude {
+        (end - start).magnitude
+    }
 }
 
 extension Interval: Hashable where Bounds: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(start)
         hasher.combine(end)
+    }
+}
+
+extension Interval: Sequence where Bounds: Strideable, Bounds.Stride: SignedInteger {
+    public typealias Element = Bounds
+
+    public func makeIterator() -> AnyIterator<Bounds> {
+        AnyIterator((start...end).makeIterator())
     }
 }

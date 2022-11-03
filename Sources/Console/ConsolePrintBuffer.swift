@@ -324,7 +324,18 @@ open class ConsolePrintBuffer {
         var acc = ""
         for i in 0...maxY {
             let l = line(index: i)
-            acc += l + "\n"
+
+            // Trim trailing whitespace
+            let endIndex =
+                l.lastIndex {
+                    $0.unicodeScalars.contains { scalar in
+                        !CharacterSet.whitespaces.contains(scalar)
+                    }
+                }.map {
+                    l.index(after: $0) // Include the index that was found
+                }
+
+            acc += l[..<(endIndex ?? l.endIndex)] + "\n"
         }
         return acc
     }

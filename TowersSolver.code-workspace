@@ -189,7 +189,12 @@
 		"ShortcutMenuBar.userButton03Command": "workbench.action.tasks.runTask|Test (release)",
 
         "swift.buildArguments": [],
-        "swift.autoGenerateLaunchConfigurations": false,
+		"swift.autoGenerateLaunchConfigurations": false,
+		"cSpell.words": [
+			"bitmask",
+			"bitmasks",
+			"xtest"
+		],
 	},
 	"extensions": {
 		"recommendations": [

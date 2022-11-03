@@ -13,6 +13,7 @@ struct SolveCommand: ParsableCommand {
             NetSolverCommand.self,
             LoopySolverCommand.self,
             SignpostSolverCommand.self,
+            PatternSolverCommand.self,
         ]
     )
     
