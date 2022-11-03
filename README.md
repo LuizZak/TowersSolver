@@ -61,7 +61,7 @@ But other puzzle combinations can be fed by utilizing the command line arguments
 OVERVIEW: 
 Invokes a solver for one of Simon Tatham's puzzles available within this program.
 
-USAGE: TowersSolver <subcommand>
+USAGE: App <subcommand>
 
 OPTIONS:
   -h, --help              Show help information.
@@ -73,7 +73,7 @@ SUBCOMMANDS:
   signpost
   pattern
 
-  See 'TowersSolver help <subcommand>' for detailed help.
+  See 'App help <subcommand>' for detailed help.
 ```
 
 Each solver takes in as argument a game ID for the appropriate game, and optionally a maximum number of guesses to use when solving the grid.
