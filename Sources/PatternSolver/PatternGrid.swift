@@ -74,6 +74,66 @@ public struct PatternGrid: GridType {
         )
     }
 
+    /// Returns `true` if this grid's hints are fully solved.
+    ///
+    /// The grid must have no undecided spaces.
+    public func isSolved() -> Bool {
+        for column in tiles {
+            for tile in column {
+                if tile.state == .undecided {
+                    return false
+                }
+            }
+        }
+
+        for row in (0..<rows) {
+            let hint = hintForRow(row)
+            let tiles = tilesInRow(row)
+
+            if hint.runs != tiles.darkTileRuns().map(\.count) {
+                return false
+            }
+        }
+
+        for column in (0..<columns) {
+            let hint = hintForColumn(column)
+            let tiles = self[column: column]
+
+            if hint.runs != tiles.darkTileRuns().map(\.count) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    /// Returns `true` if the grid at its current state is valid, that is,
+    /// sequences of potential dark tile run hints can be fit in the current
+    /// dark tile runs in the grid.
+    public func isValid() -> Bool {
+        for row in (0..<rows) {
+            let hint = hintForRow(row)
+            let tiles = tilesInRow(row)
+
+            let fitter = TileFitter(hint: hint, tiles: tiles)
+            if !fitter.isValid {
+                return false
+            }
+        }
+
+        for column in (0..<columns) {
+            let hint = hintForColumn(column)
+            let tiles = self[column: column]
+
+            let fitter = TileFitter(hint: hint, tiles: tiles)
+            if !fitter.isValid {
+                return false
+            }
+        }
+
+        return true
+    }
+
     /// Returns a flat array of all tile states, organized in row-major order.
     public func statesForTiles() -> [PatternTile.State] {
         tilesSequential.map(\.state)
@@ -104,6 +164,24 @@ public struct PatternGrid: GridType {
         precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= rows")
 
         return hints[columns + row]
+    }
+
+    /// Sets the run hints for a given row column on this grid.
+    ///
+    /// - precondition: `column >= 0 && column <= self.columns`
+    public mutating func setHintForColumn(_ column: Int, runs: [Int]) {
+        precondition(column >= 0 && column <= columns, "\(column) >= 0 && \(column) <= columns")
+
+        hints[column] = .init(runs: runs)
+    }
+
+    /// Sets the run hints for a given row index on this grid.
+    ///
+    /// - precondition: `row >= 0 && row <= self.rows`
+    public mutating func setHintForRow(_ row: Int, runs: [Int]) {
+        precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= rows")
+
+        hints[columns + row] = .init(runs: runs)
     }
 }
 

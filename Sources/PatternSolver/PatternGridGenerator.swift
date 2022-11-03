@@ -71,6 +71,14 @@ public class PatternGridGenerator {
         // TODO: Implement clue tile parsing
     }
 
+    public func setColumnHint(_ column: Int, runs: [Int]) {
+        grid.setHintForColumn(column, runs: runs)
+    }
+
+    public func setRowHint(_ row: Int, runs: [Int]) {
+        grid.setHintForRow(row, runs: runs)
+    }
+
     public func setTileState(column: Int, row: Int, _ state: PatternTile.State) {
         grid[column: column, row: row].state = state
     }

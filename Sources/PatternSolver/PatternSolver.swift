@@ -26,19 +26,12 @@ public class PatternSolver: GameSolverType {
     }
 
     func updateState() {
-        state = .solved
-
-        runStepAcrossLines(grid) { (hint, tiles, coord) in
-            let runs = tiles.darkTileRuns()
-            let runLengths = runs.map { $0.count }
-
-            // Demote state as certain conditions are met
-            if runLengths != hint.runs && state == .solved {
-                state = .unsolved
-            }
-            if tiles.darkTileCount() > hint.requiredDarkTiles {
-                state = .invalid
-            }
+        if grid.isSolved() {
+            state = .solved
+        } else if !grid.isValid() {
+            state = .invalid
+        } else {
+            state = .unsolved
         }
     }
 
