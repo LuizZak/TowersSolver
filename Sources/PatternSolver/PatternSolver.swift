@@ -103,6 +103,31 @@ public class PatternSolver: GameSolverType {
                     }
                 }
             }
+
+            // Inspect gaps in possible dark tile runs that are definitely light.
+            if
+                let earliest = tileFitter.earliestAlignedRuns(),
+                let latest = tileFitter.latestAlignedRuns()
+            {
+
+                assert(earliest.count == latest.count)
+
+                for index in 0..<(earliest.count - 1) {
+                    let latestCurrent = latest[index]
+                    let earliestNext = earliest[index + 1]
+
+                    // If the latest possible allocation for this run index does
+                    // not overlap the earliest possible allocation for the next
+                    // one, it indicates that all tiles in between are light.
+                    guard latestCurrent.end < earliestNext.start else {
+                        continue
+                    }
+
+                    for lightIndex in (latestCurrent.end + 1)..<earliestNext.start {
+                        grid[coord(lightIndex)].state = .light
+                    }
+                }
+            }
         }
 
         return grid

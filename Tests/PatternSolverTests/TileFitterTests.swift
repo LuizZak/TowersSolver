@@ -13,7 +13,7 @@ class TileFitterTests: XCTestCase {
         // [ ][ ]
         //
         // Expected result:
-        // nil
+        // [O][O]
         let sut = makeSut(hint: [2], tiles: tiles(
             .undecided,
             .undecided
@@ -34,7 +34,7 @@ class TileFitterTests: XCTestCase {
         // [ ][ ][ ]
         //
         // Expected result:
-        // nil
+        // [O][O][ ]
         let sut = makeSut(hint: [2], tiles: tiles(
             .undecided,
             .undecided,
@@ -56,7 +56,7 @@ class TileFitterTests: XCTestCase {
         // [ ][ ][ ][ ][O]
         //
         // Expected result:
-        // nil
+        // [ ][ ][ ][O][O]
         let sut = makeSut(hint: [2], tiles: tiles(
             .undecided,
             .undecided,
@@ -69,6 +69,36 @@ class TileFitterTests: XCTestCase {
 
         XCTAssertEqual(result, [
             .init(start: 3, end: 4),
+        ])
+    }
+
+    func testFitRunsEarliest_trailingRuns() {
+        // Runs:
+        // [O][O]
+        // [O][O][O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][O][ ][ ][ ][O][O][ ][ ]
+        //
+        // Expected result:
+        // [O][O][ ][O][O][O][O][ ][ ]
+        let sut = makeSut(hint: [2, 4], tiles: tiles(
+            .undecided,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark,
+            .dark,
+            .undecided,
+            .undecided
+        ))
+
+        let result = sut.fitRunsEarliest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 1),
+            .init(start: 3, end: 6),
         ])
     }
 

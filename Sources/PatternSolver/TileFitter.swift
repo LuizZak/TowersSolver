@@ -90,6 +90,42 @@ class TileFitter {
         return latestStartIndex + last.count - 1
     }
 
+    /// Returns a list of intervals, one per run in this tile fitter's hint list,
+    /// representing the earliest possible allocation for the dark tile runs.
+    ///
+    /// If any run cannot be fit, `nil` is returned.
+    func earliestAlignedRuns() -> [Interval<Int>]? {
+        var result: [Interval<Int>] = []
+
+        for entry in runs {
+            guard let earliest = entry.earliestStartIndex else {
+                return nil
+            }
+
+            result.append(.init(start: earliest, end: earliest + entry.count))
+        }
+
+        return result
+    }
+
+    /// Returns a list of intervals, one per run in this tile fitter's hint list,
+    /// representing the latest possible allocation for the dark tile runs.
+    ///
+    /// If any run cannot be fit, `nil` is returned.
+    func latestAlignedRuns() -> [Interval<Int>]? {
+        var result: [Interval<Int>] = []
+
+        for entry in runs {
+            guard let latest = entry.latestStartIndex else {
+                return nil
+            }
+
+            result.append(.init(start: latest, end: latest + entry.count))
+        }
+
+        return result
+    }
+
     /// Attempts to fit a given set of runs in a given list of tiles, returning
     /// a list of intervals that describe the exact tile interval taken by each
     /// run in `runs` such that they occupy the earliest possible tile.
