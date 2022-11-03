@@ -3,6 +3,64 @@ import XCTest
 @testable import PatternSolver
 
 class TileFitterTests: XCTestCase {
+    func testPotentialRunIndices() {
+        // Runs:
+        // [O][O]
+        // [O][O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][ ][ ][ ][ ][ ][ ][ ][ ][▋][ ][ ] (12 total)
+        let sut = makeSut(hint: [2, 3], tiles: tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .undecided,
+            .undecided
+        ))
+
+        XCTAssertEqual(sut.potentialRunIndices(forTileAt: 0), [0])
+        XCTAssertEqual(sut.potentialRunIndices(forTileAt: 3), [0, 1])
+        XCTAssertEqual(sut.potentialRunIndices(forTileAt: 8), [1])
+        XCTAssertEqual(sut.potentialRunIndices(forTileAt: 10), [])
+        XCTAssertEqual(sut.potentialRunIndices(forTileAt: 11), [])
+    }
+
+    func testPotentialRunLengths() {
+        // Runs:
+        // [O][O]
+        // [O][O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][ ][ ][ ][ ][ ][ ][ ][ ][▋][ ][ ] (12 total)
+        let sut = makeSut(hint: [2, 3], tiles: tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .undecided,
+            .undecided
+        ))
+
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 0), [2])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 3), [2, 3])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 8), [3])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 10), [])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 11), [])
+    }
+
     // MARK: - fitRunsEarliest
 
     func testFitRunsEarliest_fullFill_emptyTiles_singleHint() {
@@ -431,6 +489,70 @@ class TileFitterTests: XCTestCase {
         ])
     }
 
+    func testFitRunsLatest_finalizeSingleTileRuns() {
+        // Runs: 
+        // [O]
+        // [O]
+        // [O][O][O][O][O][O][O][O]
+        // [O][O][O][O]
+        // [O][O][O][O][O]
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [▋][O][▋][O][ ][ ][ ][ ][ ][ ][ ][ ][O][ ][ ][ ][O][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][▋][▋][ ][ ]
+        //
+        // Expected result:
+        // [▋][O][▋][O][ ][ ][ ][ ][ ][ ][ ][ ][O][O][O][O][O][O][O][O][ ][O][O][O][O][ ][O][O][O][O][O][▋][▋][O][O]
+        let sut = makeSut(hint: [1, 1, 8, 4, 5, 2], tiles: tiles(
+            .light,
+            .dark,
+            .light,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .light,
+            .undecided,
+            .undecided
+        ))
+
+        let result = sut.fitRunsLatest()
+
+        XCTAssertEqual(result, [
+            .init(start: 1, end: 1),
+            .init(start: 3, end: 3),
+            .init(start: 12, end: 19),
+            .init(start: 21, end: 24),
+            .init(start: 26, end: 30),
+            .init(start: 33, end: 34),
+        ])
+    }
+
     func testFitRunsLatest_rejectZeroRunHint() {
         // Runs:
         // [] (0-length)
@@ -656,6 +778,120 @@ class TileFitterTests: XCTestCase {
             .init(start: 5, end: 9),
             .init(start: 11, end: 11),
             .init(start: 13, end: 14),
+        ])
+    }
+
+    func testEarliestAlignedRuns_encompassExistingRuns() {
+        // Runs: 
+        // [O][O][O][O][O] (5x)
+        // [O][O][O][O][O][O][O][O][O][O][O] (11x)
+        // [O][O][O][O][O] (5x)
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][O][O][O][▋][ ][ ][O][O][O][O][O][O][O][O][O][ ][ ][ ][▋][▋][▋][▋][▋][O][O][O][O][O][▋][▋][▋][▋]
+        //
+        // Expected result:
+        // [O][O][O][O][O][▋][O][O][O][O][O][O][O][O][O][O][O][ ][ ][ ][▋][▋][▋][▋][▋][O][O][O][O][O][▋][▋][▋][▋]
+        let sut = makeSut(hint: [5, 11, 5], tiles: tiles(
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .undecided,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .light,
+            .light,
+            .light,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .light,
+            .light,
+            .light
+        ))
+
+        let result = sut.earliestAlignedRuns()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 4),
+            .init(start: 6, end: 16),
+            .init(start: 25, end: 29),
+        ])
+    }
+
+    func testLatestAlignedRuns_encompassExistingRuns() {
+        // Runs: 
+        // [O][O][O][O][O] (5x)
+        // [O][O][O][O][O][O][O][O][O][O][O] (11x)
+        // [O][O][O][O][O] (5x)
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][O][O][O][▋][ ][ ][O][O][O][O][O][O][O][O][O][ ][ ][ ][▋][▋][▋][▋][▋][O][O][O][O][O][▋][▋][▋][▋]
+        //
+        // Expected result:
+        // [O][O][O][O][O][▋][ ][ ][O][O][O][O][O][O][O][O][O][O][O][ ][▋][▋][▋][▋][▋][O][O][O][O][O][▋][▋][▋][▋]
+        let sut = makeSut(hint: [5, 11, 5], tiles: tiles(
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .undecided,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            .light,
+            .light,
+            .light,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .light,
+            .light,
+            .light
+        ))
+
+        let result = sut.latestAlignedRuns()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 4),
+            .init(start: 8, end: 18),
+            .init(start: 25, end: 29),
         ])
     }
 

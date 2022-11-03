@@ -37,6 +37,42 @@ class TileFitter {
         }
     }
 
+    /// From a given tile index, returns the indices of the potential runs that
+    /// overlap it.
+    ///
+    /// Returns `nil`, if `isValid == false`.
+    func potentialRunIndices(forTileAt index: Int) -> [Int]? {
+        guard isValid else {
+            return nil
+        }
+
+        var result: [Int] = []
+
+        for (i, entry) in runs.enumerated() {
+            guard let totalSpan = entry.totalPotentialSpan else {
+                assertionFailure("found nil run entry but isValid is true")
+                return nil
+            }
+
+            if totalSpan.contains(index) {
+                result.append(i)
+            }
+        }
+
+        return result
+    }
+
+    /// Returns the length of the potential runs that overlap a given tile index.
+    ///
+    /// Returns `nil`, if `isValid == false`.
+    func potentialRunLengths(forTileAt index: Int) -> [Int]? {
+        guard let indices = potentialRunIndices(forTileAt: index) else {
+            return nil
+        }
+
+        return indices.map { self.runs[$0].count }
+    }
+
     /// For each run in this tile fitter, returns an interval representing the
     /// tiles that that run overlap when it is laid out in earliest/latest order
     /// on the tile list.
@@ -102,7 +138,7 @@ class TileFitter {
                 return nil
             }
 
-            result.append(.init(start: earliest, end: earliest + entry.count))
+            result.append(.init(start: earliest, end: earliest + entry.count - 1))
         }
 
         return result
@@ -120,7 +156,7 @@ class TileFitter {
                 return nil
             }
 
-            result.append(.init(start: latest, end: latest + entry.count))
+            result.append(.init(start: latest, end: latest + entry.count - 1))
         }
 
         return result
@@ -256,16 +292,38 @@ class TileFitter {
             return nil
         }
 
-        if result.count != (hint.runCount - currentRunIndex) {
+        guard result.count == (hint.runCount - currentRunIndex) else {
             return nil
-        } else {
-            return result
         }
+
+        // List of results should encompass exactly all the dark tiles that are
+        // present
+        let startTileIndex = state?.startTileIndex ?? 0
+        let tilesToFit = tiles[startTileIndex...]
+        for (i, tile) in tilesToFit.enumerated() where tile.state == .dark {
+            let index = i + startTileIndex
+            if !result.contains(where: { $0.start <= index && $0.end >= index }) {
+                return nil
+            }
+        }
+        
+        return result
     }
 
     private struct RunEntry {
         var count: Int
         var earliestStartIndex: Int?
         var latestStartIndex: Int?
+
+        var totalPotentialSpan: Interval<Int>? {
+            guard let earliestStartIndex = earliestStartIndex else {
+                return nil
+            }
+            guard let latestStartIndex = latestStartIndex else {
+                return nil
+            }
+            
+            return .init(start: earliestStartIndex, end: latestStartIndex + count - 1)
+        }
     }
 }

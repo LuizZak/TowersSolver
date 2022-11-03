@@ -34,6 +34,12 @@ public struct Interval<Bounds: Comparable>: ConstructibleIntervalProtocol {
         self.start = interval.start
         self.end = interval.end
     }
+
+    /// Returns `true` if `value` is contained within the inclusive span
+    /// (start, end) defined by this interval.
+    public func contains(_ value: Bounds) -> Bool {
+        start <= value && end >= value
+    }
 }
 
 public extension Interval where Bounds: Numeric {
