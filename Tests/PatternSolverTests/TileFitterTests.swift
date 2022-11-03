@@ -242,6 +242,28 @@ class TileFitterTests: XCTestCase {
         ])
     }
 
+    func testFitRunsEarliest_partialFill_existingRun() {
+        // Runs:
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][▋]
+        //
+        // Expected result:
+        // [O][O][ ]
+        let sut = makeSut(hint: [2], tiles: tiles(
+            .dark,
+            .dark,
+            .light
+        ))
+
+        let result = sut.fitRunsEarliest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 1),
+        ])
+    }
+
     func testFitRunsEarliest_partialFill_lastHintFilled_singleHint() {
         // Runs:
         // [O][O]
@@ -510,6 +532,28 @@ class TileFitterTests: XCTestCase {
 
         XCTAssertEqual(result, [
             .init(start: 1, end: 2),
+        ])
+    }
+
+    func testFitRunsLatest_partialFill_existingRun() {
+        // Runs:
+        // [O][O]
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][▋]
+        //
+        // Expected result:
+        // [O][O][ ]
+        let sut = makeSut(hint: [2], tiles: tiles(
+            .dark,
+            .dark,
+            .light
+        ))
+
+        let result = sut.fitRunsLatest()
+
+        XCTAssertEqual(result, [
+            .init(start: 0, end: 1),
         ])
     }
 

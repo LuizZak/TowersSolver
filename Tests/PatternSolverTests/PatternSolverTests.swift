@@ -214,8 +214,6 @@ class PatternSolverTests: XCTestCase {
 
         printGrid(sut.grid)
     }
-
-    
 }
 
 extension PatternSolverTests {

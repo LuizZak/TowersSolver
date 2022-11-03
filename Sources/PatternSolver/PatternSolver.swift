@@ -2,22 +2,21 @@ import Commons
 import Interval
 
 public class PatternSolver: GameSolverType {
+    private var _pending: Set<PendingCheckEntry> = []
+
     private(set) public var state: SolverState
     private(set) public var grid: PatternGrid
 
     public init(grid: PatternGrid) {
         self.grid = grid
         state = .unsolved
+
+        _pending = PendingCheckEntry.forGrid(grid)
     }
 
     public func solve() -> SolverState {
-        while state != .unsolvable {
-            let newGrid = analyzeGrid(grid: grid)
-            if newGrid == grid {
-                break
-            }
-
-            grid = newGrid
+        while state == .unsolved && !_pending.isEmpty {
+            (grid, _pending) = PatternSolver.analyzeGrid(grid: grid, entries: _pending)
         }
 
         updateState()
@@ -35,21 +34,23 @@ public class PatternSolver: GameSolverType {
         }
     }
 
-    func analyzeGrid(grid: PatternGrid) -> PatternGrid {
-        var grid = grid
+    private static func analyzeGrid(
+        grid: PatternGrid,
+        entries: Set<PendingCheckEntry>
+    ) -> (PatternGrid, Set<PendingCheckEntry>) {
 
-        runStepAcrossLines(grid) { (hint, tiles, coord) in
+        let result = runStepAcrossLines(grid, entries: entries) { (hint, tiles, setState) in
             let tileFitter = TileFitter(hint: hint, tiles: tiles)
 
             // Mark leading/trailing tiles that are guaranteed to be light
             if let earliestDarkTile = tileFitter.earliestDarkTile(), earliestDarkTile > 0 {
                 for index in 0..<earliestDarkTile {
-                    grid[coord(index)].state = .light
+                    setState(index, .light)
                 }
             }
             if let latestDarkTile = tileFitter.latestDarkTile(), latestDarkTile < tiles.count - 1 {
                 for index in (latestDarkTile + 1)..<tiles.count {
-                    grid[coord(index)].state = .light
+                    setState(index, .light)
                 }
             }
 
@@ -57,7 +58,7 @@ public class PatternSolver: GameSolverType {
             let overlaps = tileFitter.overlappingIntervals()
             for case let (i, overlap?) in overlaps.enumerated() {
                 for index in overlap.start...overlap.end {
-                    grid[coord(index)].state = .dark
+                    setState(index, .dark)
                 }
 
                 // For overlaps that match the exact hint length, surround dark
@@ -65,30 +66,28 @@ public class PatternSolver: GameSolverType {
                 let run = hint.runs[i]
                 if (overlap.start...overlap.end).count == run {
                     if overlap.start > 0 {
-                        grid[coord(overlap.start - 1)].state = .light
+                        setState(overlap.start - 1, .light)
                     }
                     if overlap.end < tiles.count - 1 {
-                        grid[coord(overlap.end + 1)].state = .light
+                        setState(overlap.end + 1, .light)
                     }
                 }
             }
 
-            // If the dark tile count match the required hints, mark remaining
-            // tiles as light
             if hint.requiredDarkTiles == tiles.darkTileCount() {
+                // If the dark tile count match the required hints, mark remaining
+                // tiles as light
                 for index in 0..<tiles.count {
                     if tiles[index].state != .dark {
-                        grid[coord(index)].state = .light
+                        setState(index, .light)
                     }
                 }
-            }
-
-            // Conversely, if the required dark tile space matches the available
-            // undecided space, fill the undecided tiles as dark
-            if hint.requiredDarkTiles == tiles.darkTileCount() + tiles.undecidedTileCount() {
+            } else if hint.requiredDarkTiles == tiles.darkTileCount() + tiles.undecidedTileCount() {
+                // Conversely, if the required dark tile space matches the available
+                // undecided space, fill the undecided tiles as dark
                 for index in 0..<tiles.count {
                     if tiles[index].state == .undecided {
-                        grid[coord(index)].state = .dark
+                        setState(index, .dark)
                     }
                 }
             }
@@ -113,7 +112,7 @@ public class PatternSolver: GameSolverType {
                     }
 
                     for lightIndex in (latestCurrent.end + 1)..<earliestNext.start {
-                        grid[coord(lightIndex)].state = .light
+                        setState(lightIndex, .light)
                     }
                 }
             }
@@ -126,36 +125,122 @@ public class PatternSolver: GameSolverType {
                 )
 
                 for index in guaranteed {
-                    grid[coord(index)].state = .dark
+                    setState(index, .dark)
                 }
             }
         }
 
-        return grid
+        return result
     }
 
-    /// Runs a given closure for each solution direction (column, row)
-    /// passing in the hint and the array of tiles for each direction.
+    /// Runs a given closure for each solution direction (column, row) in the
+    /// `entries` list, passing in the hint and the array of tiles for each
+    /// direction.
     ///
-    /// Also provides a closure that when fed an index, returns a proper
-    /// coordinate for the tile at the given index on the column/row that
+    /// Also provides a closure that when fed an index and a state, changes the
+    /// state for the tile at the given index on the appropriate column/row that
     /// it belongs.
-    private func runStepAcrossLines(
+    ///
+    /// Returns a new grid that the closure has modified, along with a set of
+    /// columns/rows that where affected in the process.
+    private static func runStepAcrossLines(
         _ grid: PatternGrid,
+        entries: Set<PendingCheckEntry>,
         _ step: (
-            _ hint: PatternGrid.RunsHint, _ tiles: [PatternTile], _ convertCoord: (_ index: Int) -> PatternGrid.CoordinateType
+            _ hint: PatternGrid.RunsHint,
+            _ tiles: [PatternTile],
+            _ setState: (_ index: Int, _ state: PatternTile.State) -> Void
         ) throws -> Void
-    ) rethrows {
-        for column in 0..<grid.columns {
-            let hint = grid.hintForColumn(column)
+    ) rethrows -> (PatternGrid, Set<PendingCheckEntry>) {
 
-            try step(hint, grid[column: column], { PatternGrid.CoordinateType(column: column, row: $0) })
+        var grid = grid
+        var newChecks: Set<PendingCheckEntry> = []
+
+        for entry in entries {
+            switch entry {
+            case .row(let row):
+                let hint = grid.hintForRow(row)
+
+                try step(hint, grid.tilesInRow(row), { (index, state) in
+                    let coordinate = PatternGrid.CoordinateType(column: index, row: row)
+
+                    guard grid[coordinate].state != state else {
+                        return
+                    }
+
+                    grid[coordinate].state = state
+                    newChecks.formUnion(PendingCheckEntry.forCoordinate(coordinate, grid: grid))
+                })
+
+            case .column(let column):
+                let hint = grid.hintForColumn(column)
+
+                try step(hint, grid.tilesInColumn(column), { (index, state) in
+                    let coordinate = PatternGrid.CoordinateType(column: column, row: index)
+
+                    guard grid[coordinate].state != state else {
+                        return
+                    }
+
+                    grid[coordinate].state = state
+                    newChecks.formUnion(PendingCheckEntry.forCoordinate(coordinate, grid: grid))
+                })
+            }
         }
 
-        for row in 0..<grid.rows {
-            let hint = grid.hintForRow(row)
+        return (grid, newChecks)
+    }
 
-            try step(hint, grid.tilesInRow(row), { PatternGrid.CoordinateType(column: $0, row: row) })
+    /// Specifies a row or column to check next after it has been modified.
+    private enum PendingCheckEntry: Hashable {
+        case row(Int)
+        case column(Int)
+
+        static func forGrid(_ grid: PatternGrid) -> Set<Self> {
+            if grid.rows == 0 || grid.columns == 0 {
+                return []
+            }
+
+            return Self
+                .forWholeColumn(0, grid: grid)
+                .union(Self.forWholeRow(0, grid: grid))
+        }
+
+        static func forWholeColumn(_ column: Int, grid: PatternGrid) -> Set<Self> {
+            var result: Set<Self> = []
+
+            for row in 0..<grid.rows {
+                result.insert(.row(row))
+            }
+
+            return result
+        }
+
+        static func forWholeRow(_ row: Int, grid: PatternGrid) -> Set<Self> {
+            var result: Set<Self> = []
+
+            for column in 0..<grid.columns {
+                result.insert(.column(column))
+            }
+
+            return result
+        }
+
+        static func forTile(column: Int, row: Int, grid: PatternGrid) -> Set<Self> {
+            var result: Set<Self> = []
+
+            if grid.columnContainsState(column, state: .undecided) {
+                result.insert(.column(column))
+            }
+            if grid.rowContainsState(row, state: .undecided) {
+                result.insert(.row(row))
+            }
+
+            return result
+        }
+
+        static func forCoordinate(_ coordinate: PatternGrid.CoordinateType, grid: PatternGrid) -> Set<Self> {
+            forTile(column: coordinate.column, row: coordinate.row, grid: grid)
         }
     }
 }

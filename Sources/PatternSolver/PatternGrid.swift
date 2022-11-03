@@ -97,7 +97,7 @@ public struct PatternGrid: GridType {
 
         for column in (0..<columns) {
             let hint = hintForColumn(column)
-            let tiles = self[column: column]
+            let tiles = tilesInColumn(column)
 
             if hint.runs != tiles.darkTileRuns().map(\.count) {
                 return false
@@ -123,7 +123,7 @@ public struct PatternGrid: GridType {
 
         for column in (0..<columns) {
             let hint = hintForColumn(column)
-            let tiles = self[column: column]
+            let tiles = tilesInColumn(column)
 
             let fitter = TileFitter(hint: hint, tiles: tiles)
             if !fitter.isValid {
@@ -143,9 +143,58 @@ public struct PatternGrid: GridType {
     ///
     /// - precondition: `row >= 0 && row <= self.rows`
     public func statesForRow(_ row: Int) -> [PatternTile.State] {
-        precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= rows")
+        precondition(row >= 0 && row <= rows, "\(row) >= 0 && \(row) <= \(rows)")
 
-        return tilesInRow(row).map(\.state)
+        var result: [PatternTile.State] = .init(repeating: .undecided, count: columns)
+
+        for column in 0..<columns {
+            result[column] = self[column: column, row: row].state
+        }
+
+        return result
+    }
+
+    /// Returns the state for each tile in a specified column of this grid.
+    ///
+    /// - precondition: `column >= 0 && column <= self.columns`
+    public func statesForColumn(_ column: Int) -> [PatternTile.State] {
+        precondition(column >= 0 && column <= columns, "\(column) >= 0 && \(column) <= \(columns)")
+
+        var result: [PatternTile.State] = .init(repeating: .undecided, count: rows)
+
+        for row in 0..<rows {
+            result[row] = self[column: column, row: row].state
+        }
+
+        return result
+    }
+
+    /// Returns whether a tile with a specified state exists on a specified row
+    /// of this grid.
+    ///
+    /// - precondition: `row >= 0 && row <= self.rows`
+    public func rowContainsState(_ row: Int, state: PatternTile.State) -> Bool {
+        for column in 0..<columns {
+            if self[column: column, row: row].state == state {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /// Returns whether a tile with a specified state exists on a specified column
+    /// of this grid.
+    ///
+    /// - precondition: `column >= 0 && column <= self.columns`
+    public func columnContainsState(_ column: Int, state: PatternTile.State) -> Bool {
+        for row in 0..<rows {
+            if self[column: column, row: row].state == state {
+                return true
+            }
+        }
+
+        return false
     }
 
     /// Returns the run hints for a given column index on this grid.

@@ -4,19 +4,34 @@ extension Sequence where Element == PatternTile {
     /// Returns the number of tiles in this sequence of tiles that have a state of
     /// `PatternTile.State.undecided`.
     func undecidedTileCount() -> Int {
-        reduce(0, { $0 + ($1.state == .undecided ? 1 : 0) })
+        count(where: { $0.state == .undecided })
     }
 
     /// Returns the number of tiles in this sequence of tiles that have a state of
     /// `PatternTile.State.dark`.
     func darkTileCount() -> Int {
-        reduce(0, { $0 + ($1.state == .dark ? 1 : 0) })
+        count(where: { $0.state == .dark })
     }
 
     /// Returns the number of tiles in this sequence of tiles that have a state of
     /// `PatternTile.State.light`.
     func lightTileCount() -> Int {
-        reduce(0, { $0 + ($1.state == .light ? 1 : 0) })
+        count(where: { $0.state == .light })
+    }
+
+    /// Returns `true` if a tile in this sequence has a state of `PatternTile.State.undecided`.
+    func hasUndecidedTile() -> Bool {
+        contains { $0.state == .undecided }
+    }
+
+    /// Returns `true` if a tile in this sequence has a state of `PatternTile.State.dark`.
+    func hasDarkTile() -> Bool {
+        contains { $0.state == .dark }
+    }
+
+    /// Returns `true` if a tile in this sequence has a state of `PatternTile.State.light`.
+    func hasLightTile() -> Bool {
+        contains { $0.state == .light }
     }
 }
 
@@ -34,6 +49,64 @@ extension Collection where Element == PatternTile {
         }
 
         intervals = intervals.compactIntervals()
+
+        return intervals.map { ($0.start..<$0.end) }
+    }
+
+    /// Returns a list of sequential dark tiles that are enclosed in either the
+    /// boundaries of the collection or are enclosed between light tiles.
+    ///
+    /// List is capped at the first run of dark tiles that is not enclosed.
+    func leftmostEnclosedDarkTileRuns() -> [Range<Index>] {
+        /*
+        return darkTileRuns().prefix { range in
+            if range.lowerBound > startIndex && self[range.lowerBound].state != .light {
+                return false
+            }
+            if range.upperBound < endIndex && self[range.upperBound].state != .light {
+                return false
+            }
+
+            return true
+        }
+        */
+
+        var intervals: [Interval<Index>] = []
+        var lastTileState: PatternTile.State?
+        var current: Index?
+
+        for index in indices {
+            defer { lastTileState = self[index].state }
+            
+            if let c = current {
+                if self[index].state == .light {
+                    intervals.append(
+                        .init(start: c, end: index)
+                    )
+
+                    current = nil
+                } else if self[index].state == .undecided {
+                    current = nil
+                    break
+                }
+            } else if self[index].state == .dark {
+                // If this run starts after an undecided tile, stop counting the
+                // runs.
+                if lastTileState == .undecided {
+                    current = nil
+                    break
+                }
+
+                current = index
+            } else if self[index].state == .undecided {
+                break
+            }
+        }
+
+        // Close current runs
+        if let current = current {
+            intervals.append(.init(start: current, end: self.endIndex))
+        }
 
         return intervals.map { ($0.start..<$0.end) }
     }

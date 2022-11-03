@@ -38,6 +38,9 @@ public protocol GridType {
     /// Returns all the tiles contained within a given row within this grid.
     func tilesInRow(_ row: Int) -> [TileType]
 
+    /// Returns all the tiles contained within a given column within this grid.
+    func tilesInColumn(_ column: Int) -> [TileType]
+
     /// Returns `true` if the given column/row combination represents a valid
     /// tile in this grid.
     func isWithinBounds(column: Int, row: Int) -> Bool
@@ -77,6 +80,10 @@ public extension GridType {
 
     func tilesInRow(_ row: Int) -> [TileType] {
         (0..<columns).map { self[column: $0, row: row] }
+    }
+
+    func tilesInColumn(_ column: Int) -> [TileType] {
+        self[column: column]
     }
 
     func isWithinBounds(column: Int, row: Int) -> Bool {

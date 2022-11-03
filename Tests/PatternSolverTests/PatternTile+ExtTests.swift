@@ -92,6 +92,92 @@ class PatternTile_ExtTests: XCTestCase {
         )
     }
 
+    func testLeftmostEnclosedDarkTileRuns_emptyTileSet() {
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][ ][ ][ ]
+        let sut = tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided
+        )
+
+        let result = sut.leftmostEnclosedDarkTileRuns()
+
+        XCTAssertEqual(result, [])
+    }
+
+    func testLeftmostEnclosedDarkTileRuns_stopOnUnboundedRuns() {
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][▋][O][O][O][▋][O][O][ ]
+        let sut = tiles(
+            .dark,
+            .dark,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .dark,
+            .dark,
+            .undecided
+        )
+
+        let result = sut.leftmostEnclosedDarkTileRuns()
+
+        XCTAssertEqual(result, [
+            (0..<2),
+            (3..<6),
+        ])
+    }
+
+    func testLeftmostEnclosedDarkTileRuns_stopOnFirstUndecidedTile() {
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [O][O][▋][ ][▋][O][O][O][▋][O][O][ ]
+        let sut = tiles(
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .dark,
+            .dark,
+            .undecided
+        )
+
+        let result = sut.leftmostEnclosedDarkTileRuns()
+
+        XCTAssertEqual(result, [
+            (0..<2),
+        ])
+    }
+
+    func testLeftmostEnclosedDarkTileRuns_stopOnFirstRunTrailingAnUndecidedTile() {
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][O][O][▋][O][O][O][▋][O][O][ ]
+        let sut = tiles(
+            .undecided,
+            .dark,
+            .dark,
+            .light,
+            .dark,
+            .dark,
+            .dark,
+            .light,
+            .dark,
+            .dark,
+            .undecided
+        )
+
+        let result = sut.leftmostEnclosedDarkTileRuns()
+
+        XCTAssertEqual(result, [])
+    }
+
     // MARK: - Test utils
 
     private func tiles(_ states: PatternTile.State...) -> [PatternTile] {

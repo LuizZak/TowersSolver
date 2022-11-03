@@ -189,11 +189,10 @@ class TileFitter {
         }
 
         let tilesAtSpace = tiles[availableSpace]
-        let darkTileCount = tilesAtSpace.darkTileCount()
 
         // If the range contains dark tiles, attempt to find the smallest run
         // that fits the available space exactly
-        if darkTileCount > 0 {
+        if tilesAtSpace.hasDarkTile() {
             // If the space exactly fits the smallest run, return it.
             if minLength == availableSpace.count {
                 return Array(availableSpace)
@@ -221,7 +220,7 @@ class TileFitter {
     ///
     /// The number of entries in the returned array is the same as `runs.runCount`.
     func fitRunsEarliest() -> [Interval<Int>]? {
-        TileFitter._fitRunsRecursive(hint: hint, tiles: tiles)
+        TileFitter._fitRuns(hint: hint, tiles: tiles)
     }
 
     /// Attempts to fit a given set of runs in a given list of tiles, returning
@@ -232,7 +231,7 @@ class TileFitter {
     ///
     /// The number of entries in the returned array is the same as `runs.runCount`.
     func fitRunsLatest() -> [Interval<Int>]? {
-        guard let result = TileFitter._fitRunsRecursive(hint: hint.reversed, tiles: tiles.reversed()) else {
+        guard let result = TileFitter._fitRuns(hint: hint.reversed, tiles: tiles.reversed()) else {
             return nil
         }
 
@@ -240,6 +239,53 @@ class TileFitter {
         return result.reversed().map {
             .init(start: tiles.count - $0.end - 1, end: tiles.count - $0.start - 1)
         }
+    }
+    
+    private static func _fitRuns(
+        hint: PatternGrid.RunsHint,
+        tiles: [PatternTile]
+    ) -> [Interval<Int>]? {
+
+        var enclosedRuns: [Interval<Int>] = []
+
+        // Skip past enclosed tile runs that are solved
+        let firstTiles = tiles.leftmostEnclosedDarkTileRuns()
+        let state: (startHintIndex: Int, startTileIndex: Int)?
+
+        if firstTiles.count > hint.runCount {
+            return nil
+        }
+
+        if let lastTile = firstTiles.last?.upperBound {
+            if !hint.runs[..<firstTiles.count].elementsEqual(firstTiles.map(\.count)) {
+                return nil
+            }
+
+            for initialRun in firstTiles {
+                enclosedRuns.append(
+                    .init(start: initialRun.lowerBound, end: initialRun.upperBound - 1)
+                )
+            }
+
+            state = (
+                startHintIndex: firstTiles.count,
+                startTileIndex: lastTile
+            )
+        } else {
+            state = nil
+        }
+
+        if
+            let nextRuns = TileFitter._fitRunsRecursive(
+                hint: hint,
+                tiles: tiles,
+                state: state
+            )
+        {
+            return enclosedRuns + nextRuns
+        }
+
+        return nil
     }
 
     private static func _fitRunsRecursive(
@@ -253,7 +299,7 @@ class TileFitter {
         // Hints have been satisfied
         if state?.startHintIndex == hint.runCount {
             // Check if remaining tiles have no dark tiles
-            if currentIndex < tiles.count && tiles[currentIndex...].darkTileCount() > 0 {
+            if currentIndex < tiles.count && tiles[currentIndex...].hasDarkTile() {
                 return nil
             }
 
@@ -290,7 +336,7 @@ class TileFitter {
             guard spaceLength >= currentRunLength else {
                 // If there are any dark tiles in this section, not being
                 // able to place the next necessary run results in a failure
-                if nextSpaceTiles.darkTileCount() > 0 {
+                if nextSpaceTiles.hasDarkTile() {
                     return nil
                 }
 
@@ -353,7 +399,7 @@ class TileFitter {
         let tilesToFit = tiles[startTileIndex...]
         for (i, tile) in tilesToFit.enumerated() where tile.state == .dark {
             let index = i + startTileIndex
-            if !result.contains(where: { $0.start <= index && $0.end >= index }) {
+            if !result.contains(where: { $0.contains(index) }) {
                 return nil
             }
         }
