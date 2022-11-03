@@ -67,8 +67,7 @@ extension Collection where Element == PatternTile {
     /// Returns `nil` if no available spaces are found beyond the given start
     /// index.
     ///
-    /// - precondition: if `start` is non-`nil`:
-    /// `start >= self.startIndex && start < self.endIndex`.
+    /// - precondition: if `start` is non-`nil`: `self.indices.contains(index)`.
     func nextAvailableSpace(fromIndex start: Index? = nil) -> Range<Index>? {
         var searchHead = start ?? startIndex
         var currentStart: Index? = nil
@@ -95,5 +94,27 @@ extension Collection where Element == PatternTile {
 
     func isSeparator(at index: Index) -> Bool {
         self[index].state.isSeparator
+    }
+}
+
+extension BidirectionalCollection where Element == PatternTile {
+    /// Returns the total span of available space that surround a given tile index.
+    ///
+    /// Returns `nil` if no available spaces are found surrounding the given index.
+    ///
+    /// - precondition: `self.indices.contains(index)`.
+    func availableSpaceSurrounding(index: Index) -> Range<Index>? {
+        var start = index
+        if self[start].state == .light {
+            return nil
+        }
+
+        // Backtrack from current index until either a light tile or the start
+        // of the collection is found
+        while start > startIndex && self[start].state != .light {
+            start = self.index(before: start)
+        }
+
+        return nextAvailableSpace(fromIndex: start)
     }
 }

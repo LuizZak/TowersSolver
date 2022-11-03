@@ -56,3 +56,11 @@ extension Interval: Hashable where Bounds: Hashable {
         hasher.combine(end)
     }
 }
+
+extension Interval: Sequence where Bounds: Strideable, Bounds.Stride: SignedInteger {
+    public typealias Element = Bounds
+
+    public func makeIterator() -> AnyIterator<Bounds> {
+        AnyIterator((start...end).makeIterator())
+    }
+}

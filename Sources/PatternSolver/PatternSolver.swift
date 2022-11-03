@@ -62,11 +62,7 @@ public class PatternSolver: GameSolverType {
 
             // Mark tiles from overlapping ranges as dark
             let overlaps = tileFitter.overlappingIntervals()
-            for (i, overlap) in overlaps.enumerated() {
-                guard let overlap = overlap else {
-                    continue
-                }
-
+            for case let (i, overlap?) in overlaps.enumerated() {
                 for index in overlap.start...overlap.end {
                     grid[coord(index)].state = .dark
                 }
@@ -126,6 +122,18 @@ public class PatternSolver: GameSolverType {
                     for lightIndex in (latestCurrent.end + 1)..<earliestNext.start {
                         grid[coord(lightIndex)].state = .light
                     }
+                }
+            }
+
+            // For every dark tile, query for guaranteed dark tiles in the
+            // surroundings.
+            for darkTileRun in tiles.darkTileRuns() {
+                let guaranteed = tileFitter.guaranteedDarkTilesSurrounding(
+                    tileAtIndex: darkTileRun.lowerBound
+                )
+
+                for index in guaranteed {
+                    grid[coord(index)].state = .dark
                 }
             }
         }

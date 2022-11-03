@@ -9,9 +9,9 @@ class TileFitter {
     /// where provided was found.
     private(set) var isValid: Bool = false
 
-    init(hint: PatternGrid.RunsHint, tiles: [PatternTile]) {
+    init<S: Sequence>(hint: PatternGrid.RunsHint, tiles: S) where S.Element == PatternTile {
         self.hint = hint
-        self.tiles = tiles
+        self.tiles = Array(tiles)
         self.runs = hint.runs.map {
             .init(count: $0)
         }
@@ -35,6 +35,14 @@ class TileFitter {
             runs[i].earliestStartIndex = early.start
             runs[i].latestStartIndex = late.start
         }
+    }
+
+    /// Creates a subdivided tile fitter for a range of tiles in this tile fitter
+    /// with a custom list of run hints.
+    private func makeSubTileFitter(index: Int, count: Int, runs: [Int]) -> TileFitter {
+        let fitter = TileFitter(hint: .init(runs: runs), tiles: tiles[index..<(index + count)])
+
+        return fitter
     }
 
     /// From a given tile index, returns the indices of the potential runs that
@@ -160,6 +168,49 @@ class TileFitter {
         }
 
         return result
+    }
+
+    /// Returns a list of tile indices surrounding a given tile index that are
+    /// definitely dark, based on the potential run lengths that cross the tile
+    /// and its surrounding boundaries.
+    func guaranteedDarkTilesSurrounding(tileAtIndex index: Int) -> [Int] {
+        guard let availableSpace = tiles.availableSpaceSurrounding(index: index) else {
+            return []
+        }
+
+        guard let runIndices = potentialRunIndices(forTileAt: index) else {
+            return []
+        }
+        let runLengths = runIndices.map { runs[$0].count }
+
+        let minLength = runLengths.min() ?? 0
+        guard minLength > 0 else {
+            return []
+        }
+
+        let tilesAtSpace = tiles[availableSpace]
+        let darkTileCount = tilesAtSpace.darkTileCount()
+
+        // If the range contains dark tiles, attempt to find the smallest run
+        // that fits the available space exactly
+        if darkTileCount > 0 {
+            // If the space exactly fits the smallest run, return it.
+            if minLength == availableSpace.count {
+                return Array(availableSpace)
+            }
+
+            // If the space precedes or succeeds a separator, return a run that
+            // is at least minLength in size around that separator
+            let runs = tiles.darkTileRuns()
+            if let lastRun = runs.last, lastRun.contains(index), lastRun.upperBound == availableSpace.upperBound {
+                return Array((lastRun.upperBound - minLength)..<availableSpace.upperBound)
+            }
+            if let firstRun = runs.first, firstRun.contains(index), firstRun.lowerBound == availableSpace.lowerBound {
+                return Array(availableSpace.lowerBound..<(firstRun.lowerBound + minLength))
+            }
+        }
+
+        return []
     }
 
     /// Attempts to fit a given set of runs in a given list of tiles, returning

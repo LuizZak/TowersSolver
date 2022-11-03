@@ -20,4 +20,10 @@ class IntervalTests: XCTestCase {
         XCTAssertTrue(sut.contains(1))
         XCTAssertFalse(sut.contains(2))
     }
+
+    func testSequence() {
+        let sut = IntInterval(start: -2, end: 2)
+
+        XCTAssertEqual(Array(sut), [-2, -1, 0, 1, 2])
+    }
 }

@@ -61,6 +61,142 @@ class TileFitterTests: XCTestCase {
         XCTAssertEqual(sut.potentialRunLengths(forTileAt: 11), [])
     }
 
+    func testGuaranteedDarkTilesSurrounding_runPrecedingSeparator() {
+        // Runs:
+        // [O][O][O][O] (4)
+        // [O][O] (2)
+        // [O][O][O][O][O][O][O] (7)
+        // [O][O][O] (3)
+        // [O][O][O] (3)
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][O][O] x [▋][ ][ ][ ][ ] (35 total)
+        let sut = makeSut(hint: [4, 2, 7, 3, 3], tiles: tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .dark,
+            .dark,
+            //
+            .light,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided
+        ))
+
+        XCTAssertEqual(
+            sut.guaranteedDarkTilesSurrounding(tileAtIndex: 29),
+            [27, 28, 29]
+        )
+        XCTAssertEqual(
+            sut.guaranteedDarkTilesSurrounding(tileAtIndex: 28),
+            [27, 28, 29]
+        )
+        XCTAssertEqual(
+            sut.guaranteedDarkTilesSurrounding(tileAtIndex: 26),
+            []
+        )
+    }
+
+    func testGuaranteedDarkTilesSurrounding_runSucceedingSeparator() {
+        // Runs:
+        // [O][O][O] (3)
+        // [O][O][O] (3)
+        // [O][O][O][O][O][O][O] (7)
+        // [O][O] (2)
+        // [O][O][O][O] (4)
+        //
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][ ][ ][ ][▋] x [O][O][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] x [ ][ ][ ][ ][ ] (35 total)
+        let sut = makeSut(hint: [3, 3, 7, 2, 4], tiles: tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .light,
+            //
+            .dark,
+            .dark,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            //
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided
+        ))
+
+        XCTAssertEqual(
+            sut.guaranteedDarkTilesSurrounding(tileAtIndex: 5),
+            [5, 6, 7]
+        )
+        XCTAssertEqual(
+            sut.guaranteedDarkTilesSurrounding(tileAtIndex: 6),
+            [5, 6, 7]
+        )
+        XCTAssertEqual(
+            sut.guaranteedDarkTilesSurrounding(tileAtIndex: 7),
+            []
+        )
+    }
+
     // MARK: - fitRunsEarliest
 
     func testFitRunsEarliest_fullFill_emptyTiles_singleHint() {

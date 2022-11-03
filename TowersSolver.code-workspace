@@ -192,7 +192,8 @@
 		"swift.autoGenerateLaunchConfigurations": false,
 		"cSpell.words": [
 			"bitmask",
-			"bitmasks"
+			"bitmasks",
+			"xtest"
 		],
 	},
 	"extensions": {
