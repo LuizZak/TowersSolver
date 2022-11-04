@@ -1,5 +1,4 @@
 import Commons
-import Interval
 
 public class PatternSolver: GameSolverType {
     private var _pending: Set<PendingCheckEntry> = []
@@ -58,19 +57,19 @@ public class PatternSolver: GameSolverType {
             // Mark tiles from overlapping ranges as dark
             let overlaps = tileFitter.overlappingIntervals()
             for case let (i, overlap?) in overlaps.enumerated() {
-                for index in overlap.start...overlap.end {
+                for index in overlap {
                     setState(index, .dark)
                 }
 
                 // For overlaps that match the exact hint length, surround dark
                 // tiles with light tiles
                 let run = hint.runs[i]
-                if (overlap.start...overlap.end).count == run {
-                    if overlap.start > 0 {
-                        setState(overlap.start - 1, .light)
+                if overlap.count == run {
+                    if overlap.lowerBound > 0 {
+                        setState(overlap.lowerBound - 1, .light)
                     }
-                    if overlap.end < tiles.count - 1 {
-                        setState(overlap.end + 1, .light)
+                    if overlap.upperBound < tiles.count {
+                        setState(overlap.upperBound, .light)
                     }
                 }
             }
@@ -108,11 +107,11 @@ public class PatternSolver: GameSolverType {
                     // If the latest possible allocation for this run index does
                     // not overlap the earliest possible allocation for the next
                     // one, it indicates that all tiles in between are light.
-                    guard latestCurrent.end < earliestNext.start else {
+                    guard latestCurrent.upperBound < earliestNext.lowerBound else {
                         continue
                     }
 
-                    for lightIndex in (latestCurrent.end + 1)..<earliestNext.start {
+                    for lightIndex in latestCurrent.upperBound..<earliestNext.lowerBound {
                         setState(lightIndex, .light)
                     }
                 }

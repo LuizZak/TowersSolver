@@ -57,6 +57,16 @@ extension Interval: Hashable where Bounds: Hashable {
     }
 }
 
+public extension Interval where Bounds: Strideable {
+    var asRange: Range<Bounds> {
+        start..<(end.advanced(by: 1))
+    }
+
+    var asClosedRange: ClosedRange<Bounds> {
+        start...end
+    }
+}
+
 extension Interval: Sequence where Bounds: Strideable, Bounds.Stride: SignedInteger {
     public typealias Element = Bounds
 

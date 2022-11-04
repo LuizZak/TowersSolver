@@ -216,7 +216,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 1),
+            (0..<(1 + 1)),
         ])
     }
 
@@ -238,7 +238,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 1),
+            (0..<(1 + 1)),
         ])
     }
 
@@ -260,7 +260,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 1),
+            (0..<(1 + 1)),
         ])
     }
 
@@ -284,7 +284,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 3, end: 4),
+            (3..<(4 + 1)),
         ])
     }
 
@@ -313,8 +313,8 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 1),
-            .init(start: 3, end: 6),
+            (0..<(1 + 1)),
+            (3..<(6 + 1)),
         ])
     }
 
@@ -351,9 +351,9 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 2),
-            .init(start: 5, end: 8),
-            .init(start: 11, end: 12),
+            (0..<(2 + 1)),
+            (5..<(8 + 1)),
+            (11..<(12 + 1)),
         ])
     }
 
@@ -384,9 +384,9 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 3),
-            .init(start: 5, end: 5),
-            .init(start: 7, end: 7),
+            (0..<(3 + 1)),
+            (5..<(5 + 1)),
+            (7..<(7 + 1)),
         ])
     }
 
@@ -423,10 +423,10 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsEarliest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 0),
-            .init(start: 5, end: 9),
-            .init(start: 11, end: 11),
-            .init(start: 13, end: 14),
+            (0..<(0 + 1)),
+            (5..<(9 + 1)),
+            (11..<(11 + 1)),
+            (13..<(14 + 1)),
         ])
     }
 
@@ -509,7 +509,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 1),
+            (0..<(1 + 1)),
         ])
     }
 
@@ -531,7 +531,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 1, end: 2),
+            (1..<(2 + 1)),
         ])
     }
 
@@ -553,7 +553,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 1),
+            (0..<(1 + 1)),
         ])
     }
 
@@ -590,9 +590,9 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 1, end: 3),
-            .init(start: 5, end: 8),
-            .init(start: 12, end: 13),
+            (1..<(3 + 1)),
+            (5..<(8 + 1)),
+            (12..<(13 + 1)),
         ])
     }
 
@@ -623,9 +623,9 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 3),
-            .init(start: 5, end: 5),
-            .init(start: 7, end: 7),
+            (0..<(3 + 1)),
+            (5..<(5 + 1)),
+            (7..<(7 + 1)),
         ])
     }
 
@@ -662,10 +662,10 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 0),
-            .init(start: 5, end: 9),
-            .init(start: 11, end: 11),
-            .init(start: 13, end: 14),
+            (0..<(0 + 1)),
+            (5..<(9 + 1)),
+            (11..<(11 + 1)),
+            (13..<(14 + 1)),
         ])
     }
 
@@ -724,12 +724,12 @@ class TileFitterTests: XCTestCase {
         let result = sut.fitRunsLatest()
 
         XCTAssertEqual(result, [
-            .init(start: 1, end: 1),
-            .init(start: 3, end: 3),
-            .init(start: 12, end: 19),
-            .init(start: 21, end: 24),
-            .init(start: 26, end: 30),
-            .init(start: 33, end: 34),
+            (1..<(1 + 1)),
+            (3..<(3 + 1)),
+            (12..<(19 + 1)),
+            (21..<(24 + 1)),
+            (26..<(30 + 1)),
+            (33..<(34 + 1)),
         ])
     }
 
@@ -917,7 +917,7 @@ class TileFitterTests: XCTestCase {
         let result = sut.overlappingIntervals()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 0),
+            (0..<(0 + 1)),
         ])
     }
 
@@ -954,10 +954,10 @@ class TileFitterTests: XCTestCase {
         let result = sut.overlappingIntervals()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 0),
-            .init(start: 5, end: 9),
-            .init(start: 11, end: 11),
-            .init(start: 13, end: 14),
+            (0..<(0 + 1)),
+            (5..<(9 + 1)),
+            (11..<(11 + 1)),
+            (13..<(14 + 1)),
         ])
     }
 
@@ -1012,9 +1012,9 @@ class TileFitterTests: XCTestCase {
         let result = sut.earliestAlignedRuns()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 4),
-            .init(start: 6, end: 16),
-            .init(start: 25, end: 29),
+            (0..<(4 + 1)),
+            (6..<(16 + 1)),
+            (25..<(29 + 1)),
         ])
     }
 
@@ -1069,9 +1069,9 @@ class TileFitterTests: XCTestCase {
         let result = sut.latestAlignedRuns()
 
         XCTAssertEqual(result, [
-            .init(start: 0, end: 4),
-            .init(start: 8, end: 18),
-            .init(start: 25, end: 29),
+            (0..<(4 + 1)),
+            (8..<(18 + 1)),
+            (25..<(29 + 1)),
         ])
     }
 

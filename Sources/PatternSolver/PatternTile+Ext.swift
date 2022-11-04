@@ -1,5 +1,3 @@
-import Interval
-
 extension Sequence where Element == PatternTile {
     /// Returns the number of tiles in this sequence of tiles that have a state of
     /// `PatternTile.State.undecided`.
@@ -51,7 +49,7 @@ extension Collection where Element == PatternTile {
     ///
     /// List is capped at the first run of dark tiles that is not enclosed.
     func leftmostEnclosedDarkTileRuns() -> [Range<Index>] {
-        var intervals: [Interval<Index>] = []
+        var ranges: [Range<Index>] = []
         var lastTileState: PatternTile.State?
         var current: Index?
 
@@ -60,8 +58,8 @@ extension Collection where Element == PatternTile {
             
             if let c = current {
                 if self[index].state == .light {
-                    intervals.append(
-                        .init(start: c, end: index)
+                    ranges.append(
+                        c..<index
                     )
 
                     current = nil
@@ -85,10 +83,10 @@ extension Collection where Element == PatternTile {
 
         // Close current runs
         if let current = current {
-            intervals.append(.init(start: current, end: self.endIndex))
+            ranges.append(current..<self.endIndex)
         }
 
-        return intervals.map { ($0.start..<$0.end) }
+        return ranges
     }
 
     /// If this collection contains any dark tiles, returns the index of the

@@ -1,5 +1,3 @@
-import Interval
-
 class TileFitter {
     private let hint: PatternGrid.RunsHint
     private let tiles: [PatternTile]
@@ -32,8 +30,8 @@ class TileFitter {
         assert(earliest.count == latest.count)
 
         for (i, (early, late)) in zip(earliest, latest).enumerated() {
-            runs[i].earliestStartIndex = early.start
-            runs[i].latestStartIndex = late.start
+            runs[i].earliestStartIndex = early.lowerBound
+            runs[i].latestStartIndex = late.lowerBound
         }
     }
 
@@ -87,7 +85,7 @@ class TileFitter {
     ///
     /// If no overlap is known to occur for that run entry, its entry is `nil`
     /// instead.
-    func overlappingIntervals() -> [Interval<Int>?] {
+    func overlappingIntervals() -> [Range<Int>?] {
         return runs.map { runEntry in
             guard let earliest = runEntry.earliestStartIndex else {
                 return nil
@@ -96,16 +94,17 @@ class TileFitter {
                 return nil
             }
 
-            let earliestInterval =
-                Interval(start: earliest, end: earliest + runEntry.count)
-            let latestInterval =
-                Interval(start: latest, end: latest + runEntry.count)
+            let earliestInterval = earliest..<(earliest + runEntry.count)
+            let latestInterval = latest..<(latest + runEntry.count)
 
-            guard let overlap = earliestInterval.overlap(latestInterval) else {
+            guard earliestInterval.overlaps(latestInterval) else {
                 return nil
             }
 
-            return .init(start: overlap.start, end: overlap.end - 1)
+            let s = max(earliestInterval.lowerBound, latestInterval.lowerBound)
+            let e = min(earliestInterval.upperBound, latestInterval.upperBound)
+            
+            return s..<e
         }
     }
 
@@ -138,15 +137,15 @@ class TileFitter {
     /// representing the earliest possible allocation for the dark tile runs.
     ///
     /// If any run cannot be fit, `nil` is returned.
-    func earliestAlignedRuns() -> [Interval<Int>]? {
-        var result: [Interval<Int>] = []
+    func earliestAlignedRuns() -> [Range<Int>]? {
+        var result: [Range<Int>] = []
 
         for entry in runs {
             guard let earliest = entry.earliestStartIndex else {
                 return nil
             }
 
-            result.append(.init(start: earliest, end: earliest + entry.count - 1))
+            result.append(earliest..<earliest + entry.count)
         }
 
         return result
@@ -156,15 +155,15 @@ class TileFitter {
     /// representing the latest possible allocation for the dark tile runs.
     ///
     /// If any run cannot be fit, `nil` is returned.
-    func latestAlignedRuns() -> [Interval<Int>]? {
-        var result: [Interval<Int>] = []
+    func latestAlignedRuns() -> [Range<Int>]? {
+        var result: [Range<Int>] = []
 
         for entry in runs {
             guard let latest = entry.latestStartIndex else {
                 return nil
             }
 
-            result.append(.init(start: latest, end: latest + entry.count - 1))
+            result.append(latest..<latest + entry.count)
         }
 
         return result
@@ -219,7 +218,7 @@ class TileFitter {
     /// If the runs cannot be fit in the given tiles, `nil` is returned, instead.
     ///
     /// The number of entries in the returned array is the same as `runs.runCount`.
-    func fitRunsEarliest() -> [Interval<Int>]? {
+    func fitRunsEarliest() -> [Range<Int>]? {
         TileFitter._fitRuns(hint: hint, tiles: tiles)
     }
 
@@ -230,23 +229,23 @@ class TileFitter {
     /// If the runs cannot be fit in the given tiles, `nil` is returned, instead.
     ///
     /// The number of entries in the returned array is the same as `runs.runCount`.
-    func fitRunsLatest() -> [Interval<Int>]? {
+    func fitRunsLatest() -> [Range<Int>]? {
         guard let result = TileFitter._fitRuns(hint: hint.reversed, tiles: tiles.reversed()) else {
             return nil
         }
 
         // Invert results
         return result.reversed().map {
-            .init(start: tiles.count - $0.end - 1, end: tiles.count - $0.start - 1)
+            (tiles.count - $0.upperBound)..<(tiles.count - $0.lowerBound)
         }
     }
     
     private static func _fitRuns(
         hint: PatternGrid.RunsHint,
         tiles: [PatternTile]
-    ) -> [Interval<Int>]? {
+    ) -> [Range<Int>]? {
 
-        var enclosedRuns: [Interval<Int>] = []
+        var enclosedRuns: [Range<Int>] = []
 
         // Skip past enclosed tile runs that are solved
         let firstTiles = tiles.leftmostEnclosedDarkTileRuns()
@@ -262,9 +261,7 @@ class TileFitter {
             }
 
             for initialRun in firstTiles {
-                enclosedRuns.append(
-                    .init(start: initialRun.lowerBound, end: initialRun.upperBound - 1)
-                )
+                enclosedRuns.append(initialRun)
             }
 
             state = (
@@ -292,7 +289,7 @@ class TileFitter {
         hint: PatternGrid.RunsHint,
         tiles: [PatternTile],
         state: (startHintIndex: Int, startTileIndex: Int)? = nil
-    ) -> [Interval<Int>]? {
+    ) -> [Range<Int>]? {
 
         var currentIndex = state?.startTileIndex ?? 0
 
@@ -325,7 +322,7 @@ class TileFitter {
         // containing the required run.
         let lastIndex = currentIndex + tiles.count - currentRunLength
 
-        var result: [Interval<Int>] = []
+        var result: [Range<Int>] = []
 
         outerLoop:
         while currentIndex <= lastIndex, let nextSpaceInterval = tiles.nextAvailableSpace(fromIndex: currentIndex) {
@@ -374,7 +371,7 @@ class TileFitter {
                         state: (currentRunIndex + 1, nextRun)
                     )
                 {
-                    result.append(.init(start: index, end: end - 1))
+                    result.append(index..<end)
                     result.append(contentsOf: rest)
 
                     break
@@ -412,7 +409,7 @@ class TileFitter {
         var earliestStartIndex: Int?
         var latestStartIndex: Int?
 
-        var totalPotentialSpan: Interval<Int>? {
+        var totalPotentialSpan: Range<Int>? {
             guard let earliestStartIndex = earliestStartIndex else {
                 return nil
             }
@@ -420,7 +417,7 @@ class TileFitter {
                 return nil
             }
             
-            return .init(start: earliestStartIndex, end: latestStartIndex + count - 1)
+            return earliestStartIndex..<latestStartIndex + count
         }
     }
 }
