@@ -255,7 +255,7 @@ public class LoopyGridPrinter: ConsolePrintBuffer {
     }
 
     private func lineCharacters(forState state: Edge.State) -> [LineSegmentChar] {
-        #if !Xcode
+        #if !XCODE
         let useColors = colorized
         #else
         let useColor = false

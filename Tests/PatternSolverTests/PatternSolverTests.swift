@@ -161,6 +161,11 @@ class PatternSolverTests: XCTestCase {
             1.1.4.1.1.1/2.1.1.8.2
             """)
         
+        measure {
+            let _solver = PatternSolver(grid: gen.grid)
+            _solver.solve()
+        }
+        
         let sut = PatternSolver(grid: gen.grid)
 
         XCTAssertEqual(sut.solve(), .solved)

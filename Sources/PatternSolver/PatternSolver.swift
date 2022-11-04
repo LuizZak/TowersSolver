@@ -14,6 +14,7 @@ public class PatternSolver: GameSolverType {
         _pending = PendingCheckEntry.forGrid(grid)
     }
 
+    @discardableResult
     public func solve() -> SolverState {
         while state == .unsolved && !_pending.isEmpty {
             (grid, _pending) = PatternSolver.analyzeGrid(grid: grid, entries: _pending)

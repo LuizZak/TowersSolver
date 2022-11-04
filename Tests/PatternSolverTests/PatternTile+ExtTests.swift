@@ -3,6 +3,35 @@ import XCTest
 @testable import PatternSolver
 
 class PatternTile_ExtTests: XCTestCase {
+    func testDarkTileRuns() {
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][O][ ][ ][O][ ][O][O][▋][ ][O][O][ ][O]
+        let sut = tiles(
+            .undecided,
+            .dark,
+            .undecided,
+            .undecided,
+            .dark,
+            .undecided,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .dark,
+            .dark,
+            .undecided,
+            .dark
+        )
+        
+        XCTAssertEqual(sut.darkTileRuns(), [
+            (1..<2),
+            (4..<5),
+            (6..<8),
+            (10..<12),
+            (13..<14),
+        ])
+    }
+    
     func testNextAvailableSpace() {
         // Tiles: (O = dark, ▋ = light, empty = undecided)
         // [ ][O][ ][ ][O][ ][O][O][▋][ ][O][O][ ][ ]

@@ -38,19 +38,12 @@ extension Sequence where Element == PatternTile {
 extension Collection where Element == PatternTile {
     /// Returns every sequential list of dark tiles in this tile collection.
     func darkTileRuns() -> [Range<Index>] {
-        var intervals: [Interval<Index>] = []
-
-        for index in indices {
-            if self[index].state == .dark {
-                intervals.append(
-                    .init(start: index, end: self.index(after: index))
-                )
-            }
+        let runs = self.indices.split(whereSeparator: { self[$0].state != .dark })
+        let result = runs.map { run in
+            run.startIndex..<run.endIndex
         }
-
-        intervals = intervals.compactIntervals()
-
-        return intervals.map { ($0.start..<$0.end) }
+        
+        return result
     }
 
     /// Returns a list of sequential dark tiles that are enclosed in either the
@@ -58,19 +51,6 @@ extension Collection where Element == PatternTile {
     ///
     /// List is capped at the first run of dark tiles that is not enclosed.
     func leftmostEnclosedDarkTileRuns() -> [Range<Index>] {
-        /*
-        return darkTileRuns().prefix { range in
-            if range.lowerBound > startIndex && self[range.lowerBound].state != .light {
-                return false
-            }
-            if range.upperBound < endIndex && self[range.upperBound].state != .light {
-                return false
-            }
-
-            return true
-        }
-        */
-
         var intervals: [Interval<Index>] = []
         var lastTileState: PatternTile.State?
         var current: Index?
