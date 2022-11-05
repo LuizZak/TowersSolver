@@ -50,40 +50,32 @@ extension Collection where Element == PatternTile {
     /// List is capped at the first run of dark tiles that is not enclosed.
     func leftmostEnclosedDarkTileRuns() -> [Range<Index>] {
         var ranges: [Range<Index>] = []
-        var lastTileState: PatternTile.State?
-        var current: Index?
+        var currentRunStart: Index?
 
         for index in indices {
-            defer { lastTileState = self[index].state }
+            let state = self[index].state
             
-            if let c = current {
-                if self[index].state == .light {
+            if state == .undecided {
+                currentRunStart = nil
+                break
+            }
+
+            if let runStart = currentRunStart {
+                if state == .light {
                     ranges.append(
-                        c..<index
+                        runStart..<index
                     )
 
-                    current = nil
-                } else if self[index].state == .undecided {
-                    current = nil
-                    break
+                    currentRunStart = nil
                 }
-            } else if self[index].state == .dark {
-                // If this run starts after an undecided tile, stop counting the
-                // runs.
-                if lastTileState == .undecided {
-                    current = nil
-                    break
-                }
-
-                current = index
-            } else if self[index].state == .undecided {
-                break
+            } else if state == .dark {
+                currentRunStart = index
             }
         }
 
-        // Close current runs
-        if let current = current {
-            ranges.append(current..<self.endIndex)
+        // Close current run, if it's still open
+        if let currentRunStart = currentRunStart {
+            ranges.append(currentRunStart..<self.endIndex)
         }
 
         return ranges
