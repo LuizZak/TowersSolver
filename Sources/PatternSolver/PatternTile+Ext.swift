@@ -81,28 +81,6 @@ extension Collection where Element == PatternTile {
         return ranges
     }
 
-    /// If this collection contains any dark tiles, returns the index of the
-    /// first dark tile that precedes a non-dark tile immediately after it.
-    ///
-    /// Returns `nil` if this collection contains no dark tiles.
-    func endOfFirstDarkTileRun() -> Index? {
-        var index = startIndex
-        var lastFound: Index? = nil
-
-        while index < endIndex {
-            defer { _=formIndex(&index, offsetBy: 1, limitedBy: endIndex) }
-
-            let tile = self[index]
-            if tile.state == .dark {
-                lastFound = index
-            } else if lastFound != nil {
-                break
-            }
-        }
-
-        return lastFound
-    }
-
     /// Returns the interval of indices of the next available run of tiles in
     /// this collection whose tiles are not `PatternTile.State.isSeparator`,
     /// optionally providing an index to start the search from.
