@@ -74,6 +74,10 @@ class PatternGridGeneratorTests: XCTestCase {
         XCTAssertThrowsError(try makeSut("2:1/1/1/1/1/1"))
     }
 
+    func testParseGameId_missingNumberAfterPeriod_throwsError() {
+        XCTAssertThrowsError(try makeSut("2:1/1/1/1/1/1."))
+    }
+
     private func makeSut(_ gameId: String) throws -> PatternGridGenerator {
         try PatternGridGenerator(gameId: gameId)
     }

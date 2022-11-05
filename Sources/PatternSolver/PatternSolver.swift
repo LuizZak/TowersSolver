@@ -1,7 +1,7 @@
 import Commons
 
 public class PatternSolver: GameSolverType {
-    private var _pending: Set<PendingCheckEntry> = []
+    private var _pending: PendingCheckList
 
     private(set) public var state: SolverState
     private(set) public var grid: PatternGrid
@@ -10,13 +10,15 @@ public class PatternSolver: GameSolverType {
         self.grid = grid
         state = .unsolved
 
-        _pending = PendingCheckEntry.forGrid(grid)
+        _pending = PendingCheckList(grid: grid)
     }
 
     @discardableResult
     public func solve() -> SolverState {
-        while state == .unsolved && !_pending.isEmpty {
-            (grid, _pending) = PatternSolver.analyzeGrid(grid: grid, entries: _pending)
+        _pending.markGridPending()
+
+        while state == .unsolved && _pending.hasPendingChecks {
+            grid = PatternSolver.analyzeGrid(grid: grid, entries: _pending)
         }
 
         updateState()
@@ -36,10 +38,16 @@ public class PatternSolver: GameSolverType {
 
     private static func analyzeGrid(
         grid: PatternGrid,
-        entries: Set<PendingCheckEntry>
-    ) -> (PatternGrid, Set<PendingCheckEntry>) {
+        entries: PendingCheckList
+    ) -> PatternGrid {
 
         let result = runStepAcrossLines(grid, entries: entries) { (hint, tiles, setState) in
+            // Ignore completed tile lists, whether they are correctly solved
+            // or not
+            guard tiles.hasUndecidedTile() else {
+                return
+            }
+
             let tileFitter = TileFitter(hint: hint, tiles: tiles)
 
             // Mark leading/trailing tiles that are guaranteed to be light
@@ -145,102 +153,115 @@ public class PatternSolver: GameSolverType {
     /// columns/rows that where affected in the process.
     private static func runStepAcrossLines(
         _ grid: PatternGrid,
-        entries: Set<PendingCheckEntry>,
+        entries: PendingCheckList,
         _ step: (
             _ hint: PatternGrid.RunsHint,
             _ tiles: [PatternTile],
             _ setState: (_ index: Int, _ state: PatternTile.State) -> Void
         ) throws -> Void
-    ) rethrows -> (PatternGrid, Set<PendingCheckEntry>) {
+    ) rethrows -> PatternGrid {
 
         var grid = grid
-        var newChecks: Set<PendingCheckEntry> = []
 
-        for entry in entries {
-            switch entry {
-            case .row(let row):
-                let hint = grid.hintForRow(row)
+        try entries.forEachPendingColumn { column in
+            entries.satisfyColumn(column)
 
-                try step(hint, grid.tilesInRow(row), { (index, state) in
-                    let coordinate = PatternGrid.CoordinateType(column: index, row: row)
+            let hint = grid.hintForColumn(column)
 
-                    guard grid[coordinate].state != state else {
-                        return
-                    }
+            try step(hint, grid.tilesInColumn(column), { (index, state) in
+                let coordinate = PatternGrid.CoordinateType(column: column, row: index)
 
-                    grid[coordinate].state = state
-                    newChecks.formUnion(PendingCheckEntry.forCoordinate(coordinate, grid: grid))
-                })
+                guard grid[coordinate].state != state else {
+                    return
+                }
 
-            case .column(let column):
-                let hint = grid.hintForColumn(column)
-
-                try step(hint, grid.tilesInColumn(column), { (index, state) in
-                    let coordinate = PatternGrid.CoordinateType(column: column, row: index)
-
-                    guard grid[coordinate].state != state else {
-                        return
-                    }
-
-                    grid[coordinate].state = state
-                    newChecks.formUnion(PendingCheckEntry.forCoordinate(coordinate, grid: grid))
-                })
-            }
+                grid[coordinate].state = state
+                entries.markTilePending(coordinate)
+            })
         }
 
-        return (grid, newChecks)
+        try entries.forEachPendingRow { row in
+            entries.satisfyRow(row)
+
+            let hint = grid.hintForRow(row)
+
+            try step(hint, grid.tilesInRow(row), { (index, state) in
+                let coordinate = PatternGrid.CoordinateType(column: index, row: row)
+
+                guard grid[coordinate].state != state else {
+                    return
+                }
+
+                grid[coordinate].state = state
+                entries.markTilePending(coordinate)
+            })
+        }
+
+        return grid
     }
 
-    /// Specifies a row or column to check next after it has been modified.
-    private enum PendingCheckEntry: Hashable {
-        case row(Int)
-        case column(Int)
+    /// Marks columns/rows of a grid as pending checks.
+    private class PendingCheckList {
+        private var columns: [Bool]
+        private var rows: [Bool]
 
-        static func forGrid(_ grid: PatternGrid) -> Set<Self> {
-            if grid.rows == 0 || grid.columns == 0 {
-                return []
-            }
-
-            return Self
-                .forWholeColumn(0, grid: grid)
-                .union(Self.forWholeRow(0, grid: grid))
+        /// Returns `true` if all columns and rows on this check list are satisfied.
+        var hasPendingChecks: Bool {
+            columns.contains { $0 } || rows.contains { $0 }
         }
 
-        static func forWholeColumn(_ column: Int, grid: PatternGrid) -> Set<Self> {
-            var result: Set<Self> = []
-
-            for row in 0..<grid.rows {
-                result.insert(.row(row))
-            }
-
-            return result
+        init(columnCount: Int, rowCount: Int) {
+            columns = .init(repeating: false, count: columnCount)
+            rows = .init(repeating: false, count: rowCount)
         }
 
-        static func forWholeRow(_ row: Int, grid: PatternGrid) -> Set<Self> {
-            var result: Set<Self> = []
-
-            for column in 0..<grid.columns {
-                result.insert(.column(column))
-            }
-
-            return result
+        convenience init(grid: PatternGrid) {
+            self.init(columnCount: grid.columns, rowCount: grid.rows)
         }
 
-        static func forTile(column: Int, row: Int, grid: PatternGrid) -> Set<Self> {
-            var result: Set<Self> = []
-
-            if grid.columnContainsState(column, state: .undecided) {
-                result.insert(.column(column))
+        func forEachPendingColumn(_ closure: (_ column: Int) throws -> Void) rethrows {
+            for (i, column) in columns.enumerated() where column {
+                try closure(i)
             }
-            if grid.rowContainsState(row, state: .undecided) {
-                result.insert(.row(row))
-            }
-
-            return result
         }
 
-        static func forCoordinate(_ coordinate: PatternGrid.CoordinateType, grid: PatternGrid) -> Set<Self> {
-            forTile(column: coordinate.column, row: coordinate.row, grid: grid)
+        func forEachPendingRow(_ closure: (_ row: Int) throws -> Void) rethrows {
+            for (i, row) in rows.enumerated() where row {
+                try closure(i)
+            }
+        }
+
+        /// Marks all rows/columns as satisfied.
+        func satisfyAll() {
+            columns = columns.map { _ in false }
+            rows = rows.map { _ in false }
+        }
+
+        /// Marks a given column index as satisfied
+        func satisfyColumn(_ column: Int) {
+            columns[column] = false
+        }
+
+        /// Marks a given row index as satisfied
+        func satisfyRow(_ row: Int) {
+            rows[row] = false
+        }
+
+        /// Marks a tile as pending a check.
+        func markTilePending(column: Int, row: Int) {
+            columns[column] = true
+            rows[row] = true
+        }
+
+        /// Marks a tile as pending a check.
+        func markTilePending(_ coordinate: PatternGrid.CoordinateType) {
+            markTilePending(column: coordinate.column, row: coordinate.row)
+        }
+
+        /// Marks the whole set of columns and rows as pending.
+        func markGridPending() {
+            columns = columns.map { _ in true }
+            rows = rows.map { _ in true }
         }
     }
 }

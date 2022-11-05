@@ -22,20 +22,28 @@ public class PatternGridGenerator {
         try loadFromGameID(parsedGame.field)
     }
 
-    // TODO: Refactor to use MiniLexer library for the string parsing
     public func loadFromGameID(_ gameId: String) throws {
-        // 15x15:6/3.5/6.7/4.7/3.1.5/3.7/3.8/2.1.1.1/2.1.1.2/1.1/1.2.1/3.3.1/3.2/4.4/3.5/8.1.1/7.4/5.4/3.1.3/3/3/1.1/3.1.1.5/7.5/4.4.2/6.2/6.1/6/5.1/9
         let lexer = Lexer(input: gameId)
 
         func readRunHints(lexer: Lexer, maximum: Int) throws -> PatternGrid.RunsHint {
             var hint = PatternGrid.RunsHint(runs: [])
 
+            var expectsNumber = false
             while lexer.safeNextCharPasses(with: Lexer.isDigit) {
                 hint.runs.append(try lexer.consumeInt())
 
                 if !lexer.advanceIf(equals: ".") {
+                    expectsNumber = false
                     break
                 }
+
+                expectsNumber = true
+            }
+
+            if expectsNumber {
+                throw ParseError.invalidHints(
+                    message: "Expected number after '.' hint separator"
+                )
             }
 
             if hint.requiredEmptySpace > maximum {
