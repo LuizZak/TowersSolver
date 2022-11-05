@@ -2,97 +2,103 @@ import Interval
 import XCTest
 
 class IntervalOperationsTests: XCTestCase {
-    func testOverlap() {
-        let interval = Interval(start: -1, end: 1)
+    // MARK: - Range extensions
 
+    func testUnion_range() {
         XCTAssertEqual(
-            interval.overlap(Interval(start: -2, end: 0)),
-            Interval(start: -1, end: 0)
-        )
-        XCTAssertEqual(
-            interval.overlap(Interval(start: 0, end: 2)),
-            Interval(start: 0, end: 1)
-        )
-    }
-
-    func testOverlapOnIntervalWhichContainsInterval() {
-        let interval = Interval(start: -1, end: 1)
-
-        XCTAssertEqual(interval.overlap(Interval(start: -2, end: 2)), interval)
-    }
-
-    func testOverlapNilWhenOverlapRegionIsZeroLength() {
-        let interval = Interval(start: -1, end: 1)
-
-        XCTAssertNil(interval.overlap(Interval(start: 1, end: 2)))
-    }
-
-    func testOverlapNilWhenNotOverlapping() {
-        let interval = Interval(start: -1, end: 1)
-
-        XCTAssertNil(interval.overlap(Interval(start: 5, end: 10)))
-    }
-
-    func testUnion() {
-        XCTAssertEqual(
-            Interval(start: -1, end: 0).union(Interval(start: 0, end: 1)),
-            Interval(start: -1, end: 1)
+            (-1..<(0 + 1)).union((0..<(1 + 1))),
+            (-1..<(1 + 1))
         )
 
         XCTAssertEqual(
-            Interval(start: -2, end: -1).union(Interval(start: 1, end: 2)),
-            Interval(start: -2, end: 2)
+            (-2..<(-1 + 1)).union((1..<(2 + 1))),
+            (-2..<(2 + 1))
         )
     }
 
-    func testOverlaps() {
-        XCTAssert(Interval(start: -1, end: 1).overlaps(Interval(start: -1, end: 1)))
-        XCTAssert(Interval(start: -1, end: 1).overlaps(Interval(start: -1, end: 0)))
-        XCTAssert(Interval(start: -1, end: 1).overlaps(Interval(start: 0, end: 1)))
-        XCTAssertFalse(Interval(start: -1, end: 1).overlaps(Interval(start: 1, end: 2)))
-        XCTAssertFalse(Interval(start: -1, end: 1).overlaps(Interval(start: -2, end: -1)))
-    }
-
-    func testIntersects() {
-        XCTAssert(Interval(start: -1, end: 1).overlaps(Interval(start: -1, end: 1)))
-        XCTAssert(Interval(start: -1, end: 1).overlaps(Interval(start: -1, end: 0)))
-        XCTAssert(Interval(start: -1, end: 1).overlaps(Interval(start: 0, end: 1)))
-        XCTAssertFalse(Interval(start: -1, end: 1).overlaps(Interval(start: 1, end: 2)))
-        XCTAssertFalse(Interval(start: -1, end: 1).overlaps(Interval(start: -2, end: -1)))
-    }
-
-    func testCompactIntervals() {
-        let intervals: [IntInterval] = [
-            Interval(start: 10, end: 13),
-            Interval(start: 13, end: 14),
-            Interval(start: -5, end: -1),
-            Interval(start: -7, end: -2),
-            Interval(start: 4, end: 5),
-            Interval(start: 2, end: 3),
-            Interval(start: 3, end: 4),
-            Interval(start: 1, end: 9),
+    func testCompactIntervals_range() {
+        let intervals: [Range<Int>] = [
+            (-7..<(-2 + 1)),
+            (-5..<(-1 + 1)),
+            (1..<(9 + 1)),
+            (2..<(3 + 1)),
+            (4..<(5 + 1)),
+            (3..<(4 + 1)),
+            (10..<(13 + 1)),
+            (13..<(14 + 1)),
         ]
 
         XCTAssertEqual(
             intervals.compactIntervals(),
             [
-                Interval(start: -7, end: -1), Interval(start: 1, end: 9),
-                Interval(start: 10, end: 14),
+                (-7..<(-1 + 1)),
+                (1..<(9 + 1)),
+                (10..<(14 + 1)),
             ]
         )
     }
 
-    func testCompactIntervalsSingleInterval() {
+    func testCompactIntervalsSingleInterval_range() {
         XCTAssertEqual(
-            [Interval(start: 1, end: 2)].compactIntervals(),
-            [Interval(start: 1, end: 2)]
+            [(1..<(2 + 1))].compactIntervals(),
+            [(1..<(2 + 1))]
         )
     }
 
-    func testCompactIntervalsTwoNonOverlappingIntervals() {
+    func testCompactIntervalsTwoNonOverlappingIntervals_range() {
         XCTAssertEqual(
-            [Interval(start: 4, end: 5), Interval(start: 1, end: 2)].compactIntervals(),
-            [Interval(start: 1, end: 2), Interval(start: 4, end: 5)]
+            [(4..<(5 + 1)), (1..<(2 + 1))].compactIntervals(),
+            [(1..<(2 + 1)), (4..<(5 + 1))]
+        )
+    }
+
+    // MARK: - ClosedRange extensions
+
+    func testUnion_closedRange() {
+        XCTAssertEqual(
+            (-1...0).union((0...1)),
+            (-1...1)
+        )
+
+        XCTAssertEqual(
+            (-2...(-1)).union((1...2)),
+            (-2...2)
+        )
+    }
+
+    func testCompactIntervals_closedRange() {
+        let intervals: [ClosedRange<Int>] = [
+            (-7...(-1)),
+            (-5...(-1)),
+            (1...9),
+            (2...4),
+            (3...5),
+            (4...6),
+            (10...14),
+            (13...15),
+        ]
+
+        XCTAssertEqual(
+            intervals.compactIntervals(),
+            [
+                (-7...(-1)),
+                (1...9),
+                (10...15),
+            ]
+        )
+    }
+
+    func testCompactIntervalsSingleInterval_closedRange() {
+        XCTAssertEqual(
+            [(1...2)].compactIntervals(),
+            [(1...2)]
+        )
+    }
+
+    func testCompactIntervalsTwoNonOverlappingIntervals_closedRange() {
+        XCTAssertEqual(
+            [(4...5), (1...2)].compactIntervals(),
+            [(1...2), (4...5)]
         )
     }
 }
