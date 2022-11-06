@@ -17,10 +17,14 @@ class Stopwatch {
         return Float(duration) / Float(CLOCKS_PER_SEC)
     }
 
-    /// Returns an interval string, in seconds, with two decimal places for the
-    /// milliseconds.
+    /// Returns an interval string, in seconds, with two or three decimal places
+    /// for the milliseconds, depending on how short the interval is.
     var intervalString: String {
-        "\(String(format: "%.2f", interval))s"
+        if interval < 0.01 {
+            return "\(String(format: "%.3f", interval))s"
+        }
+
+        return "\(String(format: "%.2f", interval))s"
     }
 
     private init() {
