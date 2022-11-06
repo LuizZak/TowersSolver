@@ -44,6 +44,16 @@ extension Collection where Element == PatternTile {
         return result
     }
 
+    /// Returns every sequential list of non-light tiles in this tile collection.
+    func availableSpaceRuns() -> [Range<Index>] {
+        let runs = self.indices.split(whereSeparator: { self[$0].state == .light })
+        let result = runs.map { run in
+            run.startIndex..<run.endIndex
+        }
+        
+        return result
+    }
+
     /// Returns a list of sequential dark tiles that are enclosed in either the
     /// boundaries of the collection or are enclosed between light tiles.
     ///

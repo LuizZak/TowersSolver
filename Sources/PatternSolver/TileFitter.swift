@@ -30,6 +30,8 @@ class TileFitter {
         assert(earliest.count == latest.count)
 
         for (i, (early, late)) in zip(earliest, latest).enumerated() {
+            assert(early.lowerBound <= late.lowerBound)
+
             runs[i].earliestStartIndex = early.lowerBound
             runs[i].latestStartIndex = late.lowerBound
         }
@@ -68,15 +70,16 @@ class TileFitter {
         return result
     }
 
-    /// Returns the length of the potential runs that overlap a given tile index.
+    /// Returns the unique lengths of the potential runs that overlap a given
+    /// tile index.
     ///
     /// Returns `nil`, if `isValid == false`.
-    func potentialRunLengths(forTileAt index: Int) -> [Int]? {
+    func potentialRunLengths(forTileAt index: Int) -> Set<Int>? {
         guard let indices = potentialRunIndices(forTileAt: index) else {
             return nil
         }
 
-        return indices.map { self.runs[$0].count }
+        return Set(indices.map { self.runs[$0].count })
     }
 
     /// For each run in this tile fitter, returns an interval representing the
@@ -391,11 +394,9 @@ class TileFitter {
         }
 
         // List of results should encompass exactly all the dark tiles that are
-        // present
+        // present from the requested index on the tile list onwards.
         let startTileIndex = state?.startTileIndex ?? 0
-        let tilesToFit = tiles[startTileIndex...]
-        for (i, tile) in tilesToFit.enumerated() where tile.state == .dark {
-            let index = i + startTileIndex
+        for index in startTileIndex..<tiles.count where tiles[index].state == .dark {
             if !result.contains(where: { $0.contains(index) }) {
                 return nil
             }

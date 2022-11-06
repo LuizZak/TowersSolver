@@ -32,6 +32,33 @@ class PatternTile_ExtTests: XCTestCase {
         ])
     }
     
+    func testAvailableSpaceRuns() {
+        // Tiles: (O = dark, ▋ = light, empty = undecided)
+        // [ ][O][ ][ ][O][▋][O][O][▋][ ][O][O][ ][O]
+        let sut = tiles(
+            .undecided,
+            .dark,
+            .undecided,
+            .undecided,
+            .dark,
+            .light,
+            .dark,
+            .dark,
+            .light,
+            .undecided,
+            .dark,
+            .dark,
+            .undecided,
+            .dark
+        )
+        
+        XCTAssertEqual(sut.availableSpaceRuns(), [
+            (0..<5),
+            (6..<8),
+            (9..<14),
+        ])
+    }
+    
     func testNextAvailableSpace() {
         // Tiles: (O = dark, ▋ = light, empty = undecided)
         // [ ][O][ ][ ][O][ ][O][O][▋][ ][O][O][ ][ ]

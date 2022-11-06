@@ -42,44 +42,23 @@ public class PatternSolver: GameSolverType {
     ) -> PatternGrid {
 
         let result = runStepAcrossLines(grid, entries: entries) { (hint, tiles, setState) in
+            func stateAt(_ index: Int) -> PatternTile.State? {
+                if index < 0 || index >= tiles.count {
+                    return nil
+                }
+
+                return tiles[index].state
+            }
+            func setStates<S: Sequence<Int>>(_ indices: S, _ state: PatternTile.State) {
+                for index in indices {
+                    setState(index, state)
+                }
+            }
+
             // Ignore completed tile lists, whether they are correctly solved
             // or not
             guard tiles.hasUndecidedTile() else {
                 return
-            }
-
-            let tileFitter = TileFitter(hint: hint, tiles: tiles)
-
-            // Mark leading/trailing tiles that are guaranteed to be light
-            if let earliestDarkTile = tileFitter.earliestDarkTile(), earliestDarkTile > 0 {
-                for index in 0..<earliestDarkTile {
-                    setState(index, .light)
-                }
-            }
-            if let latestDarkTile = tileFitter.latestDarkTile(), latestDarkTile < tiles.count - 1 {
-                for index in (latestDarkTile + 1)..<tiles.count {
-                    setState(index, .light)
-                }
-            }
-
-            // Mark tiles from overlapping ranges as dark
-            let overlaps = tileFitter.overlappingIntervals()
-            for case let (i, overlap?) in overlaps.enumerated() {
-                for index in overlap {
-                    setState(index, .dark)
-                }
-
-                // For overlaps that match the exact hint length, surround dark
-                // tiles with light tiles
-                let run = hint.runs[i]
-                if overlap.count == run {
-                    if overlap.lowerBound > 0 {
-                        setState(overlap.lowerBound - 1, .light)
-                    }
-                    if overlap.upperBound < tiles.count {
-                        setState(overlap.upperBound, .light)
-                    }
-                }
             }
 
             if hint.requiredDarkTiles == tiles.darkTileCount() {
@@ -90,12 +69,56 @@ public class PatternSolver: GameSolverType {
                         setState(index, .light)
                     }
                 }
+
+                return
             } else if hint.requiredDarkTiles == tiles.darkTileCount() + tiles.undecidedTileCount() {
                 // Conversely, if the required dark tile space matches the available
                 // undecided space, fill the undecided tiles as dark
                 for index in 0..<tiles.count {
                     if tiles[index].state == .undecided {
                         setState(index, .dark)
+                    }
+                }
+
+                return
+            }
+
+            let tileFitter = TileFitter(hint: hint, tiles: tiles)
+
+            // Mark leading/trailing tiles that are guaranteed to be light
+            if let earliestDarkTile = tileFitter.earliestDarkTile(), earliestDarkTile > 0 {
+                setStates(0..<earliestDarkTile, .light)
+            }
+            if let latestDarkTile = tileFitter.latestDarkTile(), latestDarkTile < tiles.count - 1 {
+                setStates((latestDarkTile + 1)..<tiles.count, .light)
+            }
+
+            // Clear spaces that are too small to fit any run that may overlap
+            // those spaces
+            for availableSpace in tiles.availableSpaceRuns() where !tiles[availableSpace].hasDarkTile() {
+                guard let minRunLength = tileFitter.potentialRunLengths(forTileAt: availableSpace.startIndex)?.min() else {
+                    continue
+                }
+
+                if availableSpace.count < minRunLength {
+                    setStates(availableSpace, .light)
+                }
+            }
+
+            // Mark tiles from overlapping ranges as dark
+            let overlaps = tileFitter.overlappingIntervals()
+            for case let (i, overlap?) in overlaps.enumerated() {
+                setStates(overlap, .dark)
+
+                // For overlaps that match the exact hint length, surround dark
+                // tiles with light tiles
+                let run = hint.runs[i]
+                if overlap.count == run {
+                    if overlap.lowerBound > 0 {
+                        setState(overlap.lowerBound - 1, .light)
+                    }
+                    if overlap.upperBound < tiles.count {
+                        setState(overlap.upperBound, .light)
                     }
                 }
             }
@@ -119,9 +142,7 @@ public class PatternSolver: GameSolverType {
                         continue
                     }
 
-                    for lightIndex in latestCurrent.upperBound..<earliestNext.lowerBound {
-                        setState(lightIndex, .light)
-                    }
+                    setStates(latestCurrent.upperBound..<earliestNext.lowerBound, .light)
                 }
             }
 
@@ -132,8 +153,28 @@ public class PatternSolver: GameSolverType {
                     tileAtIndex: darkTileRun.lowerBound
                 )
 
-                for index in guaranteed {
-                    setState(index, .dark)
+                setStates(guaranteed, .dark)
+
+                // Also inspect the potential run lengths on top of a tile,
+                // surrounding that tile with light tiles if the length happen
+                // to be the only possible run length at that point.
+                if stateAt(darkTileRun.lowerBound - 1) == .undecided || stateAt(darkTileRun.upperBound) == .undecided {
+                    if let runLengths = tileFitter.potentialRunLengths(forTileAt: darkTileRun.lowerBound) {
+                        guard runLengths.count == 1, let runLength = runLengths.first else {
+                            continue
+                        }
+
+                        guard runLength == darkTileRun.count else {
+                            continue
+                        }
+
+                        if darkTileRun.lowerBound > 0 {
+                            setState(darkTileRun.lowerBound - 1, .light)
+                        }
+                        if darkTileRun.upperBound < tiles.count {
+                            setState(darkTileRun.upperBound, .light)
+                        }
+                    }
                 }
             }
         }

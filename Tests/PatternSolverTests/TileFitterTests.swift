@@ -35,11 +35,16 @@ class TileFitterTests: XCTestCase {
     func testPotentialRunLengths() {
         // Runs:
         // [O][O]
+        // [O][O]
         // [O][O][O]
         //
         // Tiles: (O = dark, ▋ = light, empty = undecided)
-        // [ ][ ][ ][ ][ ][ ][ ][ ][ ][▋][ ][ ] (12 total)
-        let sut = makeSut(hint: [2, 3], tiles: tiles(
+        // [ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][ ][▋][ ][ ] (15 total)
+        let sut = makeSut(hint: [2, 2, 3], tiles: tiles(
+            .undecided,
+            .undecided,
+            .undecided,
+            .undecided,
             .undecided,
             .undecided,
             .undecided,
@@ -55,10 +60,11 @@ class TileFitterTests: XCTestCase {
         ))
 
         XCTAssertEqual(sut.potentialRunLengths(forTileAt: 0), [2])
-        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 3), [2, 3])
-        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 8), [3])
-        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 10), [])
-        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 11), [])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 4), [2])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 7), [2, 3])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 11), [3])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 13), [])
+        XCTAssertEqual(sut.potentialRunLengths(forTileAt: 14), [])
     }
 
     func testGuaranteedDarkTilesSurrounding_runPrecedingSeparator() {
