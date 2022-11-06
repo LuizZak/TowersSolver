@@ -1,3 +1,5 @@
+import Commons
+
 extension Sequence where Element == PatternTile {
     /// Returns the number of tiles in this sequence of tiles that have a state of
     /// `PatternTile.State.undecided`.
@@ -36,22 +38,12 @@ extension Sequence where Element == PatternTile {
 extension Collection where Element == PatternTile {
     /// Returns every sequential list of dark tiles in this tile collection.
     func darkTileRuns() -> [Range<Index>] {
-        let runs = self.indices.split(whereSeparator: { self[$0].state != .dark })
-        let result = runs.map { run in
-            run.startIndex..<run.endIndex
-        }
-        
-        return result
+        return indexRanges(where: { $0.state == .dark })
     }
 
     /// Returns every sequential list of non-light tiles in this tile collection.
     func availableSpaceRuns() -> [Range<Index>] {
-        let runs = self.indices.split(whereSeparator: { self[$0].state == .light })
-        let result = runs.map { run in
-            run.startIndex..<run.endIndex
-        }
-        
-        return result
+        return indexRanges(where: { $0.state != .light })
     }
 
     /// Returns a list of sequential dark tiles that are enclosed in either the
