@@ -36,10 +36,10 @@ public protocol GridType {
     subscript(column column: Int) -> [TileType] { get set }
 
     /// Returns all the tiles contained within a given row within this grid.
-    func tilesInRow(_ row: Int) -> [TileType]
+    func tilesInRow(_ row: Int) -> GridTileView<Self>
 
     /// Returns all the tiles contained within a given column within this grid.
-    func tilesInColumn(_ column: Int) -> [TileType]
+    func tilesInColumn(_ column: Int) -> GridTileView<Self>
 
     /// Returns `true` if the given column/row combination represents a valid
     /// tile in this grid.
@@ -55,18 +55,22 @@ public protocol GridType {
 }
 
 public extension GridType {
+    @inlinable
     var tileCount: Int {
         rows * columns
     }
 
+    @inlinable
     var tilesSequential: [TileType] {
         (0..<tileCount).map { self[sequential: $0] }
     }
 
+    @inlinable
     var tileCoordinates: [CoordinateType] {
         (0..<tileCount).map(indexToColumnRow(_:))
     }
 
+    @inlinable
     subscript(sequential index: Int) -> TileType {
         get {
             let coords = indexToColumnRow(index)
@@ -78,14 +82,17 @@ public extension GridType {
         }
     }
 
-    func tilesInRow(_ row: Int) -> [TileType] {
-        (0..<columns).map { self[column: $0, row: row] }
+    @inlinable
+    func tilesInRow(_ row: Int) -> GridTileView<Self> {
+        .init(grid: self, source: .row(row))
     }
 
-    func tilesInColumn(_ column: Int) -> [TileType] {
-        self[column: column]
+    @inlinable
+    func tilesInColumn(_ column: Int) -> GridTileView<Self> {
+        .init(grid: self, source: .column(column))
     }
 
+    @inlinable
     func isWithinBounds(column: Int, row: Int) -> Bool {
         return column >= 0 && row >= 0 && column < columns && row < rows
     }
@@ -101,5 +108,68 @@ public extension GridType where CoordinateType == Coordinates {
 
     func coordinatesToIndex(_ coordinates: Coordinates) -> Int {
         coordinates.row * columns + coordinates.column
+    }
+}
+
+/// A view into a specific subset of a grid, whose contents can be rows or columns
+/// of the grid.
+public struct GridTileView<Grid: GridType> {
+    @usableFromInline
+    var grid: Grid
+
+    @usableFromInline
+    var source: Source
+
+    @usableFromInline
+    var length: Int
+
+    @inlinable
+    init(grid: Grid, source: Source) {
+        self.grid = grid
+        self.source = source
+
+        switch source {
+        case .row:
+            self.length = grid.columns
+        case .column:
+            self.length = grid.rows
+        }
+    }
+
+    @usableFromInline
+    enum Source {
+        case row(Int)
+        case column(Int)
+    }
+}
+
+extension GridTileView: Collection {
+    public typealias Element = Grid.TileType
+    public typealias Index = Int
+
+    @inlinable
+    public var startIndex: Int {
+        0
+    }
+
+    @inlinable
+    public var endIndex: Int {
+        length
+    }
+
+    @inlinable
+    public subscript(position: Int) -> Grid.TileType {
+        switch source {
+        case .row(let row):
+            return grid[column: position, row: row]
+
+        case .column(let column):
+            return grid[column: column, row: position]
+        }
+    }
+
+    @inlinable
+    public func index(after i: Int) -> Int {
+        i + 1
     }
 }

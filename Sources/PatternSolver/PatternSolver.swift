@@ -1,4 +1,5 @@
 import Commons
+import Geometry
 
 public class PatternSolver: GameSolverType {
     private var _pending: PendingCheckList
@@ -197,7 +198,7 @@ public class PatternSolver: GameSolverType {
         entries: PendingCheckList,
         _ step: (
             _ hint: PatternGrid.RunsHint,
-            _ tiles: [PatternTile],
+            _ tiles: GridTileView<PatternGrid>,
             _ setState: (_ index: Int, _ state: PatternTile.State) -> Void
         ) throws -> Void
     ) rethrows -> PatternGrid {
