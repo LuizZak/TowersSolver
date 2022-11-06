@@ -92,31 +92,7 @@ extension Collection where Element == PatternTile {
     ///
     /// - precondition: if `start` is non-`nil`: `self.indices.contains(index)`.
     func nextAvailableSpace(fromIndex start: Index? = nil) -> Range<Index>? {
-        var searchHead = start ?? startIndex
-        var currentStart: Index? = nil
-
-        while searchHead < endIndex {
-            defer { formIndex(after: &searchHead) }
-
-            if isSeparator(at: searchHead) {
-                if let currentStart = currentStart {
-                    return currentStart..<searchHead
-                }
-            } else if currentStart == nil {
-                currentStart = searchHead
-            }
-        }
-
-        // Unclosed search: return remaining of indices.
-        if let currentStart = currentStart {
-            return currentStart..<searchHead
-        }
-
-        return nil
-    }
-
-    func isSeparator(at index: Index) -> Bool {
-        self[index].state.isSeparator
+        nextIndexRange(fromIndex: start, where: { !$0.state.isSeparator })
     }
 }
 
@@ -127,17 +103,8 @@ extension BidirectionalCollection where Element == PatternTile {
     ///
     /// - precondition: `self.indices.contains(index)`.
     func availableSpaceSurrounding(index: Index) -> Range<Index>? {
-        var start = index
-        if self[start].state == .light {
-            return nil
-        }
+        let predicate: (Element) -> Bool = { !$0.state.isSeparator }
 
-        // Backtrack from current index until either a light tile or the start
-        // of the collection is found
-        while start > startIndex && self[start].state != .light {
-            start = self.index(before: start)
-        }
-
-        return nextAvailableSpace(fromIndex: start)
+        return indicesSurrounding(index: index, where: predicate)
     }
 }
