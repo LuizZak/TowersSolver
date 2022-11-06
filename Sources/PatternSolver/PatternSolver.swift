@@ -84,7 +84,7 @@ public class PatternSolver: GameSolverType {
                 return
             }
 
-            let tileFitter = TileFitter(hint: hint, tiles: tiles)
+            let tileFitter = TileFitter(hint: hint, tiles: Array(tiles))
 
             // Mark leading/trailing tiles that are guaranteed to be light
             if let earliestDarkTile = tileFitter.earliestDarkTile(), earliestDarkTile > 0 {
