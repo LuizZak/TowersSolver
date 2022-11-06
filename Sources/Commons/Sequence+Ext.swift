@@ -5,9 +5,10 @@ extension Sequence {
     /// In case less than two elements fulfil the predicate, or more than two
     /// fulfil it, nil is returned, instead.
     @inlinable
-    public func onlyTwo(where predicate: (Iterator.Element) throws -> Bool) rethrows -> (
-        first: Element, second: Element
-    )? {
+    public func onlyTwo(
+        where predicate: (Iterator.Element) throws -> Bool
+    ) rethrows -> (first: Element, second: Element)? {
+        
         var first: Element?
         var tuple: (Element, Element)?
 
@@ -114,9 +115,9 @@ extension Sequence where Iterator.Element: Equatable {
 // https://stackoverflow.com/a/50545761
 extension Sequence {
     @inlinable
-    public func stableSorted(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows
-        -> [Element]
-    {
+    public func stableSorted(
+        by areInIncreasingOrder: (Element, Element) throws -> Bool
+    ) rethrows -> [Element] {
         return try enumerated()
             .sorted { a, b -> Bool in
                 try areInIncreasingOrder(a.element, b.element)
@@ -128,9 +129,9 @@ extension Sequence {
 
 extension Array {
     @inlinable
-    public mutating func stableSort(by areInIncreasingOrder: (Element, Element) throws -> Bool)
-        rethrows
-    {
+    public mutating func stableSort(
+        by areInIncreasingOrder: (Element, Element) throws -> Bool
+    ) rethrows {
         self = try stableSorted(by: areInIncreasingOrder)
     }
 }

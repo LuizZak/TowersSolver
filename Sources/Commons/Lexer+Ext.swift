@@ -11,6 +11,7 @@ public extension Lexer {
     /// position is not a digit.
     ///
     /// - note: Regex equivalent: `\d+`
+    @inlinable
     func consumeInt(_ errorMessage: @autoclosure () -> String = "Expected integer substring") throws -> Int {
         if try !Lexer.isDigit(peek()) {
             throw syntaxError(errorMessage())

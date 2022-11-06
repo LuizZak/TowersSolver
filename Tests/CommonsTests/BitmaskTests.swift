@@ -60,6 +60,15 @@ class BitmaskTests: XCTestCase {
         XCTAssertTrue(sut.isBitSet(3))
     }
 
+    func testIsBitRangeZero() {
+        let sut: Bitmask = 0b1111_11000
+        
+        XCTAssertTrue(sut.isBitRangeZero(offset: 0, count: 3))
+        XCTAssertFalse(sut.isBitRangeZero(offset: 0, count: 4))
+        XCTAssertFalse(sut.isBitRangeZero(offset: 3, count: 6))
+        XCTAssertTrue(sut.isBitRangeZero(offset: 9, count: 20))
+    }
+
     func testSetBit() {
         var sut: Bitmask = 0b010
 
@@ -70,16 +79,18 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitOn() {
-        var sut: Bitmask = 0b0
+        var sut: Bitmask = 0b010
 
+        sut.setBitOn(1)
         sut.setBitOn(2)
 
-        assertEqual(sut, value: 0b100)
+        assertEqual(sut, value: 0b110)
     }
 
     func testSetBitOff() {
         var sut: Bitmask = 0b101
 
+        sut.setBitOff(1)
         sut.setBitOff(2)
 
         assertEqual(sut, value: 0b001)
@@ -131,6 +142,22 @@ class BitmaskTests: XCTestCase {
         sut.setBitRange(2...7, state: false)
 
         assertEqual(sut, value: 0b10000_00001)
+    }
+
+    func testSetAllBits_true() {
+        var sut: Bitmask = 0b10010_00101
+
+        sut.setAllBits(state: true)
+
+        assertEqual(sut, value: UInt64.max)
+    }
+
+    func testSetAllBits_false() {
+        var sut: Bitmask = 0b10010_00101
+
+        sut.setAllBits(state: false)
+
+        assertEqual(sut, value: 0b0)
     }
 
     func testWithStorage() {

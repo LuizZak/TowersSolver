@@ -99,6 +99,7 @@ public extension GridType {
 }
 
 public extension GridType where CoordinateType == Coordinates {
+    @inlinable
     func indexToColumnRow(_ index: Int) -> Coordinates {
         let column = index % columns
         let row = index / columns
@@ -106,6 +107,7 @@ public extension GridType where CoordinateType == Coordinates {
         return Coordinates(column: column, row: row)
     }
 
+    @inlinable
     func coordinatesToIndex(_ coordinates: Coordinates) -> Int {
         coordinates.row * columns + coordinates.column
     }
@@ -171,5 +173,12 @@ extension GridTileView: Collection {
     @inlinable
     public func index(after i: Int) -> Int {
         i + 1
+    }
+}
+
+extension GridTileView: BidirectionalCollection {
+    @inlinable
+    public func index(before i: Int) -> Int {
+        i - 1
     }
 }

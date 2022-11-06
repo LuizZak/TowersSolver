@@ -1,15 +1,15 @@
-class TileFitter {
+class TileFitter<TileList: BidirectionalCollection> where TileList.Element == PatternTile, TileList.Index == Int {
     private let hint: PatternGrid.RunsHint
-    private let tiles: [PatternTile]
+    private let tiles: TileList
     private var runs: [RunEntry]
 
     /// If `false`, indicates that no way to place the hints in the tiles that
     /// where provided was found.
     private(set) var isValid: Bool = false
 
-    init<S: Sequence>(hint: PatternGrid.RunsHint, tiles: S) where S.Element == PatternTile {
+    init(hint: PatternGrid.RunsHint, tiles: TileList) {
         self.hint = hint
-        self.tiles = Array(tiles)
+        self.tiles = tiles
         self.runs = hint.runs.map {
             .init(count: $0)
         }
@@ -35,14 +35,6 @@ class TileFitter {
             runs[i].earliestStartIndex = early.lowerBound
             runs[i].latestStartIndex = late.lowerBound
         }
-    }
-
-    /// Creates a subdivided tile fitter for a range of tiles in this tile fitter
-    /// with a custom list of run hints.
-    private func makeSubTileFitter(index: Int, count: Int, runs: [Int]) -> TileFitter {
-        let fitter = TileFitter(hint: .init(runs: runs), tiles: tiles[index..<(index + count)])
-
-        return fitter
     }
 
     /// From a given tile index, returns the indices of the potential runs that
@@ -139,8 +131,12 @@ class TileFitter {
     /// Returns a list of intervals, one per run in this tile fitter's hint list,
     /// representing the earliest possible allocation for the dark tile runs.
     ///
-    /// If any run cannot be fit, `nil` is returned.
+    /// Returns `nil` if `self.isValid == false`.
     func earliestAlignedRuns() -> [Range<Int>]? {
+        guard isValid else {
+            return nil
+        }
+
         var result: [Range<Int>] = []
 
         for entry in runs {
@@ -157,8 +153,12 @@ class TileFitter {
     /// Returns a list of intervals, one per run in this tile fitter's hint list,
     /// representing the latest possible allocation for the dark tile runs.
     ///
-    /// If any run cannot be fit, `nil` is returned.
+    /// Returns `nil` if `self.isValid == false`.
     func latestAlignedRuns() -> [Range<Int>]? {
+        guard isValid else {
+            return nil
+        }
+
         var result: [Range<Int>] = []
 
         for entry in runs {
@@ -222,7 +222,7 @@ class TileFitter {
     ///
     /// The number of entries in the returned array is the same as `runs.runCount`.
     func fitRunsEarliest() -> [Range<Int>]? {
-        TileFitter._fitRuns(hint: hint, tiles: tiles)
+        _fitRuns(hint: hint, tiles: tiles)
     }
 
     /// Attempts to fit a given set of runs in a given list of tiles, returning
@@ -233,7 +233,7 @@ class TileFitter {
     ///
     /// The number of entries in the returned array is the same as `runs.runCount`.
     func fitRunsLatest() -> [Range<Int>]? {
-        guard let result = TileFitter._fitRuns(hint: hint.reversed, tiles: tiles.reversed()) else {
+        guard let result = _fitRuns(hint: hint.reversed, tiles: tiles.reversed()) else {
             return nil
         }
 
@@ -241,168 +241,6 @@ class TileFitter {
         return result.reversed().map {
             (tiles.count - $0.upperBound)..<(tiles.count - $0.lowerBound)
         }
-    }
-    
-    private static func _fitRuns(
-        hint: PatternGrid.RunsHint,
-        tiles: [PatternTile]
-    ) -> [Range<Int>]? {
-
-        var enclosedRuns: [Range<Int>] = []
-
-        // Skip past enclosed tile runs that are solved
-        let firstTiles = tiles.leftmostEnclosedDarkTileRuns()
-        let state: (startHintIndex: Int, startTileIndex: Int)?
-
-        if firstTiles.count > hint.runCount {
-            return nil
-        }
-
-        if let lastTile = firstTiles.last?.upperBound {
-            if !hint.runs[..<firstTiles.count].elementsEqual(firstTiles.map(\.count)) {
-                return nil
-            }
-
-            for initialRun in firstTiles {
-                enclosedRuns.append(initialRun)
-            }
-
-            state = (
-                startHintIndex: firstTiles.count,
-                startTileIndex: lastTile
-            )
-        } else {
-            state = nil
-        }
-
-        if
-            let nextRuns = TileFitter._fitRunsRecursive(
-                hint: hint,
-                tiles: tiles,
-                state: state
-            )
-        {
-            return enclosedRuns + nextRuns
-        }
-
-        return nil
-    }
-
-    private static func _fitRunsRecursive(
-        hint: PatternGrid.RunsHint,
-        tiles: [PatternTile],
-        state: (startHintIndex: Int, startTileIndex: Int)? = nil
-    ) -> [Range<Int>]? {
-
-        var currentIndex = state?.startTileIndex ?? 0
-
-        // Hints have been satisfied
-        if state?.startHintIndex == hint.runCount {
-            // Check if remaining tiles have no dark tiles
-            if currentIndex < tiles.count && tiles[currentIndex...].hasDarkTile() {
-                return nil
-            }
-
-            return []
-        }
-        // No tiles available to fit!
-        if state?.startTileIndex == tiles.count {
-            return nil
-        }
-
-        let currentRunIndex = state?.startHintIndex ?? 0
-        let currentRunLength = hint.runs[currentRunIndex]
-
-        // 0-length runs are not allowed
-        if currentRunLength == 0 {
-            return nil
-        }
-
-        // Fit first tile in first available space and recursively place further
-        // tiles until we find the first combination that fits properly.
-
-        // For each run index, look for the next available space capable of
-        // containing the required run.
-        let lastIndex = currentIndex + tiles.count - currentRunLength
-
-        var result: [Range<Int>] = []
-
-        outerLoop:
-        while currentIndex <= lastIndex, let nextSpaceInterval = tiles.nextAvailableSpace(fromIndex: currentIndex) {
-            let nextSpaceTiles = tiles[nextSpaceInterval]
-            
-            let spaceLength = nextSpaceTiles.count
-
-            guard spaceLength >= currentRunLength else {
-                // If there are any dark tiles in this section, not being
-                // able to place the next necessary run results in a failure
-                if nextSpaceTiles.hasDarkTile() {
-                    return nil
-                }
-
-                currentIndex = nextSpaceInterval.endIndex
-                continue
-            }
-
-            // Attempt to fill the tiles, encompassing any dark tiles that
-            // are neighboring the run, until we can fully fit the run.
-            var index = nextSpaceInterval.startIndex
-            while index < lastIndex {
-                let end = index + currentRunLength
-                if end == tiles.count || tiles[end].state != .dark {
-                    break
-                } else {
-                    index += 1
-                }
-            }
-
-            let end = index + currentRunLength
-            if end <= tiles.count {
-                let nextRun = end + 1
-
-                // If the run of tiles succeeds a dark tile, it means this
-                // run is too long and no valid solution is available.
-                if index > 0 && tiles[index - 1].state == .dark {
-                    return nil
-                }
-
-                // Recursively fit the remaining tiles
-                if
-                    let rest = _fitRunsRecursive(
-                        hint: hint,
-                        tiles: tiles,
-                        state: (currentRunIndex + 1, nextRun)
-                    )
-                {
-                    result.append(index..<end)
-                    result.append(contentsOf: rest)
-
-                    break
-                }
-
-                // If tiles cannot fit here, increment index and try again
-                currentIndex = nextSpaceInterval.startIndex + 1
-                continue
-            }
-
-            // Cannot fit tiles!
-            return nil
-        }
-
-        guard result.count == (hint.runCount - currentRunIndex) else {
-            return nil
-        }
-
-        // List of results should encompass exactly all the dark tiles that are
-        // present from the requested index on the tile list onwards.
-        let startTileIndex = state?.startTileIndex ?? 0
-        for index in startTileIndex..<tiles.count where tiles[index].state == .dark {
-            if !result.contains(where: { $0.contains(index) }) {
-                return nil
-            }
-        }
-        
-        return result
     }
 
     private struct RunEntry {
@@ -421,4 +259,166 @@ class TileFitter {
             return earliestStartIndex..<latestStartIndex + count
         }
     }
+}
+
+private func _fitRuns<TileList: BidirectionalCollection>(
+    hint: PatternGrid.RunsHint,
+    tiles: TileList
+) -> [Range<Int>]? where TileList.Element == PatternTile, TileList.Index == Int {
+
+    var enclosedRuns: [Range<Int>] = []
+
+    // Skip past enclosed tile runs that are solved
+    let firstTiles = tiles.leftmostEnclosedDarkTileRuns()
+    let state: (startHintIndex: Int, startTileIndex: Int)?
+
+    if firstTiles.count > hint.runCount {
+        return nil
+    }
+
+    if let lastTile = firstTiles.last?.upperBound {
+        if !hint.runs[..<firstTiles.count].elementsEqual(firstTiles.map(\.count)) {
+            return nil
+        }
+
+        for initialRun in firstTiles {
+            enclosedRuns.append(initialRun)
+        }
+
+        state = (
+            startHintIndex: firstTiles.count,
+            startTileIndex: lastTile
+        )
+    } else {
+        state = nil
+    }
+
+    if
+        let nextRuns = _fitRunsRecursive(
+            hint: hint,
+            tiles: tiles,
+            state: state
+        )
+    {
+        return enclosedRuns + nextRuns
+    }
+
+    return nil
+}
+
+private func _fitRunsRecursive<TileList: BidirectionalCollection>(
+    hint: PatternGrid.RunsHint,
+    tiles: TileList,
+    state: (startHintIndex: Int, startTileIndex: Int)? = nil
+) -> [Range<Int>]? where TileList.Element == PatternTile, TileList.Index == Int {
+
+    var currentIndex = state?.startTileIndex ?? 0
+
+    // Hints have been satisfied
+    if state?.startHintIndex == hint.runCount {
+        // Check if remaining tiles have no dark tiles
+        if currentIndex < tiles.count && tiles[currentIndex...].hasDarkTile() {
+            return nil
+        }
+
+        return []
+    }
+    // No tiles available to fit!
+    if state?.startTileIndex == tiles.count {
+        return nil
+    }
+
+    let currentRunIndex = state?.startHintIndex ?? 0
+    let currentRunLength = hint.runs[currentRunIndex]
+
+    // 0-length runs are not allowed
+    if currentRunLength == 0 {
+        return nil
+    }
+
+    // Fit first tile in first available space and recursively place further
+    // tiles until we find the first combination that fits properly.
+
+    // For each run index, look for the next available space capable of
+    // containing the required run.
+    let lastIndex = currentIndex + tiles.count - currentRunLength
+
+    var result: [Range<Int>] = []
+
+    outerLoop:
+    while currentIndex <= lastIndex, let nextSpaceInterval = tiles.nextAvailableSpace(fromIndex: currentIndex) {
+        let nextSpaceTiles = tiles[nextSpaceInterval]
+        
+        let spaceLength = nextSpaceTiles.count
+
+        guard spaceLength >= currentRunLength else {
+            // If there are any dark tiles in this section, not being
+            // able to place the next necessary run results in a failure
+            if nextSpaceTiles.hasDarkTile() {
+                return nil
+            }
+
+            currentIndex = nextSpaceInterval.endIndex
+            continue
+        }
+
+        // Attempt to fill the tiles, encompassing any dark tiles that
+        // are neighboring the run, until we can fully fit the run.
+        var index = nextSpaceInterval.startIndex
+        while index < lastIndex {
+            let end = index + currentRunLength
+            if end == tiles.count || tiles[end].state != .dark {
+                break
+            } else {
+                index += 1
+            }
+        }
+
+        let end = index + currentRunLength
+        if end <= tiles.count {
+            let nextRun = end + 1
+
+            // If the run of tiles succeeds a dark tile, it means this
+            // run is too long and no valid solution is available.
+            if index > 0 && tiles[index - 1].state == .dark {
+                return nil
+            }
+
+            // Recursively fit the remaining tiles
+            if
+                let rest = _fitRunsRecursive(
+                    hint: hint,
+                    tiles: tiles,
+                    state: (currentRunIndex + 1, nextRun)
+                )
+            {
+                result.append(index..<end)
+                result.append(contentsOf: rest)
+
+                break
+            }
+
+            // If tiles cannot fit here, increment index and try again
+            currentIndex = nextSpaceInterval.startIndex + 1
+            continue
+        }
+
+        // Cannot fit tiles!
+        return nil
+    }
+
+    guard result.count == (hint.runCount - currentRunIndex) else {
+        return nil
+    }
+
+    // List of results should encompass exactly all the dark tiles that are
+    // present from the requested index on the tile list onwards.
+    let startTileIndex = state?.startTileIndex ?? 0
+    for index in startTileIndex..<tiles.count where tiles[index].state == .dark {
+        if !result.contains(where: { $0.contains(index) }) {
+            return nil
+        }
+    }
+    
+    return result
 }
