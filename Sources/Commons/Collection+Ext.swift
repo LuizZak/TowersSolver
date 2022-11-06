@@ -1,6 +1,7 @@
 public extension Collection {
     /// Returns every range of sequential indices from this collection whose
     /// element at that index satisfies a given predicate.
+    @inlinable
     func indexRanges(where predicate: (Element) -> Bool) -> [Range<Index>] {
         let runs = self.indices.split(whereSeparator: { !predicate(self[$0]) })
         let result = runs.map { run in
@@ -19,6 +20,7 @@ public extension Collection {
     /// is `nil`), including itself, satisfy `predicate`.
     ///
     /// - precondition: if `start` is non-`nil`: `self.indices.contains(index)`.
+    @inlinable
     func nextIndexRange(fromIndex start: Index? = nil, where predicate: (Element) -> Bool) -> Range<Index>? {
         var searchHead = start ?? startIndex
         var currentStart: Index? = nil
@@ -51,6 +53,7 @@ public extension BidirectionalCollection {
     /// Returns `nil` if no index, including `index`, satisfies the predicate.
     ///
     /// - precondition: `self.indices.contains(index)`.
+    @inlinable
     func indicesSurrounding(index: Index, where predicate: (Element) -> Bool) -> Range<Index>? {
         var start = index
         if !predicate(self[start]) {
