@@ -1083,7 +1083,7 @@ class TileFitterTests: XCTestCase {
 
     // MARK: - Private test factory methods
 
-    private func makeSut(hint: PatternGrid.RunsHint, tiles: [PatternTile]) -> TileFitter<[PatternTile]> {
+    private func makeSut(hint: PatternGrid.RunsHint, tiles: [PatternTile]) -> TileFitter {
         TileFitter(hint: hint, tiles: tiles)
     }
 
