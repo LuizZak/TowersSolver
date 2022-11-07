@@ -494,6 +494,66 @@ class BitmaskTests: XCTestCase {
         assertEqual(sut, value: [0b0, 0b0])
     }
 
+    func testShiftingBitsLeft_past64Bits() {
+        let sut: Bitmask = 0b10000_10001
+
+        let result = sut.shiftingBitsLeft(count: 59)
+
+        assertEqual(
+            result,
+            value: [
+                0b1000_10000_00000_00000_00000_00000_00000_00000_00000_00000_00000_00000_00000,
+                0b10000,
+            ]
+        )
+    }
+
+    func testShiftBitsLeft_past64Bits() {
+        var sut: Bitmask = 0b10000_10001
+
+        sut.shiftBitsLeft(count: 59)
+
+        assertEqual(
+            sut,
+            value: [
+                0b1000_10000_00000_00000_00000_00000_00000_00000_00000_00000_00000_00000_00000,
+                0b10000,
+            ]
+        )
+    }
+
+    func testShiftingBitsRight_past64Bits() {
+        let sut: Bitmask = Bitmask(bits: [
+            0b1000_10000_00000_00000_00000_00000_00000_01110_00000_00000_01100_10000_00001,
+            0b10000,
+        ])
+
+        let result = sut.shiftingBitsRight(count: 59)
+
+        assertEqual(
+            result,
+            value: [
+                0b10000_10001,
+            ]
+        )
+    }
+
+    func testShiftBitsRight_past64Bits() {
+        var sut: Bitmask = Bitmask(bits: [
+            0b1000_10000_00000_00000_00000_00000_00000_01110_00000_00000_01100_10000_00001,
+            0b10000,
+        ])
+
+        sut.shiftBitsRight(count: 59)
+
+        assertEqual(
+            sut,
+            value: [
+                0b10000_10001,
+            ]
+        )
+    }
+
     func testWithStorage_past64Bits() {
         var sut: Bitmask = 0b10010_00101
         sut.setBitRange(offset: 8, count: 64, state: true)
@@ -503,7 +563,7 @@ class BitmaskTests: XCTestCase {
         XCTAssertEqual(
             result, [
                 0b1111_11111_11111_11111_11111_11111_11111_11111_11111_11111_11111_11010_00101,
-                0b111_11111
+                0b111_11111,
             ]
         )
     }
@@ -511,7 +571,7 @@ class BitmaskTests: XCTestCase {
     func testForEachOnBitIndex_past64Bits() {
         let sut = Bitmask(bits: [
             0b11101_00011_10000_11110_00000_00111_11110,
-            0b11110_01001_00101_00100_11101_11110_00111
+            0b11110_01001_00101_00100_11101_11110_00111,
         ])
         var indices: [Int] = []
 
@@ -522,14 +582,14 @@ class BitmaskTests: XCTestCase {
         XCTAssertEqual(indices, [
             1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 24, 25, 26, 30, 32, 33, 34,
             64, 65, 66, 70, 71, 72, 73, 74, 76, 77, 78, 81, 84, 86, 89, 92, 95,
-            96, 97, 98
+            96, 97, 98,
         ])
     }
 
     func testForEachOnBitIndex_copyBitmasks_past64Bits() {
         let sut = Bitmask(bits: [
             0b11101_00011_10000_11110_00000_00111_11110,
-            0b11110_01001_00101_00100_11101_11110_00111
+            0b11110_01001_00101_00100_11101_11110_00111,
         ])
         var copy = Bitmask()
 

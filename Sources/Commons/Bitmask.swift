@@ -303,6 +303,58 @@ public struct Bitmask {
         }
     }
 
+    /// Returns a copy of this bitmask object with all on bits shifted left by a
+    /// given amount.
+    @inlinable
+    public func shiftingBitsLeft(count: Int) -> Self {
+        var copy = self
+        copy.shiftBitsLeft(count: count)
+        return copy
+    }
+
+    /// Shifts all on bits left by a given amount.
+    @inlinable
+    public mutating func shiftBitsLeft(count: Int) {
+        var result = Bitmask()
+
+        forEachOnBitIndex { index in
+            let newIndex = index + count
+            guard newIndex >= 0 else {
+                return
+            }
+
+            result.setBitOn(newIndex)
+        }
+
+        self = result
+    }
+
+    /// Returns a copy of this bitmask object with all on bits shifted right by a
+    /// given amount.
+    @inlinable
+    public func shiftingBitsRight(count: Int) -> Self {
+        var copy = self
+        copy.shiftBitsRight(count: count)
+        return copy
+    }
+
+    /// Shifts all on bits right by a given amount.
+    @inlinable
+    public mutating func shiftBitsRight(count: Int) {
+        var result = Bitmask()
+
+        forEachOnBitIndex { index in
+            let newIndex = index - count
+            guard newIndex >= 0 else {
+                return
+            }
+
+            result.setBitOn(newIndex)
+        }
+
+        self = result
+    }
+
     /// Returns a copy of this bitmask where the storage is the minimal count of
     /// `UInt64` bits capable of representing the on bits on this bitmask.
     @inlinable
@@ -349,6 +401,157 @@ public struct Bitmask {
             }
 
             totalLength += bitmask.bitWidth
+        }
+    }
+
+    /// Internal storage for a Bitmask type, supporting trailing storage elements
+    /// in an array, as necessary.
+    @usableFromInline
+    internal enum _Storage: Collection {
+        case single(Storage)
+        case multiple(Storage, [Storage])
+
+        @usableFromInline
+        var firstValue: Storage {
+            switch self {
+            case .single(let value), .multiple(let value, _):
+                return value
+            }
+        }
+
+        @usableFromInline
+        var startIndex: Int {
+            0
+        }
+        
+        @usableFromInline
+        var endIndex: Int {
+            switch self {
+            case .single:
+                return 1
+
+            case .multiple(_, let remaining):
+                return 1 + remaining.count
+            }
+        }
+
+        @usableFromInline
+        subscript(position: Int) -> Storage {
+            @usableFromInline
+            get {
+                switch self {
+                case .single(let value):
+                    assert(position == 0)
+                    return value
+
+                case .multiple(let lead, let remaining):
+                    assert(position <= remaining.count)
+                    if position == 0 {
+                        return lead
+                    }
+
+                    return remaining[position - 1]
+                }
+            }
+            @usableFromInline
+            set {
+                let storageCount = position
+                if storageCount > endIndex {
+                    ensureCapacity(count: storageCount)
+                }
+
+                switch self {
+                case .single:
+                    self = .single(newValue)
+
+                case .multiple(let lead, let remaining):
+                    if position == 0 {
+                        self = .multiple(newValue, remaining)
+                    } else {
+                        var remaining = remaining
+                        remaining[position - 1] = newValue
+
+                        self = .multiple(lead, remaining)
+                    }
+                }
+            }
+        }
+
+        @usableFromInline
+        func index(after i: Int) -> Int {
+            i + 1
+        }
+
+        @usableFromInline
+        mutating func ensureCapacity(count: Int) {
+            guard count > self.count else {
+                return
+            }
+
+            switch self {
+            case .single(let storage):
+                self = .multiple(storage, [Storage](repeating: 0, count: count - 1))
+            
+            case .multiple(let storage, var remaining):
+                let extraStorage = (count + 1) - remaining.count
+
+                if extraStorage > 0 {
+                    remaining.append(contentsOf: [Storage](repeating: 0, count: extraStorage))
+                    self = .multiple(storage, remaining)
+                }
+            }
+        }
+
+        @usableFromInline
+        static func _binaryOp(lhs: Self, rhs: Self, op: (Storage, Storage) -> Storage) -> Self {
+            switch (lhs, rhs) {
+            case (.single(let lValue), .single(let rValue)):
+                return .single(op(lValue, rValue))
+
+            default:
+                let totalCount = Swift.max(lhs.count, rhs.count)
+                let lhsIndexer = _StorageIndexer(storage: lhs)
+                let rhsIndexer = _StorageIndexer(storage: rhs)
+
+                var result = Self.multiple(0, [Storage](repeating: 0, count: totalCount))
+
+                for index in 0...totalCount {
+                    result[index] = op(lhsIndexer[index], rhsIndexer[index])
+                }
+
+                return result
+            }
+        }
+
+        @usableFromInline
+        static func _unaryOp(value: Self, op: (Storage) -> Storage) -> Self {
+            switch value {
+            case .single(let v):
+                return .single(op(v))
+
+            case .multiple(let lead, let rem):
+                return .multiple(op(lead), rem.map(op))
+            }
+        }
+
+        @usableFromInline
+        internal struct _StorageIndexer {
+            @usableFromInline
+            let storage: _Storage
+
+            @usableFromInline
+            subscript(position: Int) -> Bitmask.Storage {
+                if position > storage.endIndex {
+                    return 0
+                }
+
+                return storage[position]
+            }
+
+            @usableFromInline
+            init(storage: _Storage) {
+                self.storage = storage
+            }
         }
     }
 }
@@ -456,8 +659,7 @@ public extension Bitmask {
         let lhsIndexer = _StorageIndexer(bitmask: lhs)
         let rhsIndexer = _StorageIndexer(bitmask: rhs)
 
-        var result = Bitmask()
-        result.ensureBitCount(Storage.bitWidth * maxStorage)
+        var result = Bitmask(_storage: 0, _remaining: [Storage](repeating: 0, count: maxStorage))
 
         for index in 0...maxStorage {
             result[storageIndex: index] = op(lhsIndexer[index], rhsIndexer[index])
@@ -478,18 +680,13 @@ public extension Bitmask {
     }
 
     @usableFromInline
-    internal struct _StorageIndexer: Collection {
+    internal struct _StorageIndexer {
         @usableFromInline
         let bitmask: Bitmask
 
         @usableFromInline
-        let startIndex: Int = 0
-        @usableFromInline
-        let endIndex: Int = Int.max
-        
-        @usableFromInline
         subscript(position: Int) -> Bitmask.Storage {
-            if position > bitmask.storageLength {
+            if position >= bitmask.storageLength {
                 return 0
             }
 
@@ -499,11 +696,6 @@ public extension Bitmask {
         @usableFromInline
         init(bitmask: Bitmask) {
             self.bitmask = bitmask
-        }
-
-        @usableFromInline
-        func index(after i: Int) -> Int {
-            i + 1
         }
     }
 }
