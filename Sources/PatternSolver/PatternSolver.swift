@@ -242,83 +242,6 @@ public class PatternSolver: GameSolverType {
         return grid
     }
     
-    // TODO: Once Bitmask supports greater than 64 bits, enable bitmask-based pending check list
-
-    #if true
-
-    /// Marks columns/rows of a grid as pending checks.
-    private class PendingCheckList {
-        private var columnCount: Int
-        private var rowCount: Int
-
-        private var columns: [Bool]
-        private var rows: [Bool]
-
-        /// Returns `true` if all columns and rows on this check list are satisfied.
-        var hasPendingChecks: Bool {
-            columns.contains { $0 } || rows.contains { $0 }
-        }
-
-        init(columnCount: Int, rowCount: Int) {
-            self.columnCount = columnCount
-            self.rowCount = rowCount
-
-            columns = .init(repeating: false, count: columnCount)
-            rows = .init(repeating: false, count: rowCount)
-        }
-
-        convenience init(grid: PatternGrid) {
-            self.init(columnCount: grid.columns, rowCount: grid.rows)
-        }
-
-        func forEachPendingColumn(_ closure: (_ column: Int) throws -> Void) rethrows {
-            for (i, column) in columns.enumerated() where column {
-                try closure(i)
-            }
-        }
-
-        func forEachPendingRow(_ closure: (_ row: Int) throws -> Void) rethrows {
-            for (i, row) in rows.enumerated() where row {
-                try closure(i)
-            }
-        }
-
-        /// Marks all rows/columns as satisfied.
-        func satisfyAll() {
-            columns = columns.map { _ in false }
-            rows = rows.map { _ in false }
-        }
-
-        /// Marks a given column index as satisfied
-        func satisfyColumn(_ column: Int) {
-            columns[column] = false
-        }
-
-        /// Marks a given row index as satisfied
-        func satisfyRow(_ row: Int) {
-            rows[row] = false
-        }
-
-        /// Marks a tile as pending a check.
-        func markTilePending(column: Int, row: Int) {
-            columns[column] = true
-            rows[row] = true
-        }
-
-        /// Marks a tile as pending a check.
-        func markTilePending(_ coordinate: PatternGrid.CoordinateType) {
-            markTilePending(column: coordinate.column, row: coordinate.row)
-        }
-
-        /// Marks the whole set of columns and rows as pending.
-        func markGridPending() {
-            columns = columns.map { _ in true }
-            rows = rows.map { _ in true }
-        }
-    }
-
-    #else
-
     /// Marks columns/rows of a grid as pending checks.
     private class PendingCheckList {
         private var columnCount: Int
@@ -396,6 +319,4 @@ public class PatternSolver: GameSolverType {
             _rows.setBitRange(offset: 0, count: rowCount, state: true)
         }
     }
-
-    #endif
 }

@@ -225,8 +225,6 @@ class mainTests: XCTestCase {
                 ├───┼───▗▄▄▄▟███████▌
               3 │   │   ▐███████████▌
                 ╰───┴───▝▀▀▀▀▀▀▀▀▀▀▀▘
-            
-            Total time: 0.00s
             """)
         
         XCTAssertEqual(result.standardError, "")
