@@ -69,3 +69,89 @@ public extension BidirectionalCollection {
         return nextIndexRange(fromIndex: start, where: predicate)
     }
 }
+
+public extension Collection where Index == Int {
+    /// Performs a binary search for a given value.
+    ///
+    /// Invoking this function implies the collection is sorted.
+    func binarySearchIndex(value: Element) -> Index? where Element: Comparable {
+        return binarySearchIndex(value: value, transform: { $0 })
+    }
+    
+    /// Performs a binary search for a given value using a given transform
+    /// function that takes an element of the collection and returns a
+    /// comparable value.
+    ///
+    /// Invoking this function implies the collection is ordered such that when
+    /// this collection is mapped by `transform`, the resulting array is sorted.
+    func binarySearchIndex<T: Comparable>(value: T, transform: (Element) -> T) -> Index? {
+        if isEmpty {
+            return nil
+        }
+        if count == 1 {
+            if first.map(transform) == value {
+                return startIndex
+            }
+            
+            return nil
+        }
+        
+        let midIndex = (startIndex + endIndex) / 2
+        let mid = self[midIndex]
+        
+        let midValue = transform(mid)
+        
+        if midValue == value {
+            return midIndex
+        }
+        
+        if midValue > value {
+            return self[0..<midIndex].binarySearchIndex(value: value, transform: transform)
+        } else {
+            return self[midIndex..<endIndex].binarySearchIndex(value: value, transform: transform)
+        }
+    }
+    
+    /// Performs a binary search for an index to insert a given value such that
+    /// the resulting collection is still sorted.
+    ///
+    /// Invoking this function implies the collection is sorted.
+    func binarySearchInsert(value: Element) -> Index where Element: Comparable {
+        return binarySearchInsert(value: value, transform: { $0 })
+    }
+    
+    /// Performs a binary search for an index to insert a given value such that
+    /// the resulting collection is still sorted.
+    ///
+    /// Invoking this function implies the collection is ordered such that when
+    /// this collection is mapped by `transform`, the resulting array is sorted.
+    func binarySearchInsert<T: Comparable>(value: Element, transform: (Element) -> T) -> Index {
+        lazy var valueT = transform(value)
+        
+        if isEmpty {
+            return startIndex
+        }
+        if count == 1 {
+            if transform(self[startIndex]) > valueT {
+                return startIndex
+            } else {
+                return endIndex
+            }
+        }
+        
+        let midIndex = (startIndex + endIndex) / 2
+        let mid = self[midIndex]
+        
+        let midValue = transform(mid)
+        
+        if midValue == valueT {
+            return midIndex
+        }
+        
+        if midValue > valueT {
+            return self[0..<midIndex].binarySearchInsert(value: value, transform: transform)
+        } else {
+            return self[midIndex..<endIndex].binarySearchInsert(value: value, transform: transform)
+        }
+    }
+}
