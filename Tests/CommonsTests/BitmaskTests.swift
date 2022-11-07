@@ -641,6 +641,21 @@ class BitmaskTests: XCTestCase {
         )
     }
 
+    func testPerformance_bitwiseShiftLeftXOrOr_past64Bits() {
+        measure {
+            var bitmask = Bitmask()
+            let fixedMask: Bitmask = 0b10101
+
+            let iterations = 10_000
+
+            for index in 0..<iterations {
+                let mask = Bitmask(0b1)
+
+                bitmask = bitmask | (fixedMask ^ mask.shiftingBitsLeft(count: index))
+            }
+        }
+    }
+
     // MARK: - Test utils
 
     private func assertEqual(_ bitmask: Bitmask, value: UInt64, line: UInt = #line) {
