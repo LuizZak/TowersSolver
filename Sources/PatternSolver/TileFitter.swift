@@ -1,4 +1,6 @@
-class TileFitter<TileList: BidirectionalCollection> where TileList.Element == PatternTile, TileList.Index == Int {
+class TileFitter {
+    typealias TileList = [PatternTile]
+
     private let hint: PatternGrid.RunsHint
     private let tiles: TileList
     private var runs: [RunEntry]

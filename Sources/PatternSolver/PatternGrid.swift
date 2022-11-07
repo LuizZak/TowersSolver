@@ -115,7 +115,7 @@ public struct PatternGrid: GridType {
             let hint = hintForRow(row)
             let tiles = tilesInRow(row)
 
-            let fitter = TileFitter(hint: hint, tiles: tiles)
+            let fitter = TileFitter(hint: hint, tiles: Array(tiles))
             if !fitter.isValid {
                 return false
             }
@@ -125,7 +125,7 @@ public struct PatternGrid: GridType {
             let hint = hintForColumn(column)
             let tiles = tilesInColumn(column)
 
-            let fitter = TileFitter(hint: hint, tiles: tiles)
+            let fitter = TileFitter(hint: hint, tiles: Array(tiles))
             if !fitter.isValid {
                 return false
             }
