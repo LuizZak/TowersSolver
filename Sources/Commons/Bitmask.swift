@@ -31,6 +31,21 @@ public struct Bitmask {
         }
     }
 
+    /// Indexes using 0-based storage index. 0 index into `self._storage`, while
+    /// indices 1 or greater index into `_remaining` array with a -1 offset
+    /// 
+    /// Indices past `self.storageLength` result in a return value of `0`.
+    @usableFromInline
+    subscript(safeStorageIndex storageIndex: Int) -> UInt64 {
+        get {
+            if storageIndex >= storageLength {
+                return 0
+            }
+
+            return _storage[storageIndex]
+        }
+    }
+
     /// The number of bits available on this type.
     @inlinable
     public var bitWidth: Int {
@@ -205,6 +220,72 @@ public struct Bitmask {
         return result
     }
 
+    /// Extracts 64 bits from the bitmask starting at the specified bit offset.
+    /// Bits that are referenced beyond `self.bitWidth` are set to 0.
+    public func extract64Bits(offset: Int) -> UInt64 {
+        let bitStart = offset
+        let bitEnd = offset + 64
+
+        let startIndex = storageIndex(for: bitStart)
+        let endIndex = storageIndex(for: bitEnd)
+
+        assert(
+            endIndex <= startIndex + 1,
+            "Expected 64 bits of storage to span a maximum of two consecutive UInt64 indices."
+        )
+
+        if startIndex == endIndex {
+            return self[safeStorageIndex: startIndex]
+        }
+
+        let modOffset = offset % Storage.bitWidth
+        var result: Storage = 0b0
+
+        let bits0 = self[safeStorageIndex: startIndex]
+        let bits1 = self[safeStorageIndex: endIndex]
+
+        result = (bits0 >> modOffset) | ((bits1 << (Storage.bitWidth - modOffset)))
+
+        return result
+    }
+
+    /// Sets 64 bits on the bitmask starting at the specified bit offset.
+    /// Extra storage is created if offset + 64 is beyond the end of this bitmask's
+    /// range.
+    public mutating func set64Bits(offset: Int, bits: UInt64) {
+        if offset < -64 {
+            return
+        }
+        if offset < 0 {
+            let mask: Storage = ~0b0 << (Storage.bitWidth - -offset)
+            self[storageIndex: 0] = (self[storageIndex: 0] & mask) | (bits >> -offset)
+
+            return
+        } 
+
+        let bitStart = offset
+        let bitEnd = offset + 63
+
+        ensureBitCount(bitEnd)
+
+        let startIndex = max(0, storageIndex(for: bitStart))
+        let endIndex = max(0, storageIndex(for: bitEnd))
+
+        assert(
+            endIndex <= startIndex + 1,
+            "Expected 64 bits of storage to span a maximum of two consecutive UInt64 indices."
+        )
+
+        if startIndex == endIndex {
+            self[storageIndex: startIndex] = bits
+        } else {
+            let modOffset = offset % Storage.bitWidth
+
+            self[storageIndex: startIndex] |= (bits << modOffset)
+            self[storageIndex: endIndex] |= (bits >> (Storage.bitWidth - modOffset))
+        }
+    }
+
     /// Changes the state of a specific bit on this bitmask.
     ///
     /// - precondition: `index >= 0`.
@@ -298,18 +379,7 @@ public struct Bitmask {
     /// Shifts all on bits left by a given amount.
     @inlinable
     public mutating func shiftBitsLeft(count: Int) {
-        var result = Bitmask()
-
-        forEachOnBitIndex { index in
-            let newIndex = index + count
-            guard newIndex >= 0 else {
-                return
-            }
-
-            result.setBitOn(newIndex)
-        }
-
-        self = result
+        _shift(count: count)
     }
 
     /// Returns a copy of this bitmask object with all on bits shifted right by a
@@ -324,18 +394,23 @@ public struct Bitmask {
     /// Shifts all on bits right by a given amount.
     @inlinable
     public mutating func shiftBitsRight(count: Int) {
+        _shift(count: -count)
+    }
+
+    @inlinable
+    mutating func _shift(count: Int) {
         var result = Bitmask()
 
-        forEachOnBitIndex { index in
-            let newIndex = index - count
-            guard newIndex >= 0 else {
-                return
-            }
+        let bitStart = count
+        let bitEnd = bitWidth + count
 
-            result.setBitOn(newIndex)
+        result.ensureBitCount(bitEnd)
+
+        for (index, bits) in _storage.enumerated() {
+            result.set64Bits(offset: bitStart + index * Storage.bitWidth, bits: bits)
         }
 
-        self = result
+        self = result.compacted()
     }
 
     /// Returns a copy of this bitmask where the storage is the minimal count of
@@ -395,6 +470,20 @@ public struct Bitmask {
         }
 
         @inlinable
+        var leadingZeroBitCount: Int {
+            switch self {
+            case .single(let value):
+                return value.leadingZeroBitCount
+            case .multiple(let value, let rem):
+                guard let last = rem.last else {
+                    return value.leadingZeroBitCount
+                }
+
+                return last.leadingZeroBitCount
+            }
+        }
+
+        @inlinable
         var startIndex: Int {
             0
         }
@@ -416,11 +505,11 @@ public struct Bitmask {
             get {
                 switch self {
                 case .single(let value):
-                    assert(position == 0)
+                    assert(position == 0, "position == 0")
                     return value
 
                 case .multiple(let lead, let remaining):
-                    assert(position <= remaining.count)
+                    assert(position <= remaining.count, "position <= remaining.count")
                     if position == 0 {
                         return lead
                     }
@@ -453,6 +542,17 @@ public struct Bitmask {
         }
 
         @inlinable
+        init(values: [UInt64]) {
+            if values.isEmpty {
+                self = .single(0)
+            } else if values.count == 1 {
+                self = .single(values[0])
+            } else {
+                self = .multiple(values[0], Array(values.dropFirst()))
+            }
+        }
+
+        @inlinable
         func index(after i: Int) -> Int {
             i + 1
         }
@@ -468,6 +568,25 @@ public struct Bitmask {
                 } else {
                     self = .single(lead)
                 }
+            }
+        }
+
+        /// Shifts whole storage multiples of UInt64 to the left or right,
+        /// depending on the sign of `count`, filling the initial storage with
+        /// zeroed-out values if shifting to the left, and subtracting storage
+        /// if shifting to the right.
+        ///
+        /// Shifting by zero is a no-op.
+        @inlinable
+        mutating func shift(count: Int) {
+            if count == 0 {
+                return
+            }
+
+            if count < 0 {
+                self = .init(values: Array(self) + Array(repeating: 0b0, count: count))
+            } else {
+                self = .init(values: self.dropLast(-count))
             }
         }
         
