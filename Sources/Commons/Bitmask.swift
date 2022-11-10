@@ -66,7 +66,7 @@ public struct Bitmask {
     @inlinable
     public var isAllZeroes: Bool {
         for index in 0..<storageLength {
-            if index != 0 {
+            if self[storageIndex: index] != 0 {
                 return false
             }
         }
@@ -481,7 +481,7 @@ public struct Bitmask {
             switch self {
             case .single(let value):
                 return value.leadingZeroBitCount
-                
+
             case .multiple(let value, let rem):
                 guard let last = rem.last else {
                     return value.leadingZeroBitCount
