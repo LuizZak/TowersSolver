@@ -365,8 +365,6 @@ public struct Bitmask {
         }
     }
 
-    // TODO: Optimize bit shift operations
-
     /// Returns a copy of this bitmask object with all on bits shifted left by a
     /// given amount.
     @inlinable
