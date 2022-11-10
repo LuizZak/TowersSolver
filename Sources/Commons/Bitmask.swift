@@ -77,13 +77,13 @@ public struct Bitmask<Storage: FixedWidthInteger> {
     /// Returns whether all bits in this bitmask are zero.
     @inlinable
     public var isAllZeroes: Bool {
-        var result = true
-
-        withStorage { value in
-            result = result && value == 0
+        for index in 0..<storageLength {
+            if self[storageIndex: index] != 0 {
+                return false
+            }
         }
 
-        return result
+        return true
     }
 
     /// Returns whether any bit in this bitmask is not a zero.
@@ -379,8 +379,6 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         }
     }
 
-    // TODO: Optimize bit shift operations
-
     /// Returns a copy of this bitmask object with all on bits shifted left by a
     /// given amount.
     @inlinable
@@ -497,6 +495,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
             switch self {
             case .single(let value):
                 return value.leadingZeroBitCount
+
             case .multiple(let value, let rem):
                 guard let last = rem.last else {
                     return value.leadingZeroBitCount
