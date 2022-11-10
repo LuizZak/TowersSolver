@@ -247,8 +247,8 @@ public class PatternSolver: GameSolverType {
         private var columnCount: Int
         private var rowCount: Int
 
-        private var _columns: Bitmask
-        private var _rows: Bitmask
+        private var _columns: Bitmask64
+        private var _rows: Bitmask64
 
         /// Returns `true` if all columns and rows on this check list are satisfied.
         var hasPendingChecks: Bool {

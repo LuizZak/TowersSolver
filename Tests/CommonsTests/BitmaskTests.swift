@@ -4,55 +4,81 @@ import XCTest
 
 class BitmaskTests: XCTestCase {
     func testEphemeral() {
-        let sut = Bitmask()
+        let sut = Bitmask64()
 
         assertEqual(sut, value: 0b0)
     }
 
     func testInitOnBitRange_range() {
-        let sut: Bitmask = Bitmask(onBitRange: 2..<7)
+        let sut: Bitmask64 = Bitmask64(onBitRange: 2..<7)
 
         assertEqual(sut, value: 0b00011_11100)
     }
 
     func testInitOnBitRange_closedRange() {
-        let sut: Bitmask = Bitmask(onBitRange: 2...7)
+        let sut: Bitmask64 = Bitmask64(onBitRange: 2...7)
 
         assertEqual(sut, value: 0b00111_11100)
     }
 
+    func testInitWithIntegerLiteral_8BitWith64Bits() {
+        let sut: Bitmask8 = 0b01010_00110_10101_11000_00100_11000_00001
+
+        assertEqual(
+            sut,
+            value: [
+                0b00000001,
+                0b00010011,
+                0b01011100,
+                0b10001101,
+                0b00000010,
+            ]
+        )
+    }
+
+    func testInitWithIntegerLiteral_64BitWith64Bits() {
+        let sut: Bitmask64 = 0b01010_00110_10101_11000_00100_11000_00001
+
+        assertEqual(
+            sut,
+            value: [
+                0b01010_00110_10101_11000_00100_11000_00001,
+            ]
+        )
+    }
+
     func testStorageLength_emptyBitmask() {
-        let sut = Bitmask()
+        let sut = Bitmask64()
 
         XCTAssertEqual(sut.storageLength, 1)
     }
 
     func testBitWidth_emptyBitmask() {
-        let sut = Bitmask()
+        let sut = Bitmask64()
 
         XCTAssertEqual(sut.bitWidth, 64)
     }
 
     func testIsAllZeroes() {
-        XCTAssertTrue((0b0 as Bitmask).isAllZeroes)
-        XCTAssertFalse((0b1 as Bitmask).isAllZeroes)
-        XCTAssertFalse((0b1010 as Bitmask).isAllZeroes)
+        XCTAssertTrue((0b0 as Bitmask64).isAllZeroes)
+        XCTAssertFalse((0b1 as Bitmask64).isAllZeroes)
+        XCTAssertFalse((0b1010 as Bitmask64).isAllZeroes)
     }
 
     func testIsNonZero() {
-        XCTAssertFalse((0b0 as Bitmask).isNonZero)
-        XCTAssertTrue((0b1 as Bitmask).isNonZero)
-        XCTAssertTrue((0b1010 as Bitmask).isNonZero)
+        XCTAssertFalse((0b0 as Bitmask64).isNonZero)
+        XCTAssertTrue((0b1 as Bitmask64).isNonZero)
+        XCTAssertTrue((0b1010 as Bitmask64).isNonZero)
     }
 
     func testNonzeroBitCount() {
-        let sut: Bitmask = 0b01010_00110_10101_11000_00100_11000_00001
+        let sut: Bitmask64 = 0b01010_00110_10101_11000_00100_11000_00001
 
         XCTAssertEqual(sut.nonzeroBitCount, 13)
     }
 
     func testIsBitSet() {
-        let sut: Bitmask = 0b1001
+        let sut: Bitmask64 = 0b1001
         
         XCTAssertTrue(sut.isBitSet(0))
         XCTAssertFalse(sut.isBitSet(1))
@@ -61,7 +87,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testIsBitRangeZero() {
-        let sut: Bitmask = 0b1111_11000
+        let sut: Bitmask64 = 0b1111_11000
         
         XCTAssertTrue(sut.isBitRangeZero(offset: 0, count: 3))
         XCTAssertFalse(sut.isBitRangeZero(offset: 0, count: 4))
@@ -70,7 +96,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBit() {
-        var sut: Bitmask = 0b010
+        var sut: Bitmask64 = 0b010
 
         sut.setBit(2, state: true)
         sut.setBit(1, state: false)
@@ -79,7 +105,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitOn() {
-        var sut: Bitmask = 0b010
+        var sut: Bitmask64 = 0b010
 
         sut.setBitOn(1)
         sut.setBitOn(2)
@@ -88,7 +114,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitOff() {
-        var sut: Bitmask = 0b101
+        var sut: Bitmask64 = 0b101
 
         sut.setBitOff(1)
         sut.setBitOff(2)
@@ -97,7 +123,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRangeOffsetCount_true() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(offset: 2, count: 6, state: true)
 
@@ -105,7 +131,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRangeOffsetCount_false() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(offset: 2, count: 6, state: false)
 
@@ -113,7 +139,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_range_true() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(2..<7, state: true)
 
@@ -121,7 +147,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_range_false() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(2..<7, state: false)
 
@@ -129,7 +155,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_closedRange_true() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(2...7, state: true)
 
@@ -137,7 +163,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_closedRange_false() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(2...7, state: false)
 
@@ -145,7 +171,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetAllBits_true() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setAllBits(state: true)
 
@@ -153,7 +179,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetAllBits_false() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setAllBits(state: false)
 
@@ -161,7 +187,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testWithStorage() {
-        let sut: Bitmask = 0b10010_00101
+        let sut: Bitmask64 = 0b10010_00101
 
         let result = extractStorage(sut)
 
@@ -169,7 +195,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testForEachOnBitIndex() {
-        let sut: Bitmask = 0b11101_00011_10000_11110_00000_00111_11110
+        let sut: Bitmask64 = 0b11101_00011_10000_11110_00000_00111_11110
         var indices: [Int] = []
 
         sut.forEachOnBitIndex { index in
@@ -182,8 +208,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testForEachOnBitIndex_copyBitmasks() {
-        let sut: Bitmask = 0b11101_00011_10000_11110_00000_00111_11110
-        var copy = Bitmask()
+        let sut: Bitmask64 = 0b11101_00011_10000_11110_00000_00111_11110
+        var copy = Bitmask64()
 
         sut.forEachOnBitIndex { index in
             copy.setBitOn(index)
@@ -193,8 +219,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testAndOperator() {
-        let bitmask1: Bitmask = 0b10010_00101
-        let bitmask2: Bitmask = 0b01010_11001
+        let bitmask1: Bitmask64 = 0b10010_00101
+        let bitmask2: Bitmask64 = 0b01010_11001
 
         let result = bitmask1 & bitmask2
 
@@ -202,8 +228,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testOrOperator() {
-        let bitmask1: Bitmask = 0b10010_00101
-        let bitmask2: Bitmask = 0b01010_11001
+        let bitmask1: Bitmask64 = 0b10010_00101
+        let bitmask2: Bitmask64 = 0b01010_11001
 
         let result = bitmask1 | bitmask2
 
@@ -211,8 +237,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testXOrOperator() {
-        let bitmask1: Bitmask = 0b10010_00101
-        let bitmask2: Bitmask = 0b01010_11001
+        let bitmask1: Bitmask64 = 0b10010_00101
+        let bitmask2: Bitmask64 = 0b01010_11001
 
         let result = bitmask1 ^ bitmask2
 
@@ -220,7 +246,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testNegateOperator() {
-        let bitmask: Bitmask = 0b10010_00101
+        let bitmask: Bitmask64 = 0b10010_00101
 
         let result = ~bitmask
 
@@ -233,7 +259,7 @@ class BitmaskTests: XCTestCase {
     // MARK: Past 64 bits
 
     func testInitOnBitRange_range_past64Bits() {
-        let sut = Bitmask(onBitRange: 32..<80)
+        let sut = Bitmask64(onBitRange: 32..<80)
 
         assertEqual(
             sut,
@@ -242,7 +268,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testInitOnBitRange_closedRange_past64Bits() {
-        let sut = Bitmask(onBitRange: 32...80)
+        let sut = Bitmask64(onBitRange: 32...80)
 
         assertEqual(
             sut,
@@ -251,7 +277,7 @@ class BitmaskTests: XCTestCase {
     }
     
     func testInitWithBits_past64Bits() {
-        let sut = Bitmask(bits: [0b01011, 0b11001_0000])
+        let sut = Bitmask64(bits: [0b01011, 0b11001_0000])
 
         assertEqual(
             sut,
@@ -260,42 +286,42 @@ class BitmaskTests: XCTestCase {
     }
     
     func testStorageLength_past64Bits() {
-        var sut = Bitmask()
+        var sut = Bitmask64()
         sut.setBit(180, state: true)
 
         XCTAssertEqual(sut.storageLength, 3)
     }
 
     func testBitWidth_past64Bits() {
-        var sut = Bitmask()
+        var sut = Bitmask64()
         sut.setBit(180, state: true)
 
         XCTAssertEqual(sut.bitWidth, 192)
     }
 
     func testIsAllZeroes_past64Bits() {
-        XCTAssertTrue(Bitmask(bits: [0b0, 0b0]).isAllZeroes)
-        XCTAssertFalse(Bitmask(bits: [0b1011, 0b0]).isAllZeroes)
-        XCTAssertFalse(Bitmask(bits: [0b0, 0b1011]).isAllZeroes)
+        XCTAssertTrue(Bitmask64(bits: [0b0, 0b0]).isAllZeroes)
+        XCTAssertFalse(Bitmask64(bits: [0b1011, 0b0]).isAllZeroes)
+        XCTAssertFalse(Bitmask64(bits: [0b0, 0b1011]).isAllZeroes)
     }
 
     func testIsNonZero_past64Bits() {
-        XCTAssertFalse(Bitmask(bits: [0b0, 0b0]).isNonZero)
-        XCTAssertTrue(Bitmask(bits: [0b1011, 0b0]).isNonZero)
-        XCTAssertTrue(Bitmask(bits: [0b0, 0b1011]).isNonZero)
+        XCTAssertFalse(Bitmask64(bits: [0b0, 0b0]).isNonZero)
+        XCTAssertTrue(Bitmask64(bits: [0b1011, 0b0]).isNonZero)
+        XCTAssertTrue(Bitmask64(bits: [0b0, 0b1011]).isNonZero)
     }
 
     func testNonzeroBitCount_past64Bits() {
-        XCTAssertEqual(Bitmask(onBitRange: 32..<80).nonzeroBitCount, 48)
+        XCTAssertEqual(Bitmask64(onBitRange: 32..<80).nonzeroBitCount, 48)
     }
 
     func testEquatable_past64Bits_unequalLengthStorage() {
-        let bitmask1 = Bitmask(bits: [
+        let bitmask1 = Bitmask64(bits: [
             0b10110,
             0b0,
             0b0,
         ])
-        let bitmask2 = Bitmask(bits: [
+        let bitmask2 = Bitmask64(bits: [
             0b10110,
         ])
 
@@ -303,12 +329,12 @@ class BitmaskTests: XCTestCase {
     }
 
     func testHashable_past64Bits_unequalLengthStorage() {
-        let bitmask1 = Bitmask(bits: [
+        let bitmask1 = Bitmask64(bits: [
             0b10110,
             0b0,
             0b0,
         ])
-        let bitmask2 = Bitmask(bits: [
+        let bitmask2 = Bitmask64(bits: [
             0b10110,
         ])
 
@@ -316,12 +342,12 @@ class BitmaskTests: XCTestCase {
     }
 
     func testCompact_pas64Bits() {
-        var bitmask1 = Bitmask(bits: [
+        var bitmask1 = Bitmask64(bits: [
             0b10110,
             0b0,
             0b1,
         ])
-        var bitmask2 = Bitmask(bits: [
+        var bitmask2 = Bitmask64(bits: [
             0b10110,
             0b0,
             0b0,
@@ -341,12 +367,12 @@ class BitmaskTests: XCTestCase {
     }
 
     func testCompacted_pas64Bits() {
-        let bitmask1 = Bitmask(bits: [
+        let bitmask1 = Bitmask64(bits: [
             0b10110,
             0b0,
             0b1,
         ])
-        let bitmask2 = Bitmask(bits: [
+        let bitmask2 = Bitmask64(bits: [
             0b10110,
             0b0,
             0b0,
@@ -363,7 +389,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testIsBitSet_past64Bits() {
-        var sut: Bitmask = 0b1001
+        var sut: Bitmask64 = 0b1001
         sut.setBit(128, state: true)
         
         XCTAssertTrue(sut.isBitSet(0))
@@ -376,7 +402,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testIsBitRangeZero_past64Bits() {
-        var sut: Bitmask = 0b01010_11001
+        var sut: Bitmask64 = 0b01010_11001
         sut.setBit(190, state: true)
         
         XCTAssertFalse(sut.isBitRangeZero(offset: 0, count: 1))
@@ -385,79 +411,79 @@ class BitmaskTests: XCTestCase {
         XCTAssertFalse(sut.isBitRangeZero(offset: 63, count: 128))
     }
 
-    func testExtract64Bits_past64Bits_aligned() {
-        let sut: Bitmask = Bitmask(bits: [
+    func testExtractBits_past64Bits_aligned() {
+        let sut: Bitmask64 = Bitmask64(bits: [
             0b01010_11001,
             ~UInt64() ^ 0b11011_00000_11101,
         ])
         
         assertEqual(
-            sut.extract64Bits(offset: 0),
+            sut.extractBits(offset: 0),
             bits: 0b01010_11001
         )
         assertEqual(
-            sut.extract64Bits(offset: 64),
+            sut.extractBits(offset: 64),
             bits: ~UInt64() ^ 0b11011_00000_11101
         )
     }
 
-    func testExtract64Bits_past64Bits_unaligned_by_1bit() {
+    func testExtractBits_past64Bits_unaligned_by_1bit() {
         let bits0: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
         let bits1: UInt64 = UInt64.max
-        let sut: Bitmask = Bitmask(bits: [
+        let sut: Bitmask64 = Bitmask64(bits: [
             bits0,
             bits1,
         ])
         
         assertEqual(
-            sut.extract64Bits(offset: 1),
+            sut.extractBits(offset: 1),
             bits: (bits0 >> 1) | (bits1 << 63)
         )
     }
 
-    func testExtract64Bits_past64Bits_unaligned_by_4bits() {
+    func testExtractBits_past64Bits_unaligned_by_4bits() {
         let bits0: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
         let bits1: UInt64 = UInt64.max
-        let sut: Bitmask = Bitmask(bits: [
+        let sut: Bitmask64 = Bitmask64(bits: [
             bits0,
             bits1,
         ])
         
         assertEqual(
-            sut.extract64Bits(offset: 4),
+            sut.extractBits(offset: 4),
             bits: (bits0 >> 4) | (bits1 << 60)
         )
     }
 
-    func testExtract64Bits_past64Bits_unaligned() {
+    func testExtractBits_past64Bits_unaligned() {
         let bits0: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
         let bits1: UInt64 = ~UInt64() ^ 0b11011_00000_11101
-        let sut: Bitmask = Bitmask(bits: [
+        let sut: Bitmask64 = Bitmask64(bits: [
             bits0,
             bits1,
         ])
         
         assertEqual(
-            sut.extract64Bits(offset: 32),
+            sut.extractBits(offset: 32),
             bits: (bits0 >> 32) | (bits1 << 32)
         )
     }
 
-    func testExtract64Bits_past64Bits_pastEnd() {
-        let sut: Bitmask = 0b01010_11001
+    func testExtractBits_past64Bits_pastEnd() {
+        let sut: Bitmask64 = 0b01010_11001
         
         assertEqual(
-            sut.extract64Bits(offset: 128),
+            sut.extractBits(offset: 128),
             bits: 0b0
         )
     }
 
-    func testSet64Bits_past64Bits_aligned() {
+    func testSetBits_past64Bits_aligned() {
         let bits: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
-        var sut: Bitmask = Bitmask()
+        var sut: Bitmask64 = Bitmask64()
 
-        sut.set64Bits(offset: 0, bits: bits)
-        sut.set64Bits(offset: 64, bits: bits)
+        sut.setBits(offset: 0, bits: bits)
+        sut.setBits(offset: 64, bits: bits)
         
         assertEqual(
             sut,
@@ -468,13 +494,13 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    func testSet64Bits_past64Bits_unaligned() {
+    func testSetBits_past64Bits_unaligned() {
         let bits0: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
         let bits1: UInt64 = ~UInt64() ^ 0b11011_00000_11101
         let bits = (bits0 >> 32) | (bits1 << 32)
-        var sut: Bitmask = Bitmask()
+        var sut: Bitmask64 = Bitmask64()
 
-        sut.set64Bits(offset: 24, bits: bits)
+        sut.setBits(offset: 24, bits: bits)
         
         XCTAssertEqual(sut.nonzeroBitCount, bits.nonzeroBitCount)
         assertEqual(
@@ -486,13 +512,13 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    func testSet64Bits_past64Bits_negativeOffset() {
+    func testSetBits_past64Bits_negativeOffset() {
         let bits0: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
         let bits1: UInt64 = ~UInt64() ^ 0b11011_00000_11101
         let bits = (bits0 >> 32) | (bits1 << 32)
-        var sut: Bitmask = Bitmask()
+        var sut: Bitmask64 = Bitmask64()
 
-        sut.set64Bits(offset: -24, bits: bits)
+        sut.setBits(offset: -24, bits: bits)
         
         assertEqual(
             sut,
@@ -502,15 +528,15 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    func testSet64Bits_past64Bits_negativeOffset_overwriting() {
+    func testSetBits_past64Bits_negativeOffset_overwriting() {
         let bits0: UInt64 = 0b01010_11001 | (0b10101_010101 << 32)
         let bits1: UInt64 = ~UInt64() ^ 0b11011_00000_11101
         let bits = (bits0 >> 32) | (bits1 << 32)
-        var sut: Bitmask = Bitmask(bits: [
+        var sut: Bitmask64 = Bitmask64(bits: [
             ~UInt64()
         ])
 
-        sut.set64Bits(offset: -24, bits: bits)
+        sut.setBits(offset: -24, bits: bits)
         
         assertEqual(
             sut,
@@ -521,7 +547,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBit_past64Bits() {
-        var sut: Bitmask = 0b110
+        var sut: Bitmask64 = 0b110
 
         sut.setBit(64, state: true)
         sut.setBit(1, state: false)
@@ -530,7 +556,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitOn_past64Bits() {
-        var sut: Bitmask = 0b100
+        var sut: Bitmask64 = 0b100
 
         sut.setBitOn(64)
         sut.setBitOn(1)
@@ -539,7 +565,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitOff_past64Bits_past64Bits() {
-        var sut: Bitmask = 0b101
+        var sut: Bitmask64 = 0b101
 
         sut.setBitOff(64)
         sut.setBitOff(2)
@@ -548,7 +574,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRangeOffsetCount_true_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(offset: 8, count: 64, state: true)
 
@@ -562,7 +588,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRangeOffsetCount_false_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(offset: 8, count: 64, state: false)
 
@@ -570,7 +596,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_range_true_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(8..<72, state: true)
 
@@ -584,7 +610,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_range_false_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(8..<72, state: false)
 
@@ -592,7 +618,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_closedRange_true_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(8...72, state: true)
 
@@ -606,7 +632,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetBitRange_closedRange_false_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
 
         sut.setBitRange(8...72, state: false)
 
@@ -614,7 +640,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetAllBits_true_past64Bits() {
-        var sut: Bitmask = Bitmask(onBitRange: 32...80)
+        var sut: Bitmask64 = Bitmask64(onBitRange: 32...80)
 
         sut.setAllBits(state: true)
 
@@ -622,7 +648,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testSetAllBits_false_past64Bits() {
-        var sut: Bitmask = Bitmask(onBitRange: 32...80)
+        var sut: Bitmask64 = Bitmask64(onBitRange: 32...80)
 
         sut.setAllBits(state: false)
 
@@ -630,7 +656,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testShiftingBitsLeft_past64Bits() {
-        let sut: Bitmask = 0b10000_10001
+        let sut: Bitmask64 = 0b10000_10001
 
         let result = sut.shiftingBitsLeft(count: 59)
 
@@ -644,7 +670,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testShiftBitsLeft_past64Bits() {
-        var sut: Bitmask = 0b10000_10001
+        var sut: Bitmask64 = 0b10000_10001
 
         sut.shiftBitsLeft(count: 59)
 
@@ -658,7 +684,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testShiftBitsLeft_past64Bits_64BitMultiple() {
-        var sut: Bitmask = 0b10000_10001
+        var sut: Bitmask64 = 0b10000_10001
 
         sut.shiftBitsLeft(count: 192)
 
@@ -674,7 +700,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testShiftingBitsRight_past64Bits() {
-        let sut: Bitmask = Bitmask(bits: [
+        let sut: Bitmask64 = Bitmask64(bits: [
             0b1000_10000_00000_00000_00000_00000_00000_01110_00000_00000_01100_10000_00001,
             0b10000,
         ])
@@ -690,7 +716,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testShiftBitsRight_past64Bits() {
-        var sut: Bitmask = Bitmask(bits: [
+        var sut: Bitmask64 = Bitmask64(bits: [
             0b1000_10000_00000_00000_00000_00000_00000_01110_00000_00000_01100_10000_00001,
             0b10000,
         ])
@@ -706,7 +732,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testShiftBitsRight_past64Bits_64BitMultiple() {
-        var sut: Bitmask = Bitmask(bits: [
+        var sut: Bitmask64 = Bitmask64(bits: [
             0b0,
             0b0,
             0b0,
@@ -724,7 +750,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testWithStorage_past64Bits() {
-        var sut: Bitmask = 0b10010_00101
+        var sut: Bitmask64 = 0b10010_00101
         sut.setBitRange(offset: 8, count: 64, state: true)
 
         let result = extractStorage(sut)
@@ -738,7 +764,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testForEachOnBitIndex_past64Bits() {
-        let sut = Bitmask(bits: [
+        let sut = Bitmask64(bits: [
             0b11101_00011_10000_11110_00000_00111_11110,
             0b11110_01001_00101_00100_11101_11110_00111,
         ])
@@ -756,11 +782,11 @@ class BitmaskTests: XCTestCase {
     }
 
     func testForEachOnBitIndex_copyBitmasks_past64Bits() {
-        let sut = Bitmask(bits: [
+        let sut = Bitmask64(bits: [
             0b11101_00011_10000_11110_00000_00111_11110,
             0b11110_01001_00101_00100_11101_11110_00111,
         ])
-        var copy = Bitmask()
+        var copy = Bitmask64()
 
         sut.forEachOnBitIndex { index in
             copy.setBitOn(index)
@@ -770,8 +796,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testAndOperator_past64Bits() {
-        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        let bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         let result = bitmask1 & bitmask2
 
@@ -779,8 +805,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testAndOperator_inPlace_past64Bits() {
-        var bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        var bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         bitmask1 &= bitmask2
 
@@ -788,8 +814,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testOrOperator_past64Bits() {
-        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        let bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         let result = bitmask1 | bitmask2
 
@@ -797,8 +823,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testOrOperator_inPlace_past64Bits() {
-        var bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        var bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         bitmask1 |= bitmask2
 
@@ -806,8 +832,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testXOrOperator_past64Bits() {
-        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        let bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         let result = bitmask1 ^ bitmask2
 
@@ -815,8 +841,8 @@ class BitmaskTests: XCTestCase {
     }
 
     func testXOrOperator_past64Bits_unequalLength() {
-        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010, 0b10010_00101])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        let bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010, 0b10010_00101])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         let result = bitmask1 ^ bitmask2
 
@@ -824,16 +850,16 @@ class BitmaskTests: XCTestCase {
     }
 
     func testXOrOperator_past64Bits_unequalLength_singleAndArray() {
-        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010, 0b10010_00101])
-        let bitmask2 = Bitmask(bits: [0b01010_11001])
+        let bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010, 0b10010_00101])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001])
 
         assertEqual(bitmask1 ^ bitmask2, value: [0b11000_11100, 0b00101_10010, 0b10010_00101])
         assertEqual(bitmask2 ^ bitmask1, value: [0b11000_11100, 0b00101_10010, 0b10010_00101])
     }
 
     func testXOrOperator_inPlace_past64Bits() {
-        var bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
-        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+        var bitmask1 = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask64(bits: [0b01010_11001, 0b11001_01010])
 
         bitmask1 ^= bitmask2
 
@@ -841,7 +867,7 @@ class BitmaskTests: XCTestCase {
     }
 
     func testNegateOperator_past64Bits() {
-        let bitmask = Bitmask(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask = Bitmask64(bits: [0b10010_00101, 0b00101_10010])
 
         let result = ~bitmask
 
@@ -855,11 +881,11 @@ class BitmaskTests: XCTestCase {
     }
 
     func testXorSwap() {
-        let bitmask1 = Bitmask(bits: [
+        let bitmask1 = Bitmask64(bits: [
             0xBADF00D,
             0xF00DBAD,
         ])
-        let bitmask2 = Bitmask(bits: [
+        let bitmask2 = Bitmask64(bits: [
             0x1234567,
             0xAABBCC,
         ])
@@ -876,11 +902,11 @@ class BitmaskTests: XCTestCase {
     }
 
     func testXorSwap_unequalLength() {
-        let bitmask1 = Bitmask(bits: [
+        let bitmask1 = Bitmask64(bits: [
             0xBADF00D,
             0xF00DBAD,
         ])
-        let bitmask2 = Bitmask(bits: [
+        let bitmask2 = Bitmask64(bits: [
             0x1234567,
         ])
 
@@ -900,7 +926,7 @@ class BitmaskTests: XCTestCase {
             let iterations = 10_000
 
             for _ in 0..<iterations {
-                var sut: Bitmask = 0b10010_00101
+                var sut: Bitmask64 = 0b10010_00101
 
                 sut.setBitRange(0...1024, state: true)
             }
@@ -909,7 +935,7 @@ class BitmaskTests: XCTestCase {
 
     func testPerformance_xorSwap() {
         measure {
-            let bitmask1 = Bitmask(bits: [
+            let bitmask1 = Bitmask64(bits: [
                 0xDEADBEEF,
                 0xBADF00D,
                 0xF00DBAD,
@@ -919,7 +945,7 @@ class BitmaskTests: XCTestCase {
                 0xB0BBAC0FFEE,
                 0x8BADF00D,
             ])
-            let bitmask2 = Bitmask(bits: [
+            let bitmask2 = Bitmask64(bits: [
                 0x1234567890,
                 0x9876543210,
                 0xAABBCCDDEE,
@@ -945,7 +971,7 @@ class BitmaskTests: XCTestCase {
 
     func testPerformance_xorSwap_unequalLength_singleAndArray() {
         measure {
-            let bitmask1 = Bitmask(bits: [
+            let bitmask1 = Bitmask64(bits: [
                 0xDEADBEEF,
                 0xBADF00D,
                 0xF00DBAD,
@@ -955,7 +981,7 @@ class BitmaskTests: XCTestCase {
                 0xB0BBAC0FFEE,
                 0x8BADF00D,
             ])
-            let bitmask2 = Bitmask(bits: [
+            let bitmask2 = Bitmask64(bits: [
                 0x1234567890,
             ])
 
@@ -974,7 +1000,7 @@ class BitmaskTests: XCTestCase {
 
     func testPerformance_xorSwap_unequalLength_arrayAndArray() {
         measure {
-            let bitmask1 = Bitmask(bits: [
+            let bitmask1 = Bitmask64(bits: [
                 0xDEADBEEF,
                 0xBADF00D,
                 0xF00DBAD,
@@ -984,7 +1010,7 @@ class BitmaskTests: XCTestCase {
                 0xB0BBAC0FFEE,
                 0x8BADF00D,
             ])
-            let bitmask2 = Bitmask(bits: [
+            let bitmask2 = Bitmask64(bits: [
                 0x1234567890,
                 0x9876543210,
             ])
@@ -1004,13 +1030,13 @@ class BitmaskTests: XCTestCase {
 
     func testPerformance_bitwiseShiftLeftXOrOr_past64Bits() {
         measure {
-            var bitmask = Bitmask()
-            let fixedMask: Bitmask = 0b10101
+            var bitmask = Bitmask64()
+            let fixedMask: Bitmask64 = 0b10101
 
             let iterations = 10_000
 
             for index in 0..<iterations {
-                let mask = Bitmask(bits: [
+                let mask = Bitmask64(bits: [
                     0b1111_11111_11111_11111_11111_11111_11111_11111_11111_11111_11111_01101_11010,
                     0b1111_11111_11111_11111_11111_11111_01101_11101_11111_11111_11111_11111_10110,
                 ])
@@ -1022,7 +1048,7 @@ class BitmaskTests: XCTestCase {
 
     // MARK: - Test utils
 
-    private func assertEqual(_ actual: Bitmask, bitmask: Bitmask, line: UInt = #line) {
+    private func assertEqual<Storage>(_ actual: Bitmask<Storage>, bitmask: Bitmask<Storage>, line: UInt = #line) {
         let storage1 = extractStorage(actual)
         let storage2 = extractStorage(bitmask)
 
@@ -1034,7 +1060,7 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    private func assertEqual(_ bitmask: Bitmask, value: [UInt64], line: UInt = #line) {
+    private func assertEqual<Storage>(_ bitmask: Bitmask<Storage>, value: [Storage], line: UInt = #line) {
         let storage = extractStorage(bitmask)
 
         XCTAssertEqual(
@@ -1045,7 +1071,7 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    private func assertEqual(_ bitmask: Bitmask, value: UInt64, line: UInt = #line) {
+    private func assertEqual<Storage>(_ bitmask: Bitmask<Storage>, value: Storage, line: UInt = #line) {
         let storage = extractStorage(bitmask)
         let expected = [value]
 
@@ -1057,7 +1083,7 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    private func assertEqual(_ actual: UInt64, bits: UInt64, line: UInt = #line) {
+    private func assertEqual<Storage: FixedWidthInteger>(_ actual: Storage, bits: Storage, line: UInt = #line) {
         let storage = [actual]
         let expected = [bits]
 
@@ -1069,8 +1095,8 @@ class BitmaskTests: XCTestCase {
         )
     }
 
-    private func extractStorage(_ bitmask: Bitmask) -> [UInt64] {
-        var result: [UInt64] = []
+    private func extractStorage<Storage>(_ bitmask: Bitmask<Storage>) -> [Storage] {
+        var result: [Storage] = []
 
         bitmask.withStorage {
             result.append($0)
@@ -1079,7 +1105,7 @@ class BitmaskTests: XCTestCase {
         return result
     }
 
-    private func formatStorage(_ storage: [UInt64]) -> String {
+    private func formatStorage<Storage: FixedWidthInteger>(_ storage: [Storage], separator: Int = 8) -> String {
         var result: [String] = []
 
         for binary in storage {
@@ -1088,8 +1114,7 @@ class BitmaskTests: XCTestCase {
             // Underscore every five digits
             binaryString = String(binaryString.reversed())
 
-            let sepInterval = 5
-            for sep in stride(from: 0, to: binaryString.count, by: sepInterval).dropFirst().reversed() {
+            for sep in stride(from: 0, to: binaryString.count, by: separator).dropFirst().reversed() {
                 binaryString.insert(
                     "_",
                     at: binaryString.index(binaryString.startIndex, offsetBy: sep)

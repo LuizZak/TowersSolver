@@ -1,14 +1,26 @@
-/// A type used to describe bitmasks for quick, compact querying of boolean states.
-public struct Bitmask {
-    @usableFromInline
-    typealias Storage = UInt64
+/// A bitmask with 8 bits of contiguous storage.
+public typealias Bitmask8 = Bitmask<UInt8>
 
-    /// Main bitmask with the initial 64 bits of this bitmask.
+/// A bitmask with 16 bits of contiguous storage.
+public typealias Bitmask16 = Bitmask<UInt16>
+
+/// A bitmask with 32 bits of contiguous storage.
+public typealias Bitmask32 = Bitmask<UInt32>
+
+/// A bitmask with 64 bits of contiguous storage.
+public typealias Bitmask64 = Bitmask<UInt64>
+
+/// A type used to describe runs of bits for quick, compact querying of boolean
+/// states, using a specified fixed-width integer type for the backing storage.
+public struct Bitmask<Storage: FixedWidthInteger> {
+    /// Main bitmask with the initial `Storage.bitWidth` bits of this bitmask
+    /// along with a trailing array of `Storage` values, if storage is larger
+    /// than one value long.
     @usableFromInline
     var _storage: _Storage
 
     @usableFromInline
-    subscript(bitIndex bitIndex: Int) -> UInt64 {
+    subscript(bitIndex bitIndex: Int) -> Storage {
         get {
             let storageIndex = storageIndex(for: bitIndex)
             return self[storageIndex: storageIndex]
@@ -22,7 +34,7 @@ public struct Bitmask {
     /// Indexes using 0-based storage index. 0 index into `self._storage`, while
     /// indices 1 or greater index into `_remaining` array with a -1 offset.
     @usableFromInline
-    subscript(storageIndex storageIndex: Int) -> UInt64 {
+    subscript(storageIndex storageIndex: Int) -> Storage {
         get {
             _storage[storageIndex]
         }
@@ -36,7 +48,7 @@ public struct Bitmask {
     /// 
     /// Indices past `self.storageLength` result in a return value of `0`.
     @usableFromInline
-    subscript(safeStorageIndex storageIndex: Int) -> UInt64 {
+    subscript(safeStorageIndex storageIndex: Int) -> Storage {
         get {
             if storageIndex >= storageLength {
                 return 0
@@ -53,10 +65,10 @@ public struct Bitmask {
     }
 
     /// Returns the length of the storage for this bitmask, as in the number of
-    /// individual 64-bit numbers in the backing storage.
+    /// individual `Storage.bitWidth` numbers in the backing storage.
     ///
     /// When calling `withStorage`, the closure will be called `storageLength`
-    /// times with the individual 64-bit numbers.
+    /// times with the individual `Storage.bitWidth` numbers.
     @inlinable
     public var storageLength: Int {
         _storage.count
@@ -99,7 +111,7 @@ public struct Bitmask {
     }
 
     @usableFromInline
-    internal init(_lead: Bitmask.Storage, _remaining: [Storage]) {
+    internal init(_lead: Storage, _remaining: [Storage]) {
         self._storage = .multiple(_lead, _remaining)
     }
 
@@ -131,9 +143,9 @@ public struct Bitmask {
         setBitRange(onBitRange, state: true)
     }
 
-    /// Initializes a new bitmask with a specified list of UInt64 bits sequences.
+    /// Initializes a new bitmask with a specified list of `Storage` bits sequences.
     @inlinable
-    public init(bits: [UInt64]) {
+    public init(bits: [Storage]) {
         self.init()
 
         guard !bits.isEmpty else {
@@ -220,18 +232,19 @@ public struct Bitmask {
         return result
     }
 
-    /// Extracts 64 bits from the bitmask starting at the specified bit offset.
-    /// Bits that are referenced beyond `self.bitWidth` are set to 0.
-    public func extract64Bits(offset: Int) -> UInt64 {
+    /// Extracts `Storage.bitWidth` of bits from the bitmask starting at the
+    /// specified bit offset. Bits that are referenced beyond `self.bitWidth`
+    /// are set to 0.
+    public func extractBits(offset: Int) -> Storage {
         let bitStart = offset
-        let bitEnd = offset + 64
+        let bitEnd = offset + Storage.bitWidth
 
         let startIndex = storageIndex(for: bitStart)
         let endIndex = storageIndex(for: bitEnd)
 
         assert(
             endIndex <= startIndex + 1,
-            "Expected 64 bits of storage to span a maximum of two consecutive UInt64 indices."
+            "Expected \(Storage.bitWidth) bits of storage to span a maximum of two consecutive \(Storage.self) indices."
         )
 
         if startIndex == endIndex {
@@ -249,11 +262,12 @@ public struct Bitmask {
         return result
     }
 
-    /// Sets 64 bits on the bitmask starting at the specified bit offset.
-    /// Extra storage is created if offset + 64 is beyond the end of this bitmask's
-    /// range.
-    public mutating func set64Bits(offset: Int, bits: UInt64) {
-        if offset < -64 {
+    /// Sets `Storage.bitWidth` bits on the bitmask starting at the specified bit
+    /// offset.
+    /// Extra storage is created if offset + Storage.bitWidth is beyond the end
+    /// of this bitmask's range.
+    public mutating func setBits(offset: Int, bits: Storage) {
+        if offset < -Storage.bitWidth {
             return
         }
         if offset < 0 {
@@ -261,10 +275,10 @@ public struct Bitmask {
             self[storageIndex: 0] = (self[storageIndex: 0] & mask) | (bits >> -offset)
 
             return
-        } 
+        }
 
         let bitStart = offset
-        let bitEnd = offset + 63
+        let bitEnd = offset + Storage.bitWidth - 1
 
         ensureBitCount(bitEnd)
 
@@ -273,7 +287,7 @@ public struct Bitmask {
 
         assert(
             endIndex <= startIndex + 1,
-            "Expected 64 bits of storage to span a maximum of two consecutive UInt64 indices."
+            "Expected \(Storage.bitWidth) bits of storage to span a maximum of two consecutive \(Storage.self) indices."
         )
 
         if startIndex == endIndex {
@@ -355,7 +369,7 @@ public struct Bitmask {
 
     /// Sets all the bits available on this bitmask to a specified state.
     ///
-    /// The total number of bits set is always `64 * self.storageLength`
+    /// The total number of bits set is always `Storage.bitWidth * self.storageLength`
     @inlinable
     public mutating func setAllBits(state: Bool) {
         if state {
@@ -401,7 +415,8 @@ public struct Bitmask {
     mutating func _shift(count: Int) {
         switch count.quotientAndRemainder(dividingBy: Storage.bitWidth) {
         case (let q, 0):
-            // If shift is a multiple of 64, do a full storage shift instead.
+            // If shift is a multiple of Storage.bitWidth, do a full storage
+            // shift instead.
             _storage.shift(count: q)
 
         default:
@@ -413,7 +428,7 @@ public struct Bitmask {
             result.ensureBitCount(bitEnd)
 
             for (index, bits) in _storage.enumerated() {
-                result.set64Bits(offset: bitStart + index * Storage.bitWidth, bits: bits)
+                result.setBits(offset: bitStart + index * Storage.bitWidth, bits: bits)
             }
 
             self = result.compacted()
@@ -421,7 +436,7 @@ public struct Bitmask {
     }
 
     /// Returns a copy of this bitmask where the storage is the minimal count of
-    /// `UInt64` bits capable of representing the on bits on this bitmask.
+    /// `Storage` bits capable of representing the on bits on this bitmask.
     @inlinable
     public func compacted() -> Self {
         var copy = self
@@ -430,7 +445,7 @@ public struct Bitmask {
     }
 
     /// Reduces the storage elements of this bitmask to be the minimal count of
-    /// `UInt64` bits capable of representing the on bits on this bitmask.
+    /// `Storage` bits capable of representing the on bits on this bitmask.
     @inlinable
     public mutating func compact() {
         _storage.compact()
@@ -438,9 +453,10 @@ public struct Bitmask {
 
     /// Exposes the storage of this bitmask with a given closure, invoking it
     /// in sequence from the earliest bit indices to the latest, packing the
-    /// boolean states into sequences of 64 bits in `UInt64` values.
+    /// boolean states into sequences of `Storage.bitWidth` bits in `Storage`
+    /// values.
     @inlinable
-    public func withStorage(_ closure: (UInt64) throws -> Void) rethrows {
+    public func withStorage(_ closure: (Storage) throws -> Void) rethrows {
         try _storage.withStorage(closure)
     }
 
@@ -578,7 +594,7 @@ public struct Bitmask {
             }
         }
 
-        /// Shifts whole storage multiples of UInt64 to the left or right,
+        /// Shifts whole storage multiples of `Storage` to the left or right,
         /// depending on the sign of `count`, filling the initial storage with
         /// zeroed-out values if shifting to the left, and subtracting storage
         /// if shifting to the right.
@@ -701,11 +717,11 @@ extension Bitmask: Hashable {
     }
 }
 
-extension Bitmask: Decodable {
+extension Bitmask: Decodable where Storage: Decodable {
     /// Decodes a bitmask from a given decoder.
     ///
     /// Accepted values:
-    /// - `UInt64` single value containers.
+    /// - `Storage` single value containers.
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         guard let count = container.count else {
@@ -724,11 +740,11 @@ extension Bitmask: Decodable {
     }
 }
 
-extension Bitmask: Encodable {
+extension Bitmask: Encodable where Storage: Encodable {
     /// Encodes this bitmask into a given encoder.
     ///
     /// Possible outputs of encoding:
-    /// - `UInt64` single value container.
+    /// - `Storage` single value container.
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
 
@@ -741,7 +757,23 @@ extension Bitmask: Encodable {
 extension Bitmask: ExpressibleByIntegerLiteral {
     @inlinable
     public init(integerLiteral value: UInt64) {
-        self._storage = .single(value)
+        if UInt64.bitWidth == Storage.bitWidth {
+            self.init(_storage: .single(Storage(value)))
+        } else {
+            self.init()
+
+            let multiples = UInt64.bitWidth / Storage.bitWidth
+            let mask: UInt64 = ~0b0 >> (UInt64.bitWidth - Storage.bitWidth)
+
+            for index in 0...multiples {
+                let bitIndex = index * Storage.bitWidth
+                let bits = (value >> bitIndex) & mask
+
+                self.setBits(offset: bitIndex, bits: Storage(bits))
+            }
+
+            self.compact()
+        }
     }
 }
 
@@ -805,25 +837,5 @@ public extension Bitmask {
     ) -> Self {
         
         Self(_storage: _Storage._unaryOp(value: value._storage, op: op))
-    }
-
-    @usableFromInline
-    internal struct _StorageIndexer {
-        @usableFromInline
-        let bitmask: Bitmask
-
-        @usableFromInline
-        subscript(position: Int) -> Bitmask.Storage {
-            if position >= bitmask.storageLength {
-                return 0
-            }
-
-            return bitmask[storageIndex: position]
-        }
-
-        @usableFromInline
-        init(bitmask: Bitmask) {
-            self.bitmask = bitmask
-        }
     }
 }
