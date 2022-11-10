@@ -679,26 +679,6 @@ public struct Bitmask {
                 return .multiple(op(lead), rem.map(op))
             }
         }
-
-        @usableFromInline
-        internal struct _StorageIndexer {
-            @usableFromInline
-            let storage: [Storage]
-
-            @inlinable
-            subscript(position: Int) -> Bitmask.Storage {
-                if position >= storage.endIndex {
-                    return 0
-                }
-
-                return storage[position]
-            }
-
-            @inlinable
-            init(storage: [Storage]) {
-                self.storage = storage
-            }
-        }
     }
 }
 
