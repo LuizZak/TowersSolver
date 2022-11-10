@@ -211,7 +211,7 @@ public struct Bitmask {
         var result = true
 
         withStorageRange(start: offset, count: count) { (bits, start, count) in
-            var mask: UInt64 = ~0 >> (Storage.bitWidth - count)
+            var mask: Storage = ~0 >> (Storage.bitWidth - count)
             mask = mask << Storage(start)
 
             result = result && (bits & mask) == 0
@@ -342,7 +342,7 @@ public struct Bitmask {
         ensureBitCount(offset + count)
 
         withMutableStorageRange(start: offset, count: count) { (bits, offset, count) in
-            var mask: UInt64 = ~0 >> (Storage.bitWidth - count)
+            var mask: Storage = ~0 >> (Storage.bitWidth - count)
             mask = mask << Storage(offset)
             
             if state {
@@ -399,9 +399,9 @@ public struct Bitmask {
 
     @inlinable
     mutating func _shift(count: Int) {
-        // If shift is a multiple of 64, do a full storage shift instead.
-        switch count.quotientAndRemainder(dividingBy: 64) {
+        switch count.quotientAndRemainder(dividingBy: Storage.bitWidth) {
         case (let q, 0):
+            // If shift is a multiple of 64, do a full storage shift instead.
             _storage.shift(count: q)
 
         default:
@@ -549,7 +549,7 @@ public struct Bitmask {
         }
 
         @inlinable
-        init(values: [UInt64]) {
+        init(values: [Storage]) {
             if values.isEmpty {
                 self = .single(0)
             } else if values.count == 1 {
@@ -598,7 +598,7 @@ public struct Bitmask {
         }
         
         @inlinable
-        func withStorage(_ closure: (UInt64) throws -> Void) rethrows {
+        func withStorage(_ closure: (Storage) throws -> Void) rethrows {
             switch self {
             case .single(let value):
                 try closure(value)
