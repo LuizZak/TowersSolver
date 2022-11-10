@@ -65,13 +65,13 @@ public struct Bitmask {
     /// Returns whether all bits in this bitmask are zero.
     @inlinable
     public var isAllZeroes: Bool {
-        var result = true
-
-        withStorage { value in
-            result = result && value == 0
+        for index in 0..<storageLength {
+            if index != 0 {
+                return false
+            }
         }
 
-        return result
+        return true
     }
 
     /// Returns whether any bit in this bitmask is not a zero.
@@ -481,6 +481,7 @@ public struct Bitmask {
             switch self {
             case .single(let value):
                 return value.leadingZeroBitCount
+                
             case .multiple(let value, let rem):
                 guard let last = rem.last else {
                     return value.leadingZeroBitCount
