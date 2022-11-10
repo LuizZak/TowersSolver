@@ -399,18 +399,25 @@ public struct Bitmask {
 
     @inlinable
     mutating func _shift(count: Int) {
-        var result = Bitmask()
+        // If shift is a multiple of 64, do a full storage shift instead.
+        switch count.quotientAndRemainder(dividingBy: 64) {
+        case (let q, 0):
+            _storage.shift(count: q)
 
-        let bitStart = count
-        let bitEnd = bitWidth + count
+        default:
+            var result = Bitmask()
 
-        result.ensureBitCount(bitEnd)
+            let bitStart = count
+            let bitEnd = bitWidth + count
 
-        for (index, bits) in _storage.enumerated() {
-            result.set64Bits(offset: bitStart + index * Storage.bitWidth, bits: bits)
+            result.ensureBitCount(bitEnd)
+
+            for (index, bits) in _storage.enumerated() {
+                result.set64Bits(offset: bitStart + index * Storage.bitWidth, bits: bits)
+            }
+
+            self = result.compacted()
         }
-
-        self = result.compacted()
     }
 
     /// Returns a copy of this bitmask where the storage is the minimal count of
@@ -583,10 +590,10 @@ public struct Bitmask {
                 return
             }
 
-            if count < 0 {
-                self = .init(values: Array(self) + Array(repeating: 0b0, count: count))
+            if count > 0 {
+                self = .init(values: Array(repeating: 0b0, count: count) + Array(self))
             } else {
-                self = .init(values: self.dropLast(-count))
+                self = .init(values: Array(self.dropFirst(-count)))
             }
         }
         

@@ -657,6 +657,22 @@ class BitmaskTests: XCTestCase {
         )
     }
 
+    func testShiftBitsLeft_past64Bits_64BitMultiple() {
+        var sut: Bitmask = 0b10000_10001
+
+        sut.shiftBitsLeft(count: 192)
+
+        assertEqual(
+            sut,
+            value: [
+                0b0,
+                0b0,
+                0b0,
+                0b10000_10001,
+            ]
+        )
+    }
+
     func testShiftingBitsRight_past64Bits() {
         let sut: Bitmask = Bitmask(bits: [
             0b1000_10000_00000_00000_00000_00000_00000_01110_00000_00000_01100_10000_00001,
@@ -680,6 +696,24 @@ class BitmaskTests: XCTestCase {
         ])
 
         sut.shiftBitsRight(count: 59)
+
+        assertEqual(
+            sut,
+            value: [
+                0b10000_10001,
+            ]
+        )
+    }
+
+    func testShiftBitsRight_past64Bits_64BitMultiple() {
+        var sut: Bitmask = Bitmask(bits: [
+            0b0,
+            0b0,
+            0b0,
+            0b10000_10001,
+        ])
+
+        sut.shiftBitsRight(count: 192)
 
         assertEqual(
             sut,
@@ -715,9 +749,9 @@ class BitmaskTests: XCTestCase {
         }
 
         XCTAssertEqual(indices, [
-            1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 24, 25, 26, 30, 32, 33, 34,
-            64, 65, 66, 70, 71, 72, 73, 74, 76, 77, 78, 81, 84, 86, 89, 92, 95,
-            96, 97, 98,
+            1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 24, 25, 26, 30, 32, 33, 34, 64,
+            65, 66, 70, 71, 72, 73, 74, 76, 77, 78, 81, 84, 86, 89, 92, 95, 96,
+            97, 98,
         ])
     }
 
@@ -820,6 +854,112 @@ class BitmaskTests: XCTestCase {
         )
     }
 
+    func testXorSwap() {
+        let bitmask1 = Bitmask(bits: [
+            0xBADF00D,
+            0xF00DBAD,
+        ])
+        let bitmask2 = Bitmask(bits: [
+            0x1234567,
+            0xAABBCC,
+        ])
+
+        var bit1 = bitmask1
+        var bit2 = bitmask2
+
+        bit1 = bit1 ^ bit2
+        bit2 = bit2 ^ bit1
+        bit1 = bit1 ^ bit2
+
+        assertEqual(bit2, bitmask: bitmask1)
+        assertEqual(bit1, bitmask: bitmask2)
+    }
+
+    func testXorSwap_unequalLength() {
+        let bitmask1 = Bitmask(bits: [
+            0xBADF00D,
+            0xF00DBAD,
+        ])
+        let bitmask2 = Bitmask(bits: [
+            0x1234567,
+        ])
+
+        var bit1 = bitmask1
+        var bit2 = bitmask2
+
+        bit1 = bit1 ^ bit2
+        bit2 = bit2 ^ bit1
+        bit1 = bit1 ^ bit2
+
+        assertEqual(bit2, bitmask: bitmask1)
+        assertEqual(bit1, bitmask: bitmask2)
+    }
+
+    func testPerformance_xorSwap() {
+        measure {
+            let bitmask1 = Bitmask(bits: [
+                0xDEADBEEF,
+                0xBADF00D,
+                0xF00DBAD,
+                0xABEEACEE,
+                0xBADDCAFE,
+                0xBEEFBABE,
+                0xB0BBAC0FFEE,
+                0x8BADF00D,
+            ])
+            let bitmask2 = Bitmask(bits: [
+                0x1234567890,
+                0x9876543210,
+                0xAABBCCDDEE,
+                0xEEDDCCBBAA,
+                0x0A1B2C3D4E,
+                0x4E3D2C1B0A,
+                0x1122334455,
+                0x5544332211,
+            ])
+
+            let iterations = 100_000
+
+            for _ in 0..<iterations {
+                var bit1 = bitmask1
+                var bit2 = bitmask2
+
+                bit1 ^= bit2
+                bit2 ^= bit1
+                bit1 ^= bit2
+            }
+        }
+    }
+
+    func testPerformance_xorSwap_unequalLength_singleAndArray() {
+        measure {
+            let bitmask1 = Bitmask(bits: [
+                0xDEADBEEF,
+                0xBADF00D,
+                0xF00DBAD,
+                0xABEEACEE,
+                0xBADDCAFE,
+                0xBEEFBABE,
+                0xB0BBAC0FFEE,
+                0x8BADF00D,
+            ])
+            let bitmask2 = Bitmask(bits: [
+                0x1234567890,
+            ])
+
+            let iterations = 100_000
+
+            for _ in 0..<iterations {
+                var bit1 = bitmask1
+                var bit2 = bitmask2
+
+                bit1 ^= bit2
+                bit2 ^= bit1
+                bit1 ^= bit2
+            }
+        }
+    }
+
     func testPerformance_bitwiseShiftLeftXOrOr_past64Bits() {
         measure {
             var bitmask = Bitmask()
@@ -828,7 +968,10 @@ class BitmaskTests: XCTestCase {
             let iterations = 10_000
 
             for index in 0..<iterations {
-                let mask = Bitmask(0b1111_11111_11111_11111_11111_11111_11111_11111_11111_11111_11111_01101_11010)
+                let mask = Bitmask(bits: [
+                    0b1111_11111_11111_11111_11111_11111_11111_11111_11111_11111_11111_01101_11010,
+                    0b1111_11111_11111_11111_11111_11111_01101_11101_11111_11111_11111_11111_10110,
+                ])
 
                 bitmask = bitmask | (fixedMask ^ mask.shiftingBitsLeft(count: index))
             }
@@ -837,14 +980,14 @@ class BitmaskTests: XCTestCase {
 
     // MARK: - Test utils
 
-    private func assertEqual(_ bitmask: Bitmask, value: UInt64, line: UInt = #line) {
-        let storage = extractStorage(bitmask)
-        let expected = [value]
+    private func assertEqual(_ actual: Bitmask, bitmask: Bitmask, line: UInt = #line) {
+        let storage1 = extractStorage(actual)
+        let storage2 = extractStorage(bitmask)
 
         XCTAssertEqual(
-            storage,
-            expected,
-            "\(formatStorage(storage)) != \(formatStorage(expected))",
+            actual,
+            bitmask,
+            "\(formatStorage(storage1)) != \(formatStorage(storage2))",
             line: line
         )
     }
@@ -856,6 +999,18 @@ class BitmaskTests: XCTestCase {
             storage,
             value,
             "\(formatStorage(storage)) != \(formatStorage(value))",
+            line: line
+        )
+    }
+
+    private func assertEqual(_ bitmask: Bitmask, value: UInt64, line: UInt = #line) {
+        let storage = extractStorage(bitmask)
+        let expected = [value]
+
+        XCTAssertEqual(
+            storage,
+            expected,
+            "\(formatStorage(storage)) != \(formatStorage(expected))",
             line: line
         )
     }
