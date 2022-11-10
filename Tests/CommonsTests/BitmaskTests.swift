@@ -744,6 +744,15 @@ class BitmaskTests: XCTestCase {
         assertEqual(result, value: [0b00010_00001, 0b0001_00010])
     }
 
+    func testAndOperator_inPlace_past64Bits() {
+        var bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+
+        bitmask1 &= bitmask2
+
+        assertEqual(bitmask1, value: [0b00010_00001, 0b0001_00010])
+    }
+
     func testOrOperator_past64Bits() {
         let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
         let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
@@ -753,6 +762,15 @@ class BitmaskTests: XCTestCase {
         assertEqual(result, value: [0b11010_11101, 0b11101_11010])
     }
 
+    func testOrOperator_inPlace_past64Bits() {
+        var bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+
+        bitmask1 |= bitmask2
+
+        assertEqual(bitmask1, value: [0b11010_11101, 0b11101_11010])
+    }
+
     func testXOrOperator_past64Bits() {
         let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
         let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
@@ -760,6 +778,32 @@ class BitmaskTests: XCTestCase {
         let result = bitmask1 ^ bitmask2
 
         assertEqual(result, value: [0b11000_11100, 0b11100_11000])
+    }
+
+    func testXOrOperator_past64Bits_unequalLength() {
+        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010, 0b10010_00101])
+        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+
+        let result = bitmask1 ^ bitmask2
+
+        assertEqual(result, value: [0b11000_11100, 0b11100_11000, 0b10010_00101])
+    }
+
+    func testXOrOperator_past64Bits_unequalLength_singleAndArray() {
+        let bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010, 0b10010_00101])
+        let bitmask2 = Bitmask(bits: [0b01010_11001])
+
+        assertEqual(bitmask1 ^ bitmask2, value: [0b11000_11100, 0b00101_10010, 0b10010_00101])
+        assertEqual(bitmask2 ^ bitmask1, value: [0b11000_11100, 0b00101_10010, 0b10010_00101])
+    }
+
+    func testXOrOperator_inPlace_past64Bits() {
+        var bitmask1 = Bitmask(bits: [0b10010_00101, 0b00101_10010])
+        let bitmask2 = Bitmask(bits: [0b01010_11001, 0b11001_01010])
+
+        bitmask1 ^= bitmask2
+
+        assertEqual(bitmask1, value: [0b11000_11100, 0b11100_11000])
     }
 
     func testNegateOperator_past64Bits() {

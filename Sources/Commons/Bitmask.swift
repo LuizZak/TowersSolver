@@ -763,16 +763,34 @@ public extension Bitmask {
         _binaryOp(lhs, rhs, op: |)
     }
 
+    /// Performs an in-place union of two bitmasks.
+    @inlinable
+    static func |= (lhs: inout Self, rhs: Self) {
+        lhs = _binaryOp(lhs, rhs, op: |)
+    }
+
     /// Returns the intersection of two bitmasks.
     @inlinable
     static func & (lhs: Self, rhs: Self) -> Self {
         _binaryOp(lhs, rhs, op: &)
     }
 
+    /// Performs an in-place intersection of two bitmasks.
+    @inlinable
+    static func &= (lhs: inout Self, rhs: Self) {
+        lhs = _binaryOp(lhs, rhs, op: &)
+    }
+
     /// Returns the xor of two bitmasks.
     @inlinable
     static func ^ (lhs: Self, rhs: Self) -> Self {
         _binaryOp(lhs, rhs, op: ^)
+    }
+
+    /// Performs an in-place xor of two bitmasks.
+    @inlinable
+    static func ^= (lhs: inout Self, rhs: Self) {
+        lhs = _binaryOp(lhs, rhs, op: ^)
     }
 
     /// Returns the inverse of a bitmask.
