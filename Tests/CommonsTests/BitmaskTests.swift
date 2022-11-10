@@ -894,6 +894,18 @@ class BitmaskTests: XCTestCase {
         assertEqual(bit2, bitmask: bitmask1)
         assertEqual(bit1, bitmask: bitmask2)
     }
+    
+    func testPerformance_setBitRange() {
+        measure {
+            let iterations = 10_000
+
+            for _ in 0..<iterations {
+                var sut: Bitmask = 0b10010_00101
+
+                sut.setBitRange(0...1024, state: true)
+            }
+        }
+    }
 
     func testPerformance_xorSwap() {
         measure {
@@ -945,6 +957,36 @@ class BitmaskTests: XCTestCase {
             ])
             let bitmask2 = Bitmask(bits: [
                 0x1234567890,
+            ])
+
+            let iterations = 100_000
+
+            for _ in 0..<iterations {
+                var bit1 = bitmask1
+                var bit2 = bitmask2
+
+                bit1 ^= bit2
+                bit2 ^= bit1
+                bit1 ^= bit2
+            }
+        }
+    }
+
+    func testPerformance_xorSwap_unequalLength_arrayAndArray() {
+        measure {
+            let bitmask1 = Bitmask(bits: [
+                0xDEADBEEF,
+                0xBADF00D,
+                0xF00DBAD,
+                0xABEEACEE,
+                0xBADDCAFE,
+                0xBEEFBABE,
+                0xB0BBAC0FFEE,
+                0x8BADF00D,
+            ])
+            let bitmask2 = Bitmask(bits: [
+                0x1234567890,
+                0x9876543210,
             ])
 
             let iterations = 100_000

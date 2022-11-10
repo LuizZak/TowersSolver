@@ -645,21 +645,23 @@ public struct Bitmask {
                 return .multiple(op(lValue, rValue), lRem.map { op($0, 0b0) })
             
             case (.multiple(let lValue, let lRem), .multiple(let rValue, let rRem)):
-                let totalCount = Swift.max(lRem.count, rRem.count)
-
                 let lead = op(lValue, rValue)
+
+                let totalCount = Swift.max(lRem.count, rRem.count)
                 var remaining = [Storage](repeating: 0b0, count: totalCount)
 
-                if lRem.count == rRem.count {
-                    for index in 0..<totalCount {
-                        remaining[index] = op(lRem[index], rRem[index])
-                    }
-                } else {
-                    let lhsIndexer = _StorageIndexer(storage: lRem)
-                    let rhsIndexer = _StorageIndexer(storage: rRem)
+                let minCount = Swift.min(lRem.count, rRem.count)
+                for index in 0..<minCount {
+                    remaining[index] = op(lRem[index], rRem[index])
+                }
 
-                    for index in 0..<totalCount {
-                        remaining[index] = op(lhsIndexer[index], rhsIndexer[index])
+                if lRem.count > rRem.count {
+                    for index in minCount..<totalCount {
+                        remaining[index] = op(lRem[index], 0b0)
+                    }
+                } else if lRem.count < rRem.count {
+                    for index in minCount..<totalCount {
+                        remaining[index] = op(0b0, rRem[index])
                     }
                 }
 
