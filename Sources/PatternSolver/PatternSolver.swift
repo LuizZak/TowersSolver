@@ -250,7 +250,8 @@ public class PatternSolver: GameSolverType {
         private var _columns: Bitmask
         private var _rows: Bitmask
 
-        /// Returns `true` if all columns and rows on this check list are satisfied.
+        /// Returns `true` if any column or row on this check list are marked as
+        /// pending.
         var hasPendingChecks: Bool {
             _columns.isNonZero || _rows.isNonZero
         }
