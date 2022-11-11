@@ -155,6 +155,31 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         self._storage = .multiple(bits[0], Array(bits.dropFirst()))
     }
 
+    /// Initializes this bitmask object by extracting all of the bits from a given
+    /// bitmask object of arbitrary bit count.
+    @inlinable
+    public init<T>(_ bitmask: Bitmask<T>) {
+        self.init()
+
+        if Storage.bitWidth < T.bitWidth {
+            for bitIndex in stride(from: 0, to: bitmask.bitWidth, by: Storage.bitWidth) {
+                let bits = bitmask.extractBits(offset: bitIndex)
+
+                let cast = Storage(truncatingIfNeeded: bits)
+
+                setBits(offset: bitIndex, bits: cast)
+            }
+        } else {
+            for (i, storage) in bitmask._storage.enumerated() {
+                let cast = Storage(truncatingIfNeeded: storage)
+
+                setBits(offset: i * T.bitWidth, bits: cast)
+            }
+        }
+
+        compact()
+    }
+
     @inlinable
     func storageIndex(for bitIndex: Int) -> Int {
         bitIndex / Storage.bitWidth

@@ -285,6 +285,50 @@ class BitmaskTests: XCTestCase {
         )
     }
 
+    func testInitWithBitmask_64BitsInto8Bits() throws {
+        let sut = Bitmask64(bits: [
+            0xDEADBEEFBADF00D0,
+        ])
+        
+        let result = Bitmask8(sut)
+
+        assertEqual(
+            result,
+            value: [
+                0xD0,
+                0x00,
+                0xDF,
+                0xBA,
+                0xEF,
+                0xBE,
+                0xAD,
+                0xDE,
+            ]
+        )
+    }
+
+    func testInitWithBitmask_8BitsInto64Bits() throws {
+        let sut = Bitmask8(bits: [
+            0xD0,
+            0x00,
+            0xDF,
+            0xBA,
+            0xEF,
+            0xBE,
+            0xAD,
+            0xDE,
+        ])
+        
+        let result = Bitmask64(sut)
+
+        assertEqual(
+            result,
+            value: [
+                0xDEADBEEFBADF00D0,
+            ]
+        )
+    }
+    
     func testCodable() throws {
         let sut = Bitmask64(bits: [
             0xDEADBEEF,
@@ -304,7 +348,7 @@ class BitmaskTests: XCTestCase {
 
         XCTAssertEqual(result, sut)
     }
-    
+
     func testStorageLength_past64Bits() {
         var sut = Bitmask64()
         sut.setBit(180, state: true)
