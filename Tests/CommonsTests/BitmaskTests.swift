@@ -258,6 +258,26 @@ class BitmaskTests: XCTestCase {
             value: [0b01011, 0b11001_0000]
         )
     }
+
+    func testCodable() throws {
+        let sut = Bitmask(bits: [
+            0xDEADBEEF,
+            0xBADF00D,
+            0xF00DBAD,
+            0xABEEACEE,
+            0xBADDCAFE,
+            0xBEEFBABE,
+            0xB0BBAC0FFEE,
+            0x8BADF00D,
+        ])
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+
+        let data = try encoder.encode(sut)
+        let result = try decoder.decode(Bitmask.self, from: data)
+
+        XCTAssertEqual(result, sut)
+    }
     
     func testStorageLength_past64Bits() {
         var sut = Bitmask()
