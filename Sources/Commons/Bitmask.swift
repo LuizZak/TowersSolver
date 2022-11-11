@@ -87,11 +87,6 @@ public struct Bitmask {
     }
 
     @usableFromInline
-    internal init(_lead: Bitmask.Storage, _remaining: [Storage]) {
-        self._storage = .multiple(_lead, _remaining)
-    }
-
-    @usableFromInline
     internal init(_storage: _Storage) {
         self._storage = _storage
     }
@@ -121,7 +116,9 @@ public struct Bitmask {
             return
         }
 
-        self._storage = .multiple(bits[0], Array(bits.dropFirst()))
+        self._storage = .multiple(
+            .init(storage: bits)
+        )
     }
 
     @usableFromInline
@@ -459,13 +456,15 @@ public struct Bitmask {
     @usableFromInline
     internal enum _Storage: Hashable, Collection {
         case single(Storage)
-        case multiple(Storage, [Storage])
+        case multiple(_PackedStorage)
 
         @inlinable
         var firstValue: Storage {
             switch self {
-            case .single(let value), .multiple(let value, _):
+            case .single(let value):
                 return value
+            case .multiple(let packed):
+                return packed.lead
             }
         }
 
@@ -475,9 +474,9 @@ public struct Bitmask {
             case .single(let value):
                 return value.leadingZeroBitCount
 
-            case .multiple(let value, let rem):
-                guard let last = rem.last else {
-                    return value.leadingZeroBitCount
+            case .multiple(let packed):
+                guard let last = packed.storage.last else {
+                    return 0
                 }
 
                 return last.leadingZeroBitCount
@@ -495,8 +494,8 @@ public struct Bitmask {
             case .single:
                 return 1
 
-            case .multiple(_, let remaining):
-                return 1 + remaining.count
+            case .multiple(let packed):
+                return packed.storage.count
             }
         }
 
@@ -509,13 +508,8 @@ public struct Bitmask {
                     assert(position == 0, "position == 0")
                     return value
 
-                case .multiple(let lead, let remaining):
-                    assert(position <= remaining.count, "position <= remaining.count")
-                    if position == 0 {
-                        return lead
-                    }
-
-                    return remaining[position - 1]
+                case .multiple(let packed):
+                    return packed.storage[position]
                 }
             }
             @inlinable
@@ -529,15 +523,9 @@ public struct Bitmask {
                 case .single:
                     self = .single(newValue)
 
-                case .multiple(let lead, let remaining):
-                    if position == 0 {
-                        self = .multiple(newValue, remaining)
-                    } else {
-                        var remaining = remaining
-                        remaining[position - 1] = newValue
-
-                        self = .multiple(lead, remaining)
-                    }
+                case .multiple(var packed):
+                    packed.storage[position] = newValue
+                    self = .multiple(packed)
                 }
             }
         }
@@ -549,7 +537,7 @@ public struct Bitmask {
             } else if values.count == 1 {
                 self = .single(values[0])
             } else {
-                self = .multiple(values[0], Array(values.dropFirst()))
+                self = .multiple(.init(storage: values))
             }
         }
 
@@ -564,11 +552,11 @@ public struct Bitmask {
             case .single:
                 return self
                 
-            case .multiple(let lead, let remaining):
-                if let lastNonZero = remaining.lastIndex(where: { $0 != 0 }) {
-                    return .multiple(lead, Array(remaining.prefix(through: lastNonZero)))
+            case .multiple(let packed):
+                if let lastNonZero = packed.storage.lastIndex(where: { $0 != 0 }) {
+                    return .multiple(.init(storage: Array(packed.storage.prefix(through: lastNonZero))))
                 } else {
-                    return .single(lead)
+                    return .single(packed.lead)
                 }
             }
         }
@@ -603,10 +591,8 @@ public struct Bitmask {
             case .single(let value):
                 try closure(value)
             
-            case .multiple(let lead, let remaining):
-                try closure(lead)
-
-                for entry in remaining {
+            case .multiple(let packed):
+                for entry in packed.storage {
                     try closure(entry)
                 }
             }
@@ -620,14 +606,43 @@ public struct Bitmask {
 
             switch self {
             case .single(let storage):
-                self = .multiple(storage, [Storage](repeating: 0, count: count - 1))
+                let newStorage = [Storage](unsafeUninitializedCapacity: count) { (buffer, bufferCount) in
+                    buffer.assign(repeating: 0b0)
+                    buffer[0] = storage
+
+                    bufferCount = count
+                }
+                
+                self = .multiple(
+                    .init(
+                        storage: newStorage
+                    )
+                )
             
-            case .multiple(let storage, var remaining):
-                let extraStorage = (count + 1) - remaining.count
+            case .multiple(var packed):
+                let extraStorage = count - packed.storage.count
 
                 if extraStorage > 0 {
-                    remaining.append(contentsOf: [Storage](repeating: 0, count: extraStorage))
-                    self = .multiple(storage, remaining)
+                    packed.storage.append(contentsOf: [Storage](repeating: 0, count: extraStorage))
+                    self = .multiple(packed)
+                }
+            }
+        }
+
+        @inlinable
+        func withContiguousStorageIfAvailable<R>(_ body: (UnsafeBufferPointer<Storage>) throws -> R) rethrows -> R? {
+            switch self {
+            case .single(let storage):
+                return try withUnsafePointer(to: storage) { ptr in
+                    let buffer = UnsafeBufferPointer(start: ptr, count: 1)
+                    return try body(buffer)
+                }
+            
+            case .multiple(let packed):
+                return try withUnsafePointer(to: packed) { packedPtr -> R? in
+                    return try packed.storage.withContiguousStorageIfAvailable { _storagePtr in
+                        try body(_storagePtr)
+                    }
                 }
             }
         }
@@ -638,34 +653,51 @@ public struct Bitmask {
             case (.single(let lValue), .single(let rValue)):
                 return .single(op(lValue, rValue))
             
-            case (.single(let lValue), .multiple(let rValue, let rRem)):
-                return .multiple(op(lValue, rValue), rRem.map { op(0b0, $0) })
-            
-            case (.multiple(let lValue, let lRem), .single(let rValue)):
-                return .multiple(op(lValue, rValue), lRem.map { op($0, 0b0) })
-            
-            case (.multiple(let lValue, let lRem), .multiple(let rValue, let rRem)):
-                let lead = op(lValue, rValue)
+            case (.single(let lValue), .multiple(let rPacked)):
+                var storage = [Storage](repeating: 0b0, count: rPacked.storage.count)
+                storage[0] = op(lValue, rPacked.lead)
 
-                let totalCount = Swift.max(lRem.count, rRem.count)
-                var remaining = [Storage](repeating: 0b0, count: totalCount)
+                for index in 1..<storage.count {
+                    storage[index] = op(0b0, rPacked.storage[index])
+                }
 
-                let minCount = Swift.min(lRem.count, rRem.count)
+                return .multiple(.init(storage: storage))
+            
+            case (.multiple(let lPacked), .single(let rValue)):
+                var storage = [Storage](repeating: 0b0, count: lPacked.storage.count)
+                storage[0] = op(lPacked.lead, rValue)
+
+                for index in 1..<storage.count {
+                    storage[index] = op(lPacked.storage[index], 0b0)
+                }
+
+                return .multiple(.init(storage: storage))
+            
+            case (.multiple(let lPacked), .multiple(let rPacked)):
+                let lStorage = lPacked.storage
+                let rStorage = rPacked.storage
+
+                let totalCount = Swift.max(lStorage.count, rStorage.count)
+                var storage = [Storage](repeating: 0b0, count: totalCount)
+
+                let minCount = Swift.min(lStorage.count, rStorage.count)
                 for index in 0..<minCount {
-                    remaining[index] = op(lRem[index], rRem[index])
+                    storage[index] = op(lStorage[index], rStorage[index])
                 }
 
-                if lRem.count > rRem.count {
+                if lStorage.count > rStorage.count {
                     for index in minCount..<totalCount {
-                        remaining[index] = op(lRem[index], 0b0)
+                        storage[index] = op(lStorage[index], 0b0)
                     }
-                } else if lRem.count < rRem.count {
+                } else if lStorage.count < rStorage.count {
                     for index in minCount..<totalCount {
-                        remaining[index] = op(0b0, rRem[index])
+                        storage[index] = op(0b0, rStorage[index])
                     }
                 }
 
-                return .multiple(lead, remaining)
+                return .multiple(
+                    .init(storage: storage)
+                )
             }
         }
 
@@ -675,8 +707,37 @@ public struct Bitmask {
             case .single(let v):
                 return .single(op(v))
 
-            case .multiple(let lead, let rem):
-                return .multiple(op(lead), rem.map(op))
+            case .multiple(let packed):
+                return .multiple(
+                    .init(storage: packed.storage.map(op))
+                )
+            }
+        }
+
+        @usableFromInline
+        struct _PackedStorage: Hashable {
+            @usableFromInline
+            var storage: [Storage]
+
+            @usableFromInline
+            var lead: Storage {
+                @inlinable
+                get {
+                    storage[0]
+                }
+                @inlinable
+                set {
+                    storage[0] = newValue
+                }
+            }
+
+            @inlinable
+            internal init(storage: [Storage]) {
+                if storage.isEmpty {
+                    self.storage = [0b0]
+                } else {
+                    self.storage = storage
+                }
             }
         }
     }

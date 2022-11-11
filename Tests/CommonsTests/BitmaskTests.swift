@@ -914,6 +914,24 @@ class BitmaskTests: XCTestCase {
         assertEqual(bit2, bitmask: bitmask1)
         assertEqual(bit1, bitmask: bitmask2)
     }
+
+    func testWithContiguousStorageIfAvailable_past64Bits() {
+        let sut = Bitmask(bits: [
+            0xBADF00D,
+            0xF00DBAD,
+        ])
+
+        let result = sut._storage.withContiguousStorageIfAvailable { ptr -> Bool in
+            XCTAssertEqual(ptr.count, 2)
+
+            assertEqual(ptr[0], bits: 0xBADF00D)
+            assertEqual(ptr[1], bits: 0xF00DBAD)
+
+            return true
+        }
+
+        XCTAssertEqual(result, true)
+    }
     
     func testPerformance_setBitRange() {
         measure {
