@@ -580,17 +580,23 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         }
 
         @inlinable
-        mutating func compact() {
+        func compacted() -> Self {
             switch self {
             case .single:
-                break
+                return self
+                
             case .multiple(let lead, let remaining):
                 if let lastNonZero = remaining.lastIndex(where: { $0 != 0 }) {
-                    self = .multiple(lead, Array(remaining.prefix(through: lastNonZero)))
+                    return .multiple(lead, Array(remaining.prefix(through: lastNonZero)))
                 } else {
-                    self = .single(lead)
+                    return .single(lead)
                 }
             }
+        }
+
+        @inlinable
+        mutating func compact() {
+            self = compacted()
         }
 
         /// Shifts whole storage multiples of `Storage` to the left or right,
