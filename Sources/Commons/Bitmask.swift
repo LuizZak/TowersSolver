@@ -7,18 +7,6 @@ public struct Bitmask {
     @usableFromInline
     var _storage: _Storage
 
-    @usableFromInline
-    subscript(bitIndex bitIndex: Int) -> UInt64 {
-        get {
-            let storageIndex = storageIndex(for: bitIndex)
-            return self[storageIndex: storageIndex]
-        }
-        set {
-            let storageIndex = storageIndex(for: bitIndex)
-            self[storageIndex: storageIndex] = newValue
-        }
-    }
-
     /// Indexes using 0-based storage index. 0 index into `self._storage`, while
     /// indices 1 or greater index into `_remaining` array with a -1 offset.
     @usableFromInline
@@ -108,13 +96,6 @@ public struct Bitmask {
         self._storage = _storage
     }
 
-    @usableFromInline
-    mutating func ensureBitCount(_ count: Int) {
-        let storageIndex = storageIndex(for: count) + 1
-        
-        _storage.ensureCapacity(count: storageIndex)
-    }
-
     /// Initializes a new bitmask with a specified bit range on.
     @inlinable
     public init(onBitRange: Range<Int>) {
@@ -141,6 +122,17 @@ public struct Bitmask {
         }
 
         self._storage = .multiple(bits[0], Array(bits.dropFirst()))
+    }
+
+    @usableFromInline
+    mutating func ensureBitCount(_ count: Int) {
+        let (storageCount, remainder) = count.quotientAndRemainder(dividingBy: Storage.bitWidth)
+        
+        if remainder > 0 {
+            _storage.ensureCapacity(count: storageCount + 1)
+        } else {
+            _storage.ensureCapacity(count: storageCount)
+        }
     }
 
     @inlinable
@@ -201,8 +193,9 @@ public struct Bitmask {
     public func isBitSet(_ index: Int) -> Bool {
         let modBit = index % Storage.bitWidth
         let mask: Storage = 0b1 << modBit
+        let storageIndex = storageIndex(for: index)
 
-        return (self[bitIndex: index] & mask) != 0
+        return (self[storageIndex: storageIndex] & mask) != 0
     }
 
     /// Returns whether all bits on a given range are off within this bitmask.
@@ -303,12 +296,13 @@ public struct Bitmask {
     /// - precondition: `index >= 0`.
     @inlinable
     public mutating func setBitOn(_ index: Int) {
-        ensureBitCount(index)
+        ensureBitCount(index + 1)
 
         let modBit = index % Storage.bitWidth
         let mask: Storage = 0b1 << modBit
+        let storageIndex = storageIndex(for: index)
 
-        self[bitIndex: index] |= mask
+        self[storageIndex: storageIndex] |= mask
     }
 
     /// Sets a specific bit off within this bitmask.
@@ -316,12 +310,13 @@ public struct Bitmask {
     /// - precondition: `index >= 0`.
     @inlinable
     public mutating func setBitOff(_ index: Int) {
-        ensureBitCount(index)
+        ensureBitCount(index + 1)
         
         let modBit = index % Storage.bitWidth
         let mask: Storage = 0b1 << modBit
+        let storageIndex = storageIndex(for: index)
 
-        self[bitIndex: index] &= ~mask
+        self[storageIndex: storageIndex] &= ~mask
     }
 
     /// Sets a range of bits in this bitmask to a specified state.
