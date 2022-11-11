@@ -328,6 +328,33 @@ class BitmaskTests: XCTestCase {
             ]
         )
     }
+
+    func testInitWithBitmask_8BitsInto64Bits_partial() throws {
+        let sut = Bitmask8(bits: [
+            0xD0,
+            0x00,
+            0xDF,
+            0xBA,
+            0xEF,
+            0xBE,
+            0xAD,
+            0xDE,
+            0xD0,
+            0x00,
+            0xDF,
+            0xBA,
+        ])
+        
+        let result = Bitmask64(sut)
+
+        assertEqual(
+            result,
+            value: [
+                0xDEADBEEFBADF00D0,
+                0xBADF00D0,
+            ]
+        )
+    }
     
     func testCodable() throws {
         let sut = Bitmask64(bits: [
@@ -983,6 +1010,45 @@ class BitmaskTests: XCTestCase {
 
         assertEqual(bit2, bitmask: bitmask1)
         assertEqual(bit1, bitmask: bitmask2)
+    }
+
+    func testPerformance_64BitsTo8BitsBitmask() {
+        measure {
+            let sut = Bitmask64(bits: [
+                0xDEADBEEFBADF00D0,
+            ])
+
+            let iterations = 10_000
+
+            for _ in 0..<iterations {
+                let _ = Bitmask8(sut)
+            }
+        }
+    }
+
+    func testPerformance_8BitsTo64BitsBitmask_partial() {
+        measure {
+            let sut = Bitmask8(bits: [
+                0xD0,
+                0x00,
+                0xDF,
+                0xBA,
+                0xEF,
+                0xBE,
+                0xAD,
+                0xDE,
+                0xD0,
+                0x00,
+                0xDF,
+                0xBA,
+            ])
+
+            let iterations = 10_000
+
+            for _ in 0..<iterations {
+                let _ = Bitmask64(sut)
+            }
+        }
     }
     
     func testPerformance_setBitRange() {
