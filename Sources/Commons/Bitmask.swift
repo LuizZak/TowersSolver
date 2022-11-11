@@ -224,14 +224,14 @@ public struct Bitmask {
     /// Bits that are referenced beyond `self.bitWidth` are set to 0.
     public func extract64Bits(offset: Int) -> UInt64 {
         let bitStart = offset
-        let bitEnd = offset + 64
+        let bitEnd = offset + Storage.bitWidth
 
         let startIndex = storageIndex(for: bitStart)
         let endIndex = storageIndex(for: bitEnd)
 
         assert(
             endIndex <= startIndex + 1,
-            "Expected 64 bits of storage to span a maximum of two consecutive UInt64 indices."
+            "Expected \(Storage.bitWidth) bits of storage to span a maximum of two consecutive \(Storage.self) indices."
         )
 
         if startIndex == endIndex {
@@ -253,7 +253,7 @@ public struct Bitmask {
     /// Extra storage is created if offset + 64 is beyond the end of this bitmask's
     /// range.
     public mutating func set64Bits(offset: Int, bits: UInt64) {
-        if offset < -64 {
+        if offset < -Storage.bitWidth {
             return
         }
         if offset < 0 {
@@ -264,7 +264,7 @@ public struct Bitmask {
         } 
 
         let bitStart = offset
-        let bitEnd = offset + 63
+        let bitEnd = offset + Storage.bitWidth - 1
 
         ensureBitCount(bitEnd)
 
@@ -273,7 +273,7 @@ public struct Bitmask {
 
         assert(
             endIndex <= startIndex + 1,
-            "Expected 64 bits of storage to span a maximum of two consecutive UInt64 indices."
+            "Expected \(Storage.bitWidth) bits of storage to span a maximum of two consecutive \(Storage.self) indices."
         )
 
         if startIndex == endIndex {
