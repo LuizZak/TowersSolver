@@ -137,47 +137,82 @@ public struct Bitmask<Storage: FixedWidthInteger> {
     /// bitmask object of arbitrary bit count.
     @inlinable
     public init<T>(_ bitmask: Bitmask<T>) {
-        self.init()
+        let newStorage = bitmask._storage.withContiguousStorageIfAvailable { buffer in
+            let totalBytes = MemoryLayout<T>.size * bitmask.storageLength
+            var (count, remainder) = totalBytes.quotientAndRemainder(dividingBy: MemoryLayout<Storage>.size)
 
-        if Storage.bitWidth < T.bitWidth {
-            ensureBitCount(bitmask.bitWidth)
-            
-            let bitsPerStorage = T.bitWidth / Storage.bitWidth
-
-            var storageIndex = 0
-            for bitmaskIndex in 0..<bitmask.storageLength {
-                let bits = bitmask[storageIndex: bitmaskIndex]
-
-                for offset in 0..<bitsPerStorage {
-                    defer { storageIndex += 1 }
-                    let cast = Storage(truncatingIfNeeded: bits >> (offset * bitsPerStorage))
-
-                    self[storageIndex: storageIndex] = cast
-                }
+            if remainder > 0 {
+                count += 1
             }
-        } else {
-            ensureBitCount(bitmask.bitWidth)
 
-            let bitsPerStorage = Storage.bitWidth / T.bitWidth
+            return [Storage](unsafeUninitializedCapacity: count) { (arrayBuffer, counter) in
+                buffer.withMemoryRebound(to: UInt8.self) { ptr in
+                    ptr.copyBytes(to: arrayBuffer)
 
-            var storageIndex = 0
-            for bitmaskIndex in stride(from: 0, to: bitmask.bitWidth / bitsPerStorage, by: bitsPerStorage) {
-                defer { storageIndex += 1 }
+                    // Collect the remaining bytes that are left that cannot be
+                    // transformed into a whole Storage value.
+                    if remainder > 0 {
+                        var last: Storage = 0b0
+                        
+                        for index in 0..<remainder {
+                            let bytes = ptr[buffer.count - remainder + index]
 
-                var bits: Storage = 0b0
-                let end = bitmask.storageLength
+                            last |= Storage(truncatingIfNeeded: bytes) << (index * UInt8.bitWidth)
+                        }
 
-                for offset in 0..<bitsPerStorage {
-                    let index = bitmaskIndex + offset
-                    if index >= end {
-                        break
+                        arrayBuffer[count - 1] = last
                     }
 
-                    let bitIndex = offset * T.bitWidth
-                    bits |= Storage(bitmask[storageIndex: index]) << bitIndex
+                    counter = count
                 }
+            }
+        }
 
-                self[storageIndex: storageIndex] = bits
+        if let newStorage = newStorage {
+            self.init(_storage: .multiple(.init(storage: newStorage)))
+        } else {
+            self.init()
+
+            if Storage.bitWidth < T.bitWidth {
+                ensureBitCount(bitmask.bitWidth)
+                
+                let bitsPerStorage = T.bitWidth / Storage.bitWidth
+
+                var storageIndex = 0
+                for bitmaskIndex in 0..<bitmask.storageLength {
+                    let bits = bitmask[storageIndex: bitmaskIndex]
+
+                    for offset in 0..<bitsPerStorage {
+                        defer { storageIndex += 1 }
+                        let cast = Storage(truncatingIfNeeded: bits >> (offset * bitsPerStorage))
+
+                        self[storageIndex: storageIndex] = cast
+                    }
+                }
+            } else {
+                ensureBitCount(bitmask.bitWidth)
+
+                let bitsPerStorage = Storage.bitWidth / T.bitWidth
+
+                var storageIndex = 0
+                for bitmaskIndex in stride(from: 0, to: bitmask.bitWidth / bitsPerStorage, by: bitsPerStorage) {
+                    defer { storageIndex += 1 }
+
+                    var bits: Storage = 0b0
+                    let end = bitmask.storageLength
+
+                    for offset in 0..<bitsPerStorage {
+                        let index = bitmaskIndex + offset
+                        if index >= end {
+                            break
+                        }
+
+                        let bitIndex = offset * T.bitWidth
+                        bits |= Storage(bitmask[storageIndex: index]) << bitIndex
+                    }
+
+                    self[storageIndex: storageIndex] = bits
+                }
             }
         }
 
@@ -200,6 +235,13 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         bitIndex / Storage.bitWidth
     }
 
+    /// For a given bit start and count, invokes a given closure to retrieve the
+    /// storage values that correspond to the bit indices covered by
+    /// `start..<start+count`.
+    ///
+    /// The invoked closure receives a storage value, and a `start` and `count`
+    /// of its own, indicating the bit range within that storage that overlaps
+    /// the bit range that was originally requested.
     @inlinable
     func withStorageRange(
         start: Int,
@@ -223,6 +265,12 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         }
     }
 
+    /// For a given bit start and count, invokes a given closure to mutate storage
+    /// values that correspond to the bit indices covered by `start..<start+count`.
+    ///
+    /// The invoked closure receives a storage value to mutate, and a `start`
+    /// and `count` of its own, indicating the bit range within that storage that
+    /// overlaps the bit range that was originally requested.
     @inlinable
     mutating func withMutableStorageRange(
         start: Int,
@@ -415,11 +463,14 @@ public struct Bitmask<Storage: FixedWidthInteger> {
     /// The total number of bits set is always `Storage.bitWidth * self.storageLength`
     @inlinable
     public mutating func setAllBits(state: Bool) {
-        if state {
-            _storage = _Storage._unaryOp(value: _storage, op: { _ in ~0 })
-        } else {
-            _storage = _Storage._unaryOp(value: _storage, op: { _ in 0 })
-        }
+        let value: Storage = state ? ~0 : 0
+
+        _storage = .init(
+            values: .init(
+                repeating: value,
+                count: self.storageLength
+            )
+        )
     }
 
     /// Returns a copy of this bitmask object with all on bits shifted left by a
@@ -480,16 +531,14 @@ public struct Bitmask<Storage: FixedWidthInteger> {
     /// `Storage` bits capable of representing the on bits on this bitmask.
     @inlinable
     public func compacted() -> Self {
-        var copy = self
-        copy.compact()
-        return copy
+        Self(_storage: _storage.compacted())
     }
 
     /// Reduces the storage elements of this bitmask to be the minimal count of
     /// `Storage` bits capable of representing the on bits on this bitmask.
     @inlinable
     public mutating func compact() {
-        _storage.compact()
+        self = compacted()
     }
 
     /// Exposes the storage of this bitmask with a given closure, invoking it
@@ -621,9 +670,11 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 
             case .multiple(let packed):
                 if let lastNonZero = packed.storage.lastIndex(where: { $0 != 0 }) {
-                    return .multiple(.init(storage: Array(packed.storage.prefix(through: lastNonZero))))
+                    let newStorage = Array(packed.storage[...lastNonZero])
+                    
+                    return .multiple(.init(storage: newStorage))
                 } else {
-                    return .single(packed.lead)
+                    return .single(0b0)
                 }
             }
         }
@@ -706,10 +757,8 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 }
             
             case .multiple(let packed):
-                return try withUnsafePointer(to: packed) { packedPtr -> R? in
-                    return try packed.storage.withContiguousStorageIfAvailable { _storagePtr in
-                        try body(_storagePtr)
-                    }
+                return try packed.storage.withContiguousStorageIfAvailable { _storagePtr in
+                    try body(_storagePtr)
                 }
             }
         }

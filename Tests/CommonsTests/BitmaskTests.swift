@@ -1012,6 +1012,24 @@ class BitmaskTests: XCTestCase {
         assertEqual(bit1, bitmask: bitmask2)
     }
 
+    func testWithContiguousStorageIfAvailable_past64Bits() {
+        let sut = Bitmask64(bits: [
+            0xBADF00D,
+            0xF00DBAD,
+        ])
+
+        let result = sut._storage.withContiguousStorageIfAvailable { ptr -> Bool in
+            XCTAssertEqual(ptr.count, 2)
+
+            assertEqual(ptr[0], bits: 0xBADF00D)
+            assertEqual(ptr[1], bits: 0xF00DBAD)
+
+            return true
+        }
+
+        XCTAssertEqual(result, true)
+    }
+    
     func testPerformance_64BitsTo8BitsBitmask() {
         measure {
             let sut = Bitmask64(bits: [
@@ -1022,6 +1040,27 @@ class BitmaskTests: XCTestCase {
 
             for _ in 0..<iterations {
                 let _ = Bitmask8(sut)
+            }
+        }
+    }
+
+    func testPerformance_8BitsTo64BitsBitmask() {
+        measure {
+            let sut = Bitmask8(bits: [
+                0xD0,
+                0x00,
+                0xDF,
+                0xBA,
+                0xEF,
+                0xBE,
+                0xAD,
+                0xDE,
+            ])
+
+            let iterations = 10_000
+
+            for _ in 0..<iterations {
+                let _ = Bitmask64(sut)
             }
         }
     }
@@ -1051,24 +1090,6 @@ class BitmaskTests: XCTestCase {
         }
     }
 
-    func testWithContiguousStorageIfAvailable_past64Bits() {
-        let sut = Bitmask64(bits: [
-            0xBADF00D,
-            0xF00DBAD,
-        ])
-
-        let result = sut._storage.withContiguousStorageIfAvailable { ptr -> Bool in
-            XCTAssertEqual(ptr.count, 2)
-
-            assertEqual(ptr[0], bits: 0xBADF00D)
-            assertEqual(ptr[1], bits: 0xF00DBAD)
-
-            return true
-        }
-
-        XCTAssertEqual(result, true)
-    }
-    
     func testPerformance_setBitRange() {
         measure {
             let iterations = 10_000
