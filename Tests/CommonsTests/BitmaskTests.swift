@@ -355,6 +355,37 @@ class BitmaskTests: XCTestCase {
             ]
         )
     }
+
+    func testInitWithBitmask_8BitsInto64Bits_partial_small() throws {
+        let sut = Bitmask8(bits: [
+            0xD0,
+            0x00,
+            0xDF,
+            0xBA,
+        ])
+        
+        let result = Bitmask64(sut)
+
+        assertEqual(
+            result,
+            value: [
+                0xBADF00D0,
+            ]
+        )
+    }
+
+    func testInitWithBitmask_8BitsInto64Bits_empty() throws {
+        let sut = Bitmask8()
+        
+        let result = Bitmask64(sut)
+
+        assertEqual(
+            result,
+            value: [
+                0b0,
+            ]
+        )
+    }
     
     func testCodable() throws {
         let sut = Bitmask64(bits: [
