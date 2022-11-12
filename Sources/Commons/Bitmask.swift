@@ -137,7 +137,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
     /// bitmask object of arbitrary bit count.
     @inlinable
     public init<T>(_ bitmask: Bitmask<T>) {
-        let newStorage = bitmask._storage.withContiguousStorageIfAvailable { buffer in
+        let newStorage: [Storage]? = bitmask._storage.withContiguousStorageIfAvailable { buffer in
             let totalBytes = MemoryLayout<T>.size * bitmask.storageLength
             var (count, remainder) = totalBytes.quotientAndRemainder(dividingBy: MemoryLayout<Storage>.size)
 
@@ -145,7 +145,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 count += 1
             }
 
-            return [Storage](unsafeUninitializedCapacity: count) { (arrayBuffer, counter) in
+            return Array<Storage>(unsafeUninitializedCapacity: count) { (arrayBuffer, counter) in
                 buffer.withMemoryRebound(to: UInt8.self) { ptr in
                     ptr.copyBytes(to: arrayBuffer)
 
@@ -171,6 +171,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         if let newStorage = newStorage {
             self.init(_storage: .multiple(.init(storage: newStorage)))
         } else {
+            // Fallback to slower indexing method
             self.init()
 
             if Storage.bitWidth < T.bitWidth {
