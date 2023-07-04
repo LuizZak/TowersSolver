@@ -1,3 +1,5 @@
+import Foundation
+
 /// A bitmask with 8 bits of contiguous storage.
 public typealias Bitmask8 = Bitmask<UInt8>
 
@@ -726,7 +728,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
             switch self {
             case .single(let storage):
                 let newStorage = [Storage](unsafeUninitializedCapacity: count) { (buffer, bufferCount) in
-                    buffer.assign(repeating: 0b0)
+                    buffer.update(repeating: 0b0)
                     buffer[0] = storage
 
                     bufferCount = count
