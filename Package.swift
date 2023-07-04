@@ -7,8 +7,11 @@ let package = Package(
     name: "TowersSolver",
     products: [
         .executable(name: "App", targets: ["App"]),
+        .library(name: "TowersSolver", targets: ["TowersSolver"]),
         .library(name: "LoopySolver", targets: ["LoopySolver"]),
         .library(name: "NetSolver", targets: ["NetSolver"]),
+        .library(name: "SignpostSolver", targets: ["SignpostSolver"]),
+        .library(name: "PatternSolver", targets: ["PatternSolver"]),
     ],
     dependencies: [
         .package(url: "https://github.com/LuizZak/MiniLexer.git", from: "0.11.0"),
