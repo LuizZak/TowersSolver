@@ -42,6 +42,13 @@ private class InnerSolver {
         expandEnclosedSpaces()
     }
 
+    /// Expands networks of tiles when more than one 'inside' network is present,
+    /// and it has a single non-marked outer edge, indicating that the network
+    /// must span at least one face further to meet other 'inside' networks further
+    /// down.
+    ///
+    /// The same is done for 'outside' networks that are surrounded by marked
+    /// edges and a single normal edge.
     func expandEnclosedSpaces() {
         let outerFaces = outerFaces()
         let outerNetworks = toFaceNetworks(outerFaces)
