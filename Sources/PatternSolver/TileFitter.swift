@@ -294,25 +294,38 @@ private func _fitRuns<TileList: BidirectionalCollection>(
     } else {
         state = nil
     }
+    
+    var runs: [Range<Int>]
+    runs = enclosedRuns
+    runs += Array<Range<Int>>(repeating: 0..<0, count: hint.runCount - enclosedRuns.count)
 
     if
-        let nextRuns = _fitRunsRecursive(
+        _fitRunsRecursive(
             hint: hint,
             tiles: tiles,
-            state: state
+            state: state,
+            resultArray: &runs
         )
     {
-        return enclosedRuns + nextRuns
+        return runs
     }
 
     return nil
 }
 
+// Recursively fills a set of ranges fitting a particular configuration of tiles
+// and hints, from a given state.
+//
+// Returns false if no solution was found for the given configuration of hint and
+// tiles from the current state, or true if either no hints are left to fulfill,
+// or the leftmost-aligned sets of runs of dark tiles that can fulfill the hints
+// where able to be placed in `resultArray`.
 private func _fitRunsRecursive<TileList: BidirectionalCollection>(
     hint: PatternGrid.RunsHint,
     tiles: TileList,
-    state: (startHintIndex: Int, startTileIndex: Int)? = nil
-) -> [Range<Int>]? where TileList.Element == PatternTile, TileList.Index == Int {
+    state: (startHintIndex: Int, startTileIndex: Int)? = nil,
+    resultArray: inout [Range<Int>]
+) -> Bool where TileList.Element == PatternTile, TileList.Index == Int {
 
     var currentIndex = state?.startTileIndex ?? 0
 
@@ -320,14 +333,14 @@ private func _fitRunsRecursive<TileList: BidirectionalCollection>(
     if state?.startHintIndex == hint.runCount {
         // Check if remaining tiles have no dark tiles
         if currentIndex < tiles.count && tiles[currentIndex...].hasDarkTile() {
-            return nil
+            return false
         }
 
-        return []
+        return true
     }
     // No tiles available to fit!
     if state?.startTileIndex == tiles.count {
-        return nil
+        return false
     }
 
     let currentRunIndex = state?.startHintIndex ?? 0
@@ -335,7 +348,7 @@ private func _fitRunsRecursive<TileList: BidirectionalCollection>(
 
     // 0-length runs are not allowed
     if currentRunLength == 0 {
-        return nil
+        return false
     }
 
     // Fit first tile in first available space and recursively place further
@@ -345,7 +358,13 @@ private func _fitRunsRecursive<TileList: BidirectionalCollection>(
     // containing the required run.
     let lastIndex = currentIndex + tiles.count - currentRunLength
 
-    var result: [Range<Int>] = []
+    /*
+    var result = [Range<Int>](
+        repeating: 0..<0,
+        count: hint.runCount - currentRunIndex
+    )
+    */
+    var resultIndex = state?.startHintIndex ?? 0
 
     outerLoop:
     while currentIndex <= lastIndex, let nextSpaceInterval = tiles.nextAvailableSpace(fromIndex: currentIndex) {
@@ -357,7 +376,7 @@ private func _fitRunsRecursive<TileList: BidirectionalCollection>(
             // If there are any dark tiles in this section, not being
             // able to place the next necessary run results in a failure
             if nextSpaceTiles.hasDarkTile() {
-                return nil
+                return false
             }
 
             currentIndex = nextSpaceInterval.endIndex
@@ -383,20 +402,29 @@ private func _fitRunsRecursive<TileList: BidirectionalCollection>(
             // If the run of tiles succeeds a dark tile, it means this
             // run is too long and no valid solution is available.
             if index > 0 && tiles[index - 1].state == .dark {
-                return nil
+                return false
             }
 
             // Recursively fit the remaining tiles
             if
-                let rest = _fitRunsRecursive(
+                _fitRunsRecursive(
                     hint: hint,
                     tiles: tiles,
-                    state: (currentRunIndex + 1, nextRun)
+                    state: (currentRunIndex + 1, nextRun),
+                    resultArray: &resultArray
                 )
             {
-                result.append(index..<end)
-                result.append(contentsOf: rest)
-
+                /*
+                // Ensure result list contains all runs that are being queried.
+                guard rest.count == (hint.runCount - currentRunIndex) - 1 else {
+                    return false
+                }
+                */
+                
+                resultArray[resultIndex] = index..<end
+                
+                resultIndex = resultArray.count
+                
                 break
             }
 
@@ -406,21 +434,27 @@ private func _fitRunsRecursive<TileList: BidirectionalCollection>(
         }
 
         // Cannot fit tiles!
-        return nil
+        return false
+    }
+    
+    guard resultIndex == resultArray.count else {
+        return false
     }
 
+    /*
     guard result.count == (hint.runCount - currentRunIndex) else {
         return nil
     }
+    */
 
     // List of results should encompass exactly all the dark tiles that are
     // present from the requested index on the tile list onwards.
     let startTileIndex = state?.startTileIndex ?? 0
     for index in startTileIndex..<tiles.count where tiles[index].state == .dark {
-        if !result.contains(where: { $0.contains(index) }) {
-            return nil
+        if !resultArray.contains(where: { $0.contains(index) }) {
+            return false
         }
     }
     
-    return result
+    return true
 }

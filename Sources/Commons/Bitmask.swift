@@ -796,14 +796,17 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 let lStorage = lPacked.storage
                 let rStorage = rPacked.storage
 
-                let totalCount = Swift.max(lStorage.count, rStorage.count)
-                var storage = [Storage](repeating: 0b0, count: totalCount)
-
                 let minCount = Swift.min(lStorage.count, rStorage.count)
+                let totalCount = Swift.max(lStorage.count, rStorage.count)
+                
+                var storage = [Storage](repeating: 0b0, count: totalCount)
+                
+                // Fill the common storage amount
                 for index in 0..<minCount {
                     storage[index] = op(lStorage[index], rStorage[index])
                 }
-
+                
+                // Apply operator to remaining elements past minimum common storage
                 if lStorage.count > rStorage.count {
                     for index in minCount..<totalCount {
                         storage[index] = op(lStorage[index], 0b0)

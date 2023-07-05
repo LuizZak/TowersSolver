@@ -1080,11 +1080,29 @@ class TileFitterTests: XCTestCase {
             (25..<(29 + 1)),
         ])
     }
+    
+    func testLarge45RunFit() {
+        let sut = makeSut(
+            hint: [2, 1, 2, 1, 5, 2, 1, 4, 1, 4, 7, 1, 2, 2, 5],
+            tiles: tilesArray(.init(repeating: .undecided, count: 75))
+        )
+        
+        let result = sut.earliestAlignedRuns()
+        
+        XCTAssertEqual(result, [
+            (0..<(4 + 1)),
+            (8..<(18 + 1)),
+            (25..<(29 + 1)),
+        ])
+    }
 
     // MARK: - Private test factory methods
 
     private func makeSut(hint: PatternGrid.RunsHint, tiles: [PatternTile]) -> TileFitter {
-        TileFitter(hint: hint, tiles: tiles)
+        print(hint.requiredDarkTiles)
+        print(hint.requiredEmptySpace)
+        
+        return TileFitter(hint: hint, tiles: tiles)
     }
 
     private func tile(_ state: PatternTile.State) -> PatternTile {
@@ -1092,6 +1110,12 @@ class TileFitterTests: XCTestCase {
     }
 
     private func tiles(_ states: PatternTile.State...) -> [PatternTile] {
+        states.map {
+            .init(state: $0)
+        }
+    }
+    
+    private func tilesArray(_ states: [PatternTile.State]) -> [PatternTile] {
         states.map {
             .init(state: $0)
         }
