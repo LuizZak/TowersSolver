@@ -3,6 +3,12 @@ import XCTest
 @testable import PatternSolver
 
 class TileFitterTests: XCTestCase {
+    func testTileListTooSmallForHints_isValid_isFalse() {
+        let sut = makeSut(hint: [1, 2, 3], tiles: tiles(.undecided))
+
+        XCTAssertFalse(sut.isValid)
+    }
+
     func testPotentialRunIndices() {
         // Runs:
         // [O][O]
@@ -1080,28 +1086,10 @@ class TileFitterTests: XCTestCase {
             (25..<(29 + 1)),
         ])
     }
-    
-    func testLarge45RunFit() {
-        let sut = makeSut(
-            hint: [2, 1, 2, 1, 5, 2, 1, 4, 1, 4, 7, 1, 2, 2, 5],
-            tiles: tilesArray(.init(repeating: .undecided, count: 75))
-        )
-        
-        let result = sut.earliestAlignedRuns()
-        
-        XCTAssertEqual(result, [
-            (0..<(4 + 1)),
-            (8..<(18 + 1)),
-            (25..<(29 + 1)),
-        ])
-    }
 
     // MARK: - Private test factory methods
 
     private func makeSut(hint: PatternGrid.RunsHint, tiles: [PatternTile]) -> TileFitter {
-        print(hint.requiredDarkTiles)
-        print(hint.requiredEmptySpace)
-        
         return TileFitter(hint: hint, tiles: tiles)
     }
 

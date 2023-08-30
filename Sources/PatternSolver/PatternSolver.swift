@@ -3,9 +3,14 @@ import Geometry
 
 public class PatternSolver: GameSolverType {
     private var _pending: PendingCheckList
+    private var _performedGuesses: Int = 0
 
     private(set) public var state: SolverState
     private(set) public var grid: PatternGrid
+
+    /// Maximum number of guesses to apply before giving up on the resolution of
+    /// ambiguous grids.
+    public var maxGuesses: Int = 10
 
     public init(grid: PatternGrid) {
         self.grid = grid
@@ -18,13 +23,56 @@ public class PatternSolver: GameSolverType {
     public func solve() -> SolverState {
         _pending.markGridPending()
 
-        while state == .unsolved && _pending.hasPendingChecks {
-            grid = PatternSolver.analyzeGrid(grid: grid, entries: _pending)
-        }
+        repeat {
+            // Run a round of regular grid resolution
+            while _pending.hasPendingChecks {
+                grid = PatternSolver.analyzeGrid(grid: grid, entries: _pending)
+            }
 
-        updateState()
+            updateState()
+
+            guard grid.isValid() else {
+                break
+            }
+
+            // Apply a guess
+            guard _performedGuesses < maxGuesses else {
+                break
+            }
+            defer { _performedGuesses += 1 }
+
+            let guesser = PatternGuesser(grid: grid)
+            guard let guess = guesser.generateNextGuess(index: _performedGuesses) else {
+                break
+            }
+            let guessGrid = guess.applied(to: grid)
+
+            let subSolver = makeSubSolver(grid: guessGrid)
+
+            let result = subSolver.solve()
+            switch result {
+            case .solved:
+                self.grid = subSolver.grid
+                self.state = subSolver.state
+            
+            case .unsolvable, .invalid:
+                grid = PatternSolver.applyMoves(guess.invalidatingMoves, to: grid, entries: _pending)
+
+            case .unsolved:
+                break
+            }
+
+            updateState()
+        } while state != .solved && grid.isValid()
 
         return state
+    }
+
+    func makeSubSolver(grid: PatternGrid, maxGuesses: Int = 0) -> PatternSolver {
+        let subSolver = PatternSolver(grid: grid)
+        subSolver.maxGuesses = maxGuesses
+
+        return subSolver
     }
 
     func updateState() {
@@ -35,6 +83,28 @@ public class PatternSolver: GameSolverType {
         } else {
             state = .unsolved
         }
+    }
+
+    private static func applyMove(
+        _ move: PatternMove,
+        to grid: PatternGrid,
+        entries: PendingCheckList
+    ) -> PatternGrid {
+        
+        entries.markTilesPending(move.affectedTileCoordinates)
+
+        return move.applied(to: grid)
+    }
+
+    private static func applyMoves(
+        _ moves: [PatternMove],
+        to grid: PatternGrid,
+        entries: PendingCheckList
+    ) -> PatternGrid {
+        
+        entries.markTilesPending(moves.reduce([], { $0 + $1.affectedTileCoordinates }))
+
+        return moves.applied(to: grid)
     }
 
     private static func analyzeGrid(
@@ -84,6 +154,7 @@ public class PatternSolver: GameSolverType {
                 return
             }
 
+            // Run tile fitter
             let tileFitter = TileFitter(hint: hint, tiles: Array(tiles))
 
             // Mark leading/trailing tiles that are guaranteed to be light
@@ -200,17 +271,17 @@ public class PatternSolver: GameSolverType {
             _ hint: PatternGrid.RunsHint,
             _ tiles: GridTileView<PatternGrid>,
             _ setState: (_ index: Int, _ state: PatternTile.State) -> Void
-        ) throws -> Void
-    ) rethrows -> PatternGrid {
+        ) -> Void
+    ) -> PatternGrid {
 
         var grid = grid
 
-        try entries.forEachPendingColumn { column in
+        entries.forEachPendingColumn { column in
             entries.satisfyColumn(column)
 
             let hint = grid.hintForColumn(column)
 
-            try step(hint, grid.tilesInColumn(column), { (index, state) in
+            step(hint, grid.tilesInColumn(column), { (index, state) in
                 let coordinate = PatternGrid.CoordinateType(column: column, row: index)
 
                 guard grid[coordinate].state != state else {
@@ -222,12 +293,12 @@ public class PatternSolver: GameSolverType {
             })
         }
 
-        try entries.forEachPendingRow { row in
+        entries.forEachPendingRow { row in
             entries.satisfyRow(row)
 
             let hint = grid.hintForRow(row)
 
-            try step(hint, grid.tilesInRow(row), { (index, state) in
+            step(hint, grid.tilesInRow(row), { (index, state) in
                 let coordinate = PatternGrid.CoordinateType(column: index, row: row)
 
                 guard grid[coordinate].state != state else {
@@ -262,6 +333,10 @@ public class PatternSolver: GameSolverType {
 
             _columns = 0
             _rows = 0
+
+            // Ensure we have enough bits for each dimension
+            _columns.ensureCapacity(columnCount)
+            _rows.ensureCapacity(rowCount)
         }
 
         convenience init(grid: PatternGrid) {
@@ -312,6 +387,13 @@ public class PatternSolver: GameSolverType {
         /// Marks a tile as pending a check.
         func markTilePending(_ coordinate: PatternGrid.CoordinateType) {
             markTilePending(column: coordinate.column, row: coordinate.row)
+        }
+
+        /// Marks a list of tiles as pending a check.
+        func markTilesPending<S: Sequence<PatternGrid.CoordinateType>>(_ coordinates: S) {
+            for coord in coordinates {
+                markTilePending(coord)
+            }
         }
 
         /// Marks the whole set of columns and rows as pending.
