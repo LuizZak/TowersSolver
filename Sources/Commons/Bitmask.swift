@@ -530,15 +530,22 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         }
     }
 
+    /// Ensures that bitmask has at least `bitCount` number of bits available as
+    /// a backing storage after this function returns.
+    @inlinable
+    public mutating func ensureCapacity(_ bitCount: Int) {
+        ensureBitCount(bitCount)
+    }
+
     /// Returns a copy of this bitmask where the storage is the minimal count of
-    /// `Storage` bits capable of representing the on bits on this bitmask.
+    /// `Storage` bits capable of representing the `1` bits on this bitmask.
     @inlinable
     public func compacted() -> Self {
         Self(_storage: _storage.compacted())
     }
 
     /// Reduces the storage elements of this bitmask to be the minimal count of
-    /// `Storage` bits capable of representing the on bits on this bitmask.
+    /// `Storage` bits capable of representing the `1` bits on this bitmask.
     @inlinable
     public mutating func compact() {
         self = compacted()
@@ -553,8 +560,8 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         try _storage.withStorage(closure)
     }
 
-    /// Invokes a given closure for every bit index in this bitmask that are set
-    /// on, from the lowest bit index to the largest.
+    /// Invokes a given closure for every bit index in this bitmask that are `1`,
+    /// from the lowest bit index to the highest.
     @inlinable
     public func forEachOnBitIndex(_ closure: (Int) throws -> Void) rethrows {
         var totalLength: Int = 0
