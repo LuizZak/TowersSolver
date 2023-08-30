@@ -490,7 +490,7 @@ extension PatternGridPrinter {
     static func startGridY(for grid: PatternGrid) -> Int {
         // Find largest hint string for each column
         let largestColumn =
-            (0..<grid.rows)
+            (0..<grid.columns)
             .map {
                 grid.hintForColumn($0).runCount
             }

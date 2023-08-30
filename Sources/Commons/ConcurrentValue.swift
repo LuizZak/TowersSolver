@@ -40,9 +40,9 @@ public final class ConcurrentValue<T> {
     }
 
     @inlinable
-    public func modifyingValue<U>(_ block: (inout T) -> U) -> U {
-        return _lock.lockingForWrite {
-            block(&_value)
+    public func modifyingValue<U>(_ block: (inout T) throws -> U) rethrows -> U {
+        return try _lock.lockingForWrite {
+            try block(&_value)
         }
     }
 

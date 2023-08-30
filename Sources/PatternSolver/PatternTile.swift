@@ -15,6 +15,7 @@ public struct PatternTile: Hashable {
         case dark
 
         /// Returns `true` iff `self == .light`.
+        @inlinable
         public var isSeparator: Bool {
             self == .light
         }

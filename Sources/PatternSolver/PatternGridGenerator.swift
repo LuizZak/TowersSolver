@@ -17,7 +17,7 @@ public class PatternGridGenerator {
     public convenience init(gameId: String) throws {
         let parsedGame = try ParsedGame(string: gameId)
 
-        self.init(rows: parsedGame.width, columns: parsedGame.height)
+        self.init(rows: parsedGame.height, columns: parsedGame.width)
 
         try loadFromGameID(parsedGame.field)
     }
@@ -25,7 +25,7 @@ public class PatternGridGenerator {
     public func loadFromGameID(_ gameId: String) throws {
         let lexer = Lexer(input: gameId)
 
-        func readRunHints(lexer: Lexer, maximum: Int) throws -> PatternGrid.RunsHint {
+        func readRunHints(lexer: Lexer, maximum: Int, identifier: @autoclosure () -> String) throws -> PatternGrid.RunsHint {
             var hint = PatternGrid.RunsHint(runs: [])
 
             var expectsNumber = false
@@ -48,7 +48,7 @@ public class PatternGridGenerator {
 
             if hint.requiredEmptySpace > maximum {
                 throw ParseError.invalidHints(
-                    message: "Number of hints exceeds available space. Can fit up to \(maximum) but found \(hint.requiredEmptySpace)"
+                    message: "Number of hints exceeds available space. Can fit up to \(maximum) but found \(hint.requiredEmptySpace): \(hint) in \(identifier())"
                 )
             }
 
@@ -58,9 +58,13 @@ public class PatternGridGenerator {
         // Fill hints for columns and rows
         let hintsCount = columns + rows
         for index in (0..<hintsCount) {
-            let maximum = index < columns ? columns : rows
+            let maximum = index < columns ? rows : columns
 
-            try grid.hints[index] = readRunHints(lexer: lexer, maximum: maximum)
+            try grid.hints[index] = readRunHints(
+                lexer: lexer,
+                maximum: maximum,
+                identifier: index < columns ? "column \(index)" : "row \(index - columns)"
+            )
             
             if lexer.advanceIf(equals: "/") {
                 // Hints separator

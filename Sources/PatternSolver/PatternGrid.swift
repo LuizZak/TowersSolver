@@ -59,13 +59,13 @@ public struct PatternGrid: GridType {
     private mutating func initGrid() {
         tiles.removeAll()
 
-        for _ in 0..<rows {
-            let row = Array(repeating:
+        for _ in 0..<columns {
+            let column = Array(repeating:
                 PatternTile(state: .undecided),
-                count: columns
+                count: rows
             )
 
-            tiles.append(row)
+            tiles.append(column)
         }
 
         hints = Array(
