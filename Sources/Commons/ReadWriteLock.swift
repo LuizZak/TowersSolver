@@ -1,9 +1,3 @@
-#if os(Linux)
-import Glibc
-#elseif os(macOS)
-import Darwin
-#endif
-
 #if os(Windows)
 
 import WinSDK
@@ -63,6 +57,14 @@ public class ReadWriteLock {
 }
 
 #else
+
+#if os(Linux)
+import Glibc
+#elseif os(macOS)
+import Darwin
+#else
+#error("Unsupported operating system")
+#endif
 
 public class ReadWriteLock {
     var lock: pthread_rwlock_t
