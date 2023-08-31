@@ -1,3 +1,4 @@
+import Foundation
 import Commons
 import Geometry
 
@@ -267,50 +268,70 @@ public class PatternSolver: GameSolverType {
     private static func runStepAcrossLines(
         _ grid: PatternGrid,
         entries: PendingCheckList,
-        _ step: (
+        _ step: @escaping (
             _ hint: PatternGrid.RunsHint,
             _ tiles: GridTileView<PatternGrid>,
             _ setState: (_ index: Int, _ state: PatternTile.State) -> Void
         ) -> Void
     ) -> PatternGrid {
 
-        var grid = grid
+        @ConcurrentValue
+        var moves: [PatternMove] = []
 
-        entries.forEachPendingColumn { column in
-            entries.satisfyColumn(column)
-
-            let hint = grid.hintForColumn(column)
-
-            step(hint, grid.tilesInColumn(column), { (index, state) in
-                let coordinate = PatternGrid.CoordinateType(column: column, row: index)
-
+        func addMove(_ coordinate: PatternGrid.CoordinateType, setState state: PatternTile.State) {
+            _moves.modifyingValue { moves in
+                // Ignore redundant moves to avoid spurious grid invalidation
                 guard grid[coordinate].state != state else {
                     return
                 }
+                
+                switch state {
+                case .dark:
+                    moves.append(.markAsDark(grid.viewForTile(coordinate)))
+                case .light:
+                    moves.append(.markAsLight(grid.viewForTile(coordinate)))
+                case .undecided:
+                    moves.append(.markAsUndecided(grid.viewForTile(coordinate)))
+                }
+            }
+        }
 
-                grid[coordinate].state = state
-                entries.markTilePending(coordinate)
-            })
+        let parallel = ParallelQueue()
+
+        // Examine each row/column and collect potential moves
+        entries.forEachPendingColumn { column in
+            let hint = grid.hintForColumn(column)
+            let tiles = grid.tilesInColumn(column)
+
+            parallel.addBlock {
+                step(hint, tiles, { (index, state) in
+                    let coordinate = PatternGrid.CoordinateType(column: column, row: index)
+
+                    addMove(coordinate, setState: state)
+                })
+            }
         }
 
         entries.forEachPendingRow { row in
-            entries.satisfyRow(row)
-
             let hint = grid.hintForRow(row)
+            let tiles = grid.tilesInRow(row)
 
-            step(hint, grid.tilesInRow(row), { (index, state) in
-                let coordinate = PatternGrid.CoordinateType(column: index, row: row)
+            parallel.addBlock {
+                step(hint, tiles, { (index, state) in
+                    let coordinate = PatternGrid.CoordinateType(column: index, row: row)
 
-                guard grid[coordinate].state != state else {
-                    return
-                }
-
-                grid[coordinate].state = state
-                entries.markTilePending(coordinate)
-            })
+                    addMove(coordinate, setState: state)
+                })
+            }
         }
 
-        return grid
+        parallel.waitForCompletion()
+
+        // Satisfy before applying moves
+        entries.satisfyAll()
+
+        // Apply moves and return
+        return applyMoves(moves, to: grid, entries: entries)
     }
     
     /// Marks columns/rows of a grid as pending checks.
@@ -400,6 +421,28 @@ public class PatternSolver: GameSolverType {
         func markGridPending() {
             _columns.setBitRange(offset: 0, count: columnCount, state: true)
             _rows.setBitRange(offset: 0, count: rowCount, state: true)
+        }
+    }
+}
+
+private class ParallelQueue {
+    let queue: OperationQueue = OperationQueue()
+    var blocks: [() -> Void] = []
+
+    func addBlock(_ block: @escaping () -> Void) {
+        blocks.append(block)
+    }
+
+    func waitForCompletion(sequential: Bool = false) {
+        defer { blocks.removeAll() }
+
+        if sequential {
+            for block in blocks {
+                block()
+            }
+        } else {
+            blocks.forEach(queue.addOperation(_:))
+            queue.waitUntilAllOperationsAreFinished()
         }
     }
 }
