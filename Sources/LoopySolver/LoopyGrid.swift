@@ -712,6 +712,14 @@ extension LoopyGrid {
         return _ignoringDisabledEdges ? !edge.state.isEnabled : false
     }
 
+    // Public methods
+    
+    /// Returns `true` if `edgeId` refers to a valid edge within this graph.
+    @inlinable
+    public func hasEdgeId(_ edgeId: EdgeId) -> Bool {
+        edgeIds.contains(edgeId)
+    }
+
     /// Returns the state of a given edge reference
     @inlinable
     public func edgeState<E: EdgeReferenceConvertible>(forEdge edge: E) -> Edge.State {
@@ -814,6 +822,20 @@ extension LoopyGrid {
     /// If the two faces do not share an edge, nil is returned, instead.
     @inlinable
     public func sharedEdge(
+        between first: FaceId,
+        _ second: FaceId
+    ) -> Edge.Id? {
+
+        let face1 = faces[first.id.value]
+        let face2 = faces[second.id.value]
+
+        return face1.localToGlobalEdges.first(where: face2.localToGlobalEdges.contains)
+    }
+
+    /// Returns the edge ID of the shared edge between two faces.
+    /// If the two faces do not share an edge, nil is returned, instead.
+    @inlinable
+    public func sharedEdge(
         between first: FaceReferenceConvertible,
         _ second: FaceReferenceConvertible
     ) -> Edge.Id? {
@@ -827,6 +849,12 @@ extension LoopyGrid {
 
 // MARK: - Face querying methods
 extension LoopyGrid {
+    /// Returns `true` if `faceId` refers to a valid face within this graph.
+    @inlinable
+    public func hasFaceId(_ faceId: FaceId) -> Bool {
+        faceIds.contains(faceId)
+    }
+
     /// Gets the hint for a particular face in this loopy grid
     @inlinable
     public func hintForFace(_ face: FaceReferenceConvertible) -> Int? {
@@ -839,7 +867,7 @@ extension LoopyGrid {
     /// Semi complete faces have a required edge count equal to their total edge
     /// count - 1, i.e. all but one of its edges are part of the solution.
     @inlinable
-    public func isFaceSemicomplete(_ face: FaceReferenceConvertible) -> Bool {
+    public func isFaceSemiComplete(_ face: FaceReferenceConvertible) -> Bool {
         return faces[face.id.value].isSemiComplete
     }
 

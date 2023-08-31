@@ -230,7 +230,8 @@ private class InnerSolver {
         var faces: Set<LoopyGrid.FaceId>
         var state: State
 
-        /// Returns a list of edges that are shared between `self.faces` and `other.faces`.
+        /// Returns a list of edges that are shared between `self.faces` and
+        /// `other.faces`.
         ///
         /// Returns an empty set if no faces from `self` neighbor `other`.
         ///

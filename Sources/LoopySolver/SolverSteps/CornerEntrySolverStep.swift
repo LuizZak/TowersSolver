@@ -95,7 +95,7 @@ private class InternalSolver {
         // If any of the faces is semi-complete, apply a different logic here to
         // 'hijack' the line into it's own path
         if let semiComplete = grid.facesSharing(vertexIndex: vertexIndex).first(
-            where: grid.isFaceSemicomplete
+            where: grid.isFaceSemiComplete
         ) {
             if grid.isFaceSolved(semiComplete) {
                 return

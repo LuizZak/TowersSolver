@@ -200,7 +200,7 @@ private class InternalSolver {
                     // Ignore faces that contain one of the join vertices
                     .filter({ !grid.vertices(forFace: $0).contains(where: joinVertices.contains) })
 
-                if faces.contains(where: grid.isFaceSemicomplete) {
+                if faces.contains(where: grid.isFaceSemiComplete) {
                     // Hijacking!
                     // Mark outer edges as solution and quit.
                     grid.setEdges(state: .disabled, forEdges: shared)

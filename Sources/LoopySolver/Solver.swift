@@ -343,7 +343,7 @@ public final class Solver: GameSolverType {
                 }
             let semicompleteFaces =
                 grid.faceIds.count {
-                    grid.faceContainsEdge(face: $0, edge: e) && grid.isFaceSemicomplete($0)
+                    grid.faceContainsEdge(face: $0, edge: e) && grid.isFaceSemiComplete($0)
                 }
 
             let priority = hintedFaces + semicompleteFaces + 1
@@ -372,7 +372,7 @@ public final class Solver: GameSolverType {
 
             let semicompleteFaces =
                 grid.faceIds.count {
-                    grid.vertices(forFace: $0).contains(i) && grid.isFaceSemicomplete($0)
+                    grid.vertices(forFace: $0).contains(i) && grid.isFaceSemiComplete($0)
                 }
 
             let priority = hintedFaces + semicompleteFaces
@@ -394,7 +394,7 @@ public final class Solver: GameSolverType {
         }
 
         // Look for semi-complete faces that are missing one edge to solve
-        for face in grid.faceIds.sorted(by: { (l, _) in grid.isFaceSemicomplete(l) }) {
+        for face in grid.faceIds.sorted(by: { (l, _) in grid.isFaceSemiComplete(l) }) {
             let edges = grid.edges(forFace: face)
 
             if edges.count(where: { grid.edgeState(forEdge: $0) == .marked }) + 1

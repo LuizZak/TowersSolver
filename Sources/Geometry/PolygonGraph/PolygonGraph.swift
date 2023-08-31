@@ -16,6 +16,18 @@ public protocol PolygonGraph {
     /// Gets the list of vertices in this Graph
     var vertices: [Vertex] { get }
 
+    /// Returns `true` if `faceId` refers to a valid face within this graph.
+    func hasFaceId(_ faceId: FaceId) -> Bool
+
+    /// Returns `true` if `edgeId` refers to a valid edge within this graph.
+    func hasEdgeId(_ edgeId: EdgeId) -> Bool
+
+    /// Returns a subset of this graph composed of a given selection of faces in
+    /// this graph.
+    ///
+    /// - precondition: for every `face` in `faces`, `self.hasFaceId(face) == true`.
+    func subset<S: Sequence<FaceId>>(faces: S) -> PolygonGraphSubset<Self>
+
     /// Returns the index for the edge of the given vertices.
     /// Detects both direction of edges.
     /// Returns `nil`, if no edge is present between the two edges.
@@ -40,21 +52,31 @@ public protocol PolygonGraph {
     @inlinable
     func faceContainsEdge(face: FaceId, edge: EdgeId) -> Bool
 
+    /// Returns `true` if a given vertex index forms one of the vertices of a
+    /// given face.
+    @inlinable
+    func faceContainsVertex(face: FaceId, vertex: Int) -> Bool
+
     /// Returns the index of an index that matches a given vertex object.
     ///
-    /// Returns nil, in case a matching vertex is not found.
+    /// Returns `nil`, in case a matching vertex is not found.
     @inlinable
     func vertexIndex(_ vertex: Vertex) -> Int?
 
     /// Returns the index of the vertex with the given coordinates.
     ///
-    /// Returns nil, in case the coordinate does not match any vertex.
+    /// Returns `nil`, in case the coordinate does not match any vertex.
     @inlinable
     func vertexIndex(x: Vertex.Coordinate, y: Vertex.Coordinate) -> Int?
 
     /// Returns the two vertex indices for the start/end of a given edge.
     @inlinable
     func edgeVertices(forEdge edge: EdgeId) -> (start: Int, end: Int)
+
+    /// Returns the edge ID of the shared edge between two faces.
+    /// If the two faces do not share an edge, `nil` is returned, instead.
+    @inlinable
+    func sharedEdge(between first: FaceId, _ second: FaceId) -> EdgeId?
 
     /// From a starting edge in this graph, extract all connected edges that share
     /// a vertex in such a way that the connected vertex has only two edges connected.
@@ -92,12 +114,23 @@ public protocol PolygonGraph {
 
     /// Returns `true` iff all edges in a given list are connected, and they form
     /// a loop (i.e. all edges connected start-to-end).
+    ///
+    /// - note: Edges are not required to be ordered in any particular way in
+    /// the input collection.
     @inlinable
     func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId
 }
 
 // MARK: - Default Implementations
 extension PolygonGraph {
+    @inlinable
+    public func subset<S: Sequence<FaceId>>(faces: S) -> PolygonGraphSubset<Self> {
+        let faces = Set(faces)
+        precondition(faces.allSatisfy(self.hasFaceId(_:)), "faces.allSatisfy(self.hasFaceId(_:))")
+
+        return .init(graph: self, faces: faces)
+    }
+
     @inlinable
     public func vertexIndex(_ vertex: Vertex) -> Int? {
         return vertices.firstIndex(of: vertex)
@@ -109,9 +142,7 @@ extension PolygonGraph {
             v.x == x && v.y == y
         }
     }
-}
-
-extension PolygonGraph {
+    
     @inlinable
     public func linearPathGraphEdges(around face: FaceId) -> [Set<EdgeId>] {
         let edges = self.edges(forFace: face)
@@ -227,8 +258,6 @@ extension PolygonGraph {
         return true
     }
 
-    /// Returns `true` iff all edges in a given list are connected, and they form
-    /// a loop (i.e. all edges connected start-to-end).
     @inlinable
     public func isLoop<C: Collection>(_ edges: C) -> Bool where C.Element == EdgeId {
         // Minimal number of edges connected to form a loop must be 3.

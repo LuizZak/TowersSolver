@@ -16,7 +16,7 @@ public class LoopyGridController {
     /// This would be a `2`-hint on a triangle, `3` on a square face, `4` on a
     /// pentagon, etc.
     public func semiCompleteFaces() -> [Face.Id] {
-        return grid.faceIds.filter(grid.isFaceSemicomplete)
+        return grid.faceIds.filter(grid.isFaceSemiComplete)
     }
 
     public func setAllEdges(state: Edge.State) {
