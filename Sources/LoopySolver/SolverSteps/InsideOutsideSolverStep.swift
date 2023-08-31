@@ -1,3 +1,5 @@
+import Geometry
+
 /// Solver step that analyzes a grid by detecting island of faces that are either
 /// definitely inside or definitely outside of a loop, connecting neighboring
 /// islands accordingly.
@@ -163,7 +165,7 @@ private class InnerSolver {
         var result: Set<FaceNetwork> = []
 
         for neighbor in neighbors {
-            let network = FaceNetwork(faces: neighbor, state: network.state.reversed)
+            let network = FaceNetwork(subset: neighbor, state: network.state.reversed)
             result.insert(network)
         }
 
@@ -189,11 +191,11 @@ private class InnerSolver {
                 }
             }
 
-            if network.count == 1 && state == .unknown {
+            if network.faces.count == 1 && state == .unknown {
                 continue
             }
 
-            let entry = FaceNetwork(faces: network, state: state)
+            let entry = FaceNetwork(subset: network, state: state)
             result.insert(entry)
         }
 
@@ -227,8 +229,12 @@ private class InnerSolver {
 
     /// A network of faces with the associated inside/outside state
     struct FaceNetwork: Hashable {
-        var faces: Set<LoopyGrid.FaceId>
+        var subset: PolygonGraphSubset<LoopyGrid>
         var state: State
+
+        var faces: Set<LoopyGrid.FaceId> {
+            subset.faces
+        }
 
         /// Returns a list of edges that are shared between `self.faces` and
         /// `other.faces`.
@@ -297,7 +303,7 @@ private class InnerSolver {
         /// This function assumes the networks both have the same containment
         /// state `self.state`.
         func merged(with other: FaceNetwork) -> FaceNetwork {
-            FaceNetwork(faces: faces.union(other.faces), state: state)
+            FaceNetwork(subset: subset.combined(with: other.subset), state: state)
         }
 
         /// Returns a list of edges from all faces in this network that match

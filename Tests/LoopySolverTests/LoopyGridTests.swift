@@ -199,7 +199,7 @@ class LoopyGridTests: XCTestCase {
         grid.setEdges(state: .disabled, forFace: 4)
         grid.setEdges(state: .marked, forFace: 5)
 
-        XCTAssertEqual(grid.networkForFace(0).sorted(by: { $0.value < $1.value }), [
+        XCTAssertEqual(grid.networkForFace(0).faces.sorted(by: { $0.value < $1.value }), [
             0, 1, 2, 6
         ])
     }
@@ -214,7 +214,7 @@ class LoopyGridTests: XCTestCase {
 
         let result = grid.neighboringNetworksFor([0, 1, 2, 6])
 
-        XCTAssertEqual(Set(result), [
+        XCTAssertEqual(Set(result.map(\.faces)), [
             [5],
             [3, 4, 9],
         ])

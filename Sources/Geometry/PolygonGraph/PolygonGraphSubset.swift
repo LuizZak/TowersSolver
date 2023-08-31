@@ -40,6 +40,15 @@ public struct PolygonGraphSubset<Graph: PolygonGraph> {
         }
     }
 
+    /// Returns a new polygon graph subset that is the combination of the faces
+    /// in `self` and `other`.
+    ///
+    /// - precondition: `self` and `other` are subsets of the same graph.
+    @inlinable
+    public func combined(with other: Self) -> Self {
+        .init(graph: graph, faces: faces.union(other.faces))
+    }
+
     /// Returns a list of edges that are shared between `self.faces` and
     /// `other.faces`.
     ///

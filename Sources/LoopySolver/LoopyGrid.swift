@@ -1139,7 +1139,7 @@ extension LoopyGrid {
     /// Returns a list of all faces that can be reached by crossing open (`.disabled`)
     /// edges, recursively.
     @inlinable
-    public func networkForFace(_ face: FaceId) -> Set<FaceId> {
+    public func networkForFace(_ face: FaceId) -> PolygonGraphSubset<Self> {
         var visited: Set<FaceId> = []
         var queue: [FaceId] = [face]
 
@@ -1158,7 +1158,7 @@ extension LoopyGrid {
             }
         }
 
-        return result
+        return subset(faces: result)
     }
 
     /// Returns a list of networks (faces that are connected to each other) that
@@ -1167,10 +1167,10 @@ extension LoopyGrid {
     ///
     /// Neighboring networks are considered for edges that are closed (`.marked`)
     /// only.
-    func neighboringNetworksFor<S: Sequence>(_ faces: S) -> [Set<FaceId>] where S.Element == FaceId {
+    func neighboringNetworksFor<S: Sequence>(_ faces: S) -> [PolygonGraphSubset<Self>] where S.Element == FaceId {
         let initialFaces: Set<FaceId> = Set(faces)
 
-        var result: [Set<FaceId>] = []
+        var result: [PolygonGraphSubset<Self>] = []
 
         for face in faces {
             for next in facesDisconnectedTo(face) {
