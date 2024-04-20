@@ -19,6 +19,9 @@ struct TowersSolverCommand: ParsableCommand {
     @Flag(help: "Whether to colorize the output in the terminal.")
     var colorized: Bool = false
 
+    @Flag(help: "Whether to print out the grid values as a flat array of '[a, b, c, ...]' in the console.\nIf set, no other content will be printed.")
+    var printGridValues: Bool = false
+
     var interactive: Bool = false
     var descriptive: Bool = false
     
@@ -26,13 +29,28 @@ struct TowersSolverCommand: ParsableCommand {
         let game = TowersGame()
 
         let solver = try game.createSolver(fromGameId: gameId)
-        solver.gridPrinter.diffingPrint = interactive
+        solver.gridPrinter.diffingPrint = interactive && !printGridValues
         solver.gridPrinter.colorized = colorized
-        solver.interactive = interactive
-        solver.descriptive = descriptive
+        solver.interactive = interactive && !printGridValues
+        solver.descriptive = descriptive && !printGridValues
 
         let timer = Stopwatch.timing {
             solver.solve()
+        }
+
+        if printGridValues {
+            var gridValues: [Int] = []
+            for cell in solver.grid.cells {
+                guard let value = cell.solution else {
+                    print("[]")
+                    return
+                }
+
+                gridValues.append(value)
+            }
+
+            print(gridValues)
+            return
         }
 
         print("After solve:")

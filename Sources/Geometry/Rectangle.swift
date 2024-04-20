@@ -1,7 +1,7 @@
 public typealias FloatRectangle = RectangleOf<Float>
 public typealias IntRectangle = RectangleOf<Int>
 
-/// Represents a axis-aligned rectangle on a 2D plane.
+/// Represents an axis-aligned rectangle on a 2D plane.
 public struct RectangleOf<T: Numeric & Hashable & Comparable>: Hashable {
     public typealias Vector = Vector2<T>
 
