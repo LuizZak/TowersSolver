@@ -23,7 +23,7 @@ public struct PatternGrid: GridType {
         }
     }
 
-    public subscript(column column: Int, row row: Int) -> PatternTile {
+    public subscript(column column: Int, row row: Int) -> TileType {
         get {
             tiles[column][row]
         }

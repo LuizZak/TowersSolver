@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "NetSolver", targets: ["NetSolver"]),
         .library(name: "SignpostSolver", targets: ["SignpostSolver"]),
         .library(name: "PatternSolver", targets: ["PatternSolver"]),
+        .library(name: "LightUpSolver", targets: ["LightUpSolver"]),
     ],
     dependencies: [
         .package(url: "https://github.com/LuizZak/MiniLexer.git", from: "0.11.0"),
@@ -27,6 +28,7 @@ let package = Package(
         .target(name: "NetSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "SignpostSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "PatternSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
+        .target(name: "LightUpSolver", dependencies: ["Console", "Geometry", "Interval", "Commons"]),
         .target(name: "App", dependencies: [
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
             "TowersSolver",
@@ -34,6 +36,7 @@ let package = Package(
             "NetSolver",
             "SignpostSolver",
             "PatternSolver",
+            "LightUpSolver",
         ]),
         // Tests
         .testTarget(
@@ -75,6 +78,11 @@ let package = Package(
             name: "PatternSolverTests",
             dependencies: ["PatternSolver"],
             path: "Tests/PatternSolverTests"
+        ),
+        .testTarget(
+            name: "LightUpSolverTests",
+            dependencies: ["LightUpSolver"],
+            path: "Tests/LightUpSolverTests"
         ),
         .testTarget(
             name: "AppTests",

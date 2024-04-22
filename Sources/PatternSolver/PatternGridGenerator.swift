@@ -13,7 +13,7 @@ public class PatternGridGenerator {
         grid = PatternGrid(rows: rows, columns: columns)
     }
 
-    /// Loads a Signpost grid from a given game ID.
+    /// Loads a Pattern grid from a given game ID.
     public convenience init(gameId: String) throws {
         let parsedGame = try ParsedGame(string: gameId)
 

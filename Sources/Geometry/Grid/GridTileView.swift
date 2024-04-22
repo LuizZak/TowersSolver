@@ -114,6 +114,12 @@ extension GridTileView where Grid.CoordinateType == Coordinates {
             return coords
         }
     }
+
+    /// Returns an array of tuples that map each coordinate in this grid tile view
+    /// to its respective tile in the base grid.
+    public func pairs() -> [(Grid.CoordinateType, Grid.TileType)] {
+        return coordinates.map { ($0, grid[$0]) }
+    }
 }
 
 extension GridTileView: Collection {
