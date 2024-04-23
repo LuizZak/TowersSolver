@@ -14,6 +14,7 @@ struct SolveCommand: ParsableCommand {
             LoopySolverCommand.self,
             SignpostSolverCommand.self,
             PatternSolverCommand.self,
+            LightUpSolverCommand.self,
         ]
     )
     

@@ -1,6 +1,6 @@
 # TowersSolver
 
-A sample solver for [Towers](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html) (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/). Written in [Swift 5.0](https://swift.org). The project also features experimental [Loopy](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html) (or 'Slitherlink'), [Net](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html), [Pattern](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/pattern.html), and [Signpost](https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html) solvers.
+A sample solver for [Towers] (aka Skyscrapers) game, featured in [Simon Tatham's Puzzle Collection]. Written in [Swift 5.0](https://swift.org). The project also features experimental [Loopy] (or 'Slitherlink'), [Net], [Pattern], [Signpost], and [Light Up] solvers.
 
 Towers is a logic game where a _at most_ half-filled grid is presented and is to be filled with towers of height 1 through N _(N = length of square grid's side)_, such that all lines and columns have all possible tower heights, but no line or column has repeated tower heights.
 
@@ -72,6 +72,7 @@ SUBCOMMANDS:
   loopy
   signpost
   pattern
+  light-up
 
   See 'App help <subcommand>' for detailed help.
 ```
@@ -96,3 +97,11 @@ It's pretty simple, but fancy stuff. It's able to solve a pretty complex puzzle 
 ## License
 
 This is licensed under MIT license (see `LICENSE.md` for more info.)
+
+[Towers]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/towers.html
+[Simon Tatham's Puzzle Collection]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/
+[Loopy]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/loopy.html
+[Net]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/net.html
+[Pattern]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/pattern.html
+[Signpost]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/signpost.html
+[Light Up]: https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/lightup.html

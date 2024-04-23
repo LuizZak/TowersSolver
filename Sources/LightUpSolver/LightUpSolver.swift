@@ -15,7 +15,7 @@ public class LightUpSolver: GameSolverType {
 
     /// The maximum number of guesses this solver takes before giving up on
     /// ambiguous states.
-    var maxGuesses: Int = 10
+    public var maxGuesses: Int = 10
 
     var internalState: InternalState
 
