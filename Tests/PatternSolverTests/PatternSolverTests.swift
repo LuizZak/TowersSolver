@@ -1,4 +1,5 @@
 import XCTest
+import Console
 
 @testable import PatternSolver
 
@@ -380,7 +381,7 @@ class PatternSolverTests: XCTestCase {
 
 extension PatternSolverTests {
     fileprivate func printGrid(_ grid: PatternGrid) {
-        let target = TestConsolePrintTarget()
+        let target = StringBufferConsolePrintTarget()
         let gridPrinter = PatternGridPrinter(bufferForGrid: grid)
         gridPrinter.target = target
         gridPrinter.printGrid(grid: grid)

@@ -97,8 +97,7 @@ public struct LightUpGrid: GridType, Equatable {
                 }
 
             case .wall(let hint?):
-                let adjacent = tilesOrthogonallyAdjacentTo(coords)
-                let lights = adjacent.count(where: \.isLight)
+                let lights = lightsSurrounding(coords)?.count ?? 0
 
                 if lights != hint {
                     return false
@@ -120,13 +119,25 @@ public struct LightUpGrid: GridType, Equatable {
     /// 1. No light is orthogonally connected to another light without a wall in
     ///    between;
     /// 2. All walls with numeric hints have no more lights surrounding that wall
-    ///    than its numeric hint.
-    /// 3. All walls with numeric hints that have less lights surrounding them
-    ///    than their numeric hint should have the difference of `lights - hint`
-    ///    as non-wall, non-lit tiles orthogonal to the wall.
+    ///    than its numeric hint;
+    /// 3. All walls with numeric hints should have at least as many empty
+    ///    non-lit spaces surrounding them as the lights still required for that
+    ///    hint;
+    /// 4. All tiles with markers are either lit or have an unobstructed orthogonal
+    ///    path to a tile where a light can be place to illuminate them.
     func isValid() -> Bool {
         for coords in tileCoordinates {
             switch self[coords].state {
+            case .space(.marker) where !isLit(coords):
+                guard let spaces = allSpacesVisible(from: coords) else {
+                    // Marker has no reachable neighbors that can light it
+                    return false
+                }
+
+                if spaces.coordinates.count(where: canPlaceLight(on:)) == 0 {
+                    return false
+                }
+
             case .space(.light):
                 let spaces = allSpacesVisible(from: coords)
 
@@ -135,8 +146,7 @@ public struct LightUpGrid: GridType, Equatable {
                 }
 
             case .wall(let hint?):
-                let adjacent = tilesOrthogonallyAdjacentTo(coords)
-                let lights = adjacent.count(where: \.isLight)
+                let lights = lightsSurrounding(coords)?.count ?? 0
 
                 if lights > hint {
                     return false
@@ -145,10 +155,10 @@ public struct LightUpGrid: GridType, Equatable {
                     continue
                 }
 
-                let remaining = lights - hint
-                let unlit = adjacent.coordinates.count(where: { !self[$0].isWall && !isLit($0) })
+                let remainingRequired = hint - lights
+                let available = availableSpacesSurrounding(coords)?.count ?? 0
 
-                if unlit < remaining {
+                if available < remainingRequired {
                     return false
                 } 
 
@@ -160,10 +170,47 @@ public struct LightUpGrid: GridType, Equatable {
         return true
     }
 
+    /// Returns a view of light tiles that are currently orthogonally adjacent
+    /// to a tile at a given coordinate.
+    func lightsSurrounding(_ coord: Coordinates) -> GridTileView<Self>? {
+        let coordinates = tilesOrthogonallyAdjacentTo(coord).coordinates.filter({ self[$0].isLight })
+        guard !coordinates.isEmpty else {
+            return nil
+        }
+
+        return viewForCoordinates(coordinateList:
+            coordinates
+        )
+    }
+
+    /// Returns a view of tiles orthogonally adjacent to `coord` where a light
+    /// can be placed.
+    func availableSpacesSurrounding(_ coord: Coordinates) -> GridTileView<Self>? {
+        let coordinates = tilesOrthogonallyAdjacentTo(coord).coordinates.filter(canPlaceLight(on:))
+        guard !coordinates.isEmpty else {
+            return nil
+        }
+
+        return viewForCoordinates(coordinateList:
+            coordinates
+        )
+    }
+
+    /// Returns `true` if a tile at a given coordinate can be made a light, i.e.
+    /// it is an unlit empty space.
+    func canPlaceLight(on coord: Coordinates) -> Bool {
+        switch self[coord].state {
+        case .space(.empty):
+            return !isLit(coord)
+        default:
+            return false
+        }
+    }
+
     /// Returns `true` if a tile at a given coordinate is lit by a light in any
     /// of the four cardinal directions.
     ///
-    /// Also returns `true` if the tile is a light tile itself.
+    /// Also returns `true` if the tile is a light itself.
     func isLit(_ coord: Coordinates) -> Bool {
         if self[coord].isLight {
             return true
@@ -259,6 +306,23 @@ public struct LightUpGrid: GridType, Equatable {
         }
     }
 }
+
+#if DEBUG
+
+import Console
+
+extension LightUpGrid {
+    func debugPrint() {
+        let target = StringBufferConsolePrintTarget(supportsTerminalColors: true)
+        let printer = LightUpGridPrinter(bufferForGrid: self)
+        printer.target = target
+        printer.printGrid(grid: self)
+
+        print(target.buffer)
+    }
+}
+
+#endif
 
 extension GridTileView where Grid == LightUpGrid {
     /// Returns the number of free spaces in this set of tiles that a light can

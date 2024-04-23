@@ -4,9 +4,18 @@ import Geometry
 
 public class LightUpSolver: GameSolverType {
     private(set) public var state: SolverState
-    public var grid: LightUpGrid {
-        internalState.grid
+    private(set) public var grid: LightUpGrid {
+        get {
+            internalState.grid
+        }
+        set {
+            internalState.grid = newValue
+        }
     }
+
+    /// The maximum number of guesses this solver takes before giving up on
+    /// ambiguous states.
+    var maxGuesses: Int = 10
 
     var internalState: InternalState
 
@@ -15,9 +24,21 @@ public class LightUpSolver: GameSolverType {
         state = .unsolved
     }
 
+    private init(internalState: InternalState) {
+        self.internalState = internalState
+        state = .unsolved
+    }
+
+    private func makeSubSolver() -> LightUpSolver {
+        return .init(internalState: internalState.stateForSubSolver())
+    }
+
     @discardableResult
     public func solve() -> SolverState {
-        whileModifyingState {
+        whileModifyingState { changeState in
+            if state == .invalid {
+                return
+            }
             if state == .solved {
                 return
             }
@@ -25,8 +46,16 @@ public class LightUpSolver: GameSolverType {
             applyMoves(moves_applyHintMarkers())
             applyMoves(moves_satisfyCompleteHints())
             applyMoves(moves_soleLightTiles())
+            applyMoves(moves_preventUnlitMarkers())
 
             updateState()
+
+            // Guess only when state is unchanged from simple solver steps
+            guard !changeState.hasChanged() else {
+                return
+            }
+
+            applyGuesses()
         }
 
         return state
@@ -51,7 +80,7 @@ public class LightUpSolver: GameSolverType {
     }
 
     private func applyMove(_ move: LightUpMove) {
-        internalState.grid = move.applied(to: grid)
+        grid = move.applied(to: grid)
 
         switch move {
         case .markAsLight(let tiles):
@@ -63,13 +92,50 @@ public class LightUpSolver: GameSolverType {
                     }
 
                     for coord in neighbors.coordinates {
-                        internalState.grid[coord].state = .space(.marker)
+                        grid[coord].state = .space(.marker)
                     }
                 }
             }
 
         default:
             break
+        }
+    }
+
+    private func applyGuesses() {
+        // Only root solver can apply guesses
+        guard !internalState.isSubSolver else {
+            return
+        }
+
+        var guesses = generateGuesses()
+
+        while !guesses.isEmpty && internalState.guessesTaken <= maxGuesses {
+            defer { internalState.guessesTaken += 1 }
+
+            let guess = guesses.removeFirst()
+
+            // Use sub-solver to inspect guess move
+            let subSolver = makeSubSolver()
+            subSolver.applyMove(guess.asLightUpMove(on: subSolver.grid))
+
+            switch subSolver.solve() {
+            case .invalid:
+                // Invert move and apply change
+                if let inverted = guess.inverted {
+                    applyMove(inverted.asLightUpMove(on: grid))
+                    return
+                }
+
+            case .solved:
+                // Adopt sub-solver state
+                grid = subSolver.grid
+                state = subSolver.state
+                return
+
+            case .unsolvable, .unsolved:
+                break
+            }
         }
     }
 
@@ -87,8 +153,7 @@ public class LightUpSolver: GameSolverType {
                 result.append(.markAsMarker(grid.tilesOrthogonallyAdjacentTo(coords)))
             
             case .wall(1):
-                let adjacent = grid.tilesOrthogonallyAdjacentTo(coords)
-                let lightCount = adjacent.count(where: \.isLight)
+                let lightCount = grid.lightsSurrounding(coords)?.count ?? 0
                 if lightCount == 1 {
                     break
                 }
@@ -96,17 +161,21 @@ public class LightUpSolver: GameSolverType {
                 // 1 hint: If only two available tiles exist and they share an
                 // adjacent tile, then that adjacent tile cannot be a light as
                 // it would invalidate the hint.
-                let available = adjacent.coordinates.filter({ grid[$0].isEmpty && !grid.isLit($0) })
+                guard let available = grid.availableSpacesSurrounding(coords)?.coordinates else {
+                    break
+                }
 
-                if available.count == 2 && grid.areDiagonallyAdjacent(available[0], available[1]) {
+                if
+                    available.count == 2,
+                    let diagonal = grid.orthogonalTileTo(
+                        diagonal1: available[0],
+                        diagonal2: available[1],
+                        ignoring: coords
+                    )
+                {
                     // The diagonal tile is the one that has the column of one of
                     // the tiles and the row of the other. One of the two possible
                     // combinations is the 1-hint wall itself
-                    let diagonal1 = grid.makeCoordinates(column: available[0].column, row: available[1].row)
-                    let diagonal2 = grid.makeCoordinates(column: available[1].column, row: available[0].row)
-
-                    let diagonal = diagonal1 == coords ? diagonal2 : diagonal1
-
                     result.append(.markAsMarker(grid.viewForTile(diagonal)))
                 }
             
@@ -126,9 +195,9 @@ public class LightUpSolver: GameSolverType {
                 }
 
                 // 2 hint extended: If exactly one orthogonally adjacent tile is
-                // a wall, the diagonals that are adjacent to two free spaces
-                // cannot be lights
-                let walls = orthogonal.coordinates.filter { grid[$0].isWall }
+                // a wall or is lit from another tile, the diagonals that are
+                // adjacent to two free spaces cannot be lights
+                let walls = orthogonal.coordinates.filter { grid[$0].isWall || (grid.isLit($0) && !grid[$0].isLight) }
                 if walls.count == 1 {
                     let wall = walls[0]
                     let diagonals = grid.tilesDiagonallyAdjacentTo(coords).coordinates.filter {
@@ -152,6 +221,58 @@ public class LightUpSolver: GameSolverType {
 
             default:
                 break
+            }
+        }
+
+        return result
+    }
+
+    /// Apply markers to neighbors of marker tiles to prevent a light placement
+    /// from ruling out ways to light the marker itself.
+    /// 
+    /// Considering the following example:
+    /// ```
+    /// | x |   |
+    /// |   |   |
+    /// ```
+    /// 
+    /// Placement of a light on the bottom-right tile would prevent the marker
+    /// tile from being lit by either of its adjacent tiles, so it must not be
+    /// a light:
+    /// 
+    /// ```
+    /// | x |   |
+    /// |   | x |
+    /// ```
+    private func moves_preventUnlitMarkers() -> [LightUpMove] {
+        var result: [LightUpMove] = []
+
+        for coords in grid.tileCoordinates where grid[coords].isMarker && !grid.isLit(coords) {
+            let available = grid
+                .tilesOrthogonallyAdjacentTo(coords)
+                .coordinates.filter({ !grid.isLit($0) && grid[$0].isEmpty })
+
+            // Must have exactly two empty adjacent spaces
+            guard available.count == 2 else {
+                continue
+            }
+
+            // Set of tiles that can light the marker must be equal to the adjacent
+            // tiles themselves
+            guard let visible = grid.allSpacesVisible(from: coords) else {
+                continue
+            }
+            guard Set(visible.coordinates.filter(grid.canPlaceLight(on:))) == Set(available) else {
+                continue
+            }
+
+            // Tiles must be diagonal to each other
+            guard let shared = grid.orthogonalTileTo(diagonal1: available[0], diagonal2: available[1], ignoring: coords) else {
+                continue
+            }
+
+            if grid[shared].isEmpty {
+                result.append(.markAsMarker(grid.viewForTile(shared)))
             }
         }
 
@@ -220,13 +341,47 @@ public class LightUpSolver: GameSolverType {
         return result
     }
 
-    private func whileModifyingState(_ block: () -> Void) {
+    /// Generates an array of all potential guess move from the current grid state.
+    /// 
+    /// Returns an empty array if no move can be made from the current grid state.
+    private func generateGuesses() -> [Guess] {
+        var guesses: [Guess] = []
+
+        for coord in grid.tileCoordinates {
+            switch grid[coord].state {
+            case .wall(let hint?):
+                guard (grid.lightsSurrounding(coord)?.count ?? 0) < hint else {
+                    continue
+                }
+                guard let available = grid.availableSpacesSurrounding(coord) else {
+                    continue
+                }
+                
+                // Guesses for hinted tiles take priority over empty space guesses
+                for coord in available.coordinates {
+                    guesses.insert(.markAsLight(coord), at: 0)
+                }
+            
+            case .space(.empty):
+                guesses.append(
+                    .markAsLight(coord)
+                )
+
+            default:
+                continue
+            }
+        }
+
+        return guesses
+    }
+
+    private func whileModifyingState(_ block: (ChangeWatcher) -> Void) {
         while true {
-            let start = internalState
+            let changed = ChangeWatcher(solver: self)
 
-            block()
+            block(changed)
 
-            if !internalState.changed(from: start) {
+            if !changed.hasChanged() {
                 break
             }
         }
@@ -234,9 +389,71 @@ public class LightUpSolver: GameSolverType {
 
     struct InternalState {
         var grid: LightUpGrid
+        var guessesTaken: Int = 0
+        var isSubSolver: Bool = false
 
         func changed(from other: InternalState) -> Bool {
             return other.grid != grid
         }
+
+        func stateForSubSolver() -> InternalState {
+            .init(grid: grid, guessesTaken: guessesTaken, isSubSolver: true)
+        }
+    }
+
+    private class ChangeWatcher {
+        var initialState: InternalState
+        var solver: LightUpSolver
+
+        init(solver: LightUpSolver) {
+            self.initialState = solver.internalState
+            self.solver = solver
+        }
+
+        func hasChanged() -> Bool {
+            solver.internalState.changed(from: initialState)
+        }
+    }
+
+    private enum Guess {
+        case markAsLight(Coordinates)
+        case markAsMarker(Coordinates)
+
+        /// Returns a logical inversion of this guess.
+        /// For `Guess.markAsMarker(coords)`, returns `.Guess(coords)`,
+        /// and for `Guess.markAsLight(coords)`, returns `.Guess(coords)`.
+        var inverted: Self? {
+            switch self {
+            case .markAsMarker(let coords):
+                return .markAsLight(coords)
+            case .markAsLight(let coords):
+                return .markAsMarker(coords)
+            }
+        }
+
+        func asLightUpMove(on grid: LightUpGrid) -> LightUpMove {
+            switch self {
+            case .markAsLight(let coords):
+                return .markAsLight(grid.viewForTile(coords))
+            case .markAsMarker(let coords):
+                return .markAsMarker(grid.viewForTile(coords))
+            }
+        }
+    }
+}
+
+extension LightUpGrid {
+    /// Returns the tile that two diagonally adjacent tiles share their edge with,
+    /// ignoring one of the potential tile coordinates.
+    /// Returns `nil` if the tiles are not diagonally adjacent.
+    func orthogonalTileTo(diagonal1: Coordinates, diagonal2: Coordinates, ignoring ignore: Coordinates) -> Coordinates? {
+        guard areDiagonallyAdjacent(diagonal1, diagonal2) else {
+            return nil
+        }
+
+        let adjacent1 = makeCoordinates(column: diagonal1.column, row: diagonal2.row)
+        let adjacent2 = makeCoordinates(column: diagonal2.column, row: diagonal1.row)
+        
+        return adjacent1 == ignore ? adjacent2 : adjacent1
     }
 }

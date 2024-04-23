@@ -2,6 +2,15 @@ import Geometry
 
 /// Represents an atomic change on a light up grid.
 public enum LightUpMove {
+    /// A move where a subset of grid tiles are marked as a maker.
+    case markAsMarker(_ gridTiles: GridTileView<LightUpGrid>)
+
+    /// A move where a subset of grid tiles are marked as light.
+    case markAsLight(_ gridTiles: GridTileView<LightUpGrid>)
+
+    /// A move where a subset of grid tiles are marked as empty.
+    case markAsEmpty(_ gridTiles: GridTileView<LightUpGrid>)
+
     /// Returns the list of affected tile coordinates that are referenced by this
     /// move.
     public var affectedTileCoordinates: [LightUpGrid.CoordinateType] {
@@ -13,15 +22,6 @@ public enum LightUpMove {
             return gridTiles.coordinates
         }
     }
-
-    /// A move where a subset of grid tiles are marked as a maker.
-    case markAsMarker(_ gridTiles: GridTileView<LightUpGrid>)
-
-    /// A move where a subset of grid tiles are marked as light.
-    case markAsLight(_ gridTiles: GridTileView<LightUpGrid>)
-
-    /// A move where a subset of grid tiles are marked as empty.
-    case markAsEmpty(_ gridTiles: GridTileView<LightUpGrid>)
 
     /// Returns the result of applying this move to given grid.
     public func applied(to grid: LightUpGrid) -> LightUpGrid {

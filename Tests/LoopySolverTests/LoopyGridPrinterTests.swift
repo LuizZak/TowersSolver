@@ -5,12 +5,12 @@ import XCTest
 @testable import LoopySolver
 
 class LoopyGridPrinterTests: XCTestCase {
-    private var target: TestConsolePrintTarget!
+    private var target: StringBufferConsolePrintTarget!
 
     override func setUp() {
         super.setUp()
 
-        target = TestConsolePrintTarget()
+        target = StringBufferConsolePrintTarget()
     }
 
     func testPrintEdgeIndices() {
@@ -309,17 +309,5 @@ extension LoopyGridPrinterTests {
                 line: line
             )
         }
-    }
-}
-
-private class TestConsolePrintTarget: ConsolePrintTarget {
-    let supportsTerminalColors = false
-
-    var buffer: String = ""
-
-    func print(_ values: [Any], separator: String, terminator: String) {
-        let total = values.map { String(describing: $0) }.joined(separator: separator)
-
-        Swift.print(total, terminator: terminator, to: &buffer)
     }
 }

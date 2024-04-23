@@ -4,12 +4,12 @@ import Console
 @testable import SignpostSolver
 
 class SignpostGridPrinterTests: XCTestCase {
-    private var target: TestConsolePrintTarget!
+    private var target: StringBufferConsolePrintTarget!
 
     override func setUp() {
         super.setUp()
 
-        target = TestConsolePrintTarget()
+        target = StringBufferConsolePrintTarget()
     }
 
     func testPrintGrid_3x3_unsolved() {
@@ -186,19 +186,5 @@ class SignpostGridPrinterTests: XCTestCase {
 
             """
         )
-    }
-}
-
-internal class TestConsolePrintTarget: ConsolePrintTarget {
-    var supportsTerminalColors: Bool {
-        return false
-    }
-
-    var buffer: String = ""
-
-    func print(_ values: [Any], separator: String, terminator: String) {
-        let total = values.map { String(describing: $0) }.joined(separator: separator)
-
-        Swift.print(total, terminator: terminator, to: &buffer)
     }
 }

@@ -1,4 +1,5 @@
 import NetSolver
+import Console
 import XCTest
 
 class SolverTests: XCTestCase {
@@ -145,7 +146,7 @@ class SolverTests: XCTestCase {
 
 extension SolverTests {
     fileprivate func printGrid(_ grid: Grid) {
-        let target = TestConsolePrintTarget()
+        let target = StringBufferConsolePrintTarget()
         let gridPrinter = NetGridPrinter(bufferForGridWidth: grid.columns, height: grid.rows)
         gridPrinter.target = target
         gridPrinter.printGrid(grid: grid)

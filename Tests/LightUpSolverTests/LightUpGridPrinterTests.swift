@@ -1,14 +1,15 @@
 import XCTest
+import Console
 
 @testable import LightUpSolver
 
 class LightUpGridPrinterTests: XCTestCase {
-    private var target: TestConsolePrintTarget!
+    private var target: StringBufferConsolePrintTarget!
 
     override func setUp() {
         super.setUp()
 
-        target = TestConsolePrintTarget()
+        target = StringBufferConsolePrintTarget()
     }
 
     func testPrintGrid() throws {

@@ -4,12 +4,12 @@ import Console
 @testable import PatternSolver
 
 class PatternGridPrinterTests: XCTestCase {
-    private var target: TestConsolePrintTarget!
+    private var target: StringBufferConsolePrintTarget!
 
     override func setUp() {
         super.setUp()
 
-        target = TestConsolePrintTarget()
+        target = StringBufferConsolePrintTarget()
     }
 
     func testPrintGrid_5x5() throws {
