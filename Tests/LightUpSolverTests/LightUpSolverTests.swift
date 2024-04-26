@@ -94,7 +94,7 @@ class LightUpSolverTests: XCTestCase {
         ])
     }
 
-    func testSolve_20x20_hard() throws {
+    func testSolve_20x20_hard_1() throws {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/lightup.html#20x20:Ba0cBBBb1cBBa1aBdBaBaBb1c1cBd1cBbBg2e0c0d1eBBBbBBBBc1Bd0BBb2aBaBc1BbBcBBBBl1b2b1aBc1b1b1iBc1BBcBc0bBeBbBB2g1B2aBaBdBb11bBaBaBaBaBdBcBBbBaBBaBaB1eBd3aBgBjBa2a0iBeB1h3bBB0c1BbBbBdBBjBdBeBe1b3b2a2bBc3i0cBc1Ba2cB
         let gameID = "20x20:Ba0cBBBb1cBBa1aBdBaBaBb1c1cBd1cBbBg2e0c0d1eBBBbBBBBc1Bd0BBb2aBaBc1BbBcBBBBl1b2b1aBc1b1b1iBc1BBcBc0bBeBbBB2g1B2aBaBdBb11bBaBaBaBaBdBcBBbBaBBaBaB1eBd3aBgBjBa2a0iBeB1h3bBB0c1BbBbBdBBjBdBeBe1b3b2a2bBc3i0cBc1Ba2cB"
@@ -128,6 +128,43 @@ class LightUpSolverTests: XCTestCase {
             [s, s, s, s, s, l, s, s, s, s, s, s, s, s, s, s, s, s, s, s],
             [1, s, s, s, s, s, l, s, 0, s, b, l, 3, l, s, 1, l, s, s, s],
             [l, s, s, s, 0, s, 2, l, s, s, s, b, l, b, b, b, s, 1, l, b],
+        ])
+    }
+
+    func testSolve_20x20_hard_2() throws {
+        // Game available at:
+        // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/lightup.html#20x20:0Ba0cBBBcBbB0f1d1bBhBb1d1g0bBa3bBBbBc01BhBb11cB0c0B1d2gBfBnBeB0f1aBf2lBb0dB2bBa1a1a2BaBd1BcBaBbBb1a0b0gBaBBbBb1g0dBb11Be1a0c2BBbBe2eBdB1bBb0BcBc3cBdBaBbBa0h0aBbB1b0dBBbBB0dBBBaBdBB2BaB0b1iBBBaBg2aBa0a1b1B
+        let gameID = "20x20:0Ba0cBBBcBbB0f1d1bBhBb1d1g0bBa3bBBbBc01BhBb11cB0c0B1d2gBfBnBeB0f1aBf2lBb0dB2bBa1a1a2BaBd1BcBaBbBb1a0b0gBaBBbBb1g0dBb11Be1a0c2BBbBe2eBdB1bBb0BcBc3cBdBaBbBa0h0aBbB1b0dBBbBB0dBBBaBdBB2BaB0b1iBBBaBg2aBa0a1b1B"
+        let grid = try LightUpGridGenerator(gameId: gameID).grid
+        let sut = LightUpSolver(grid: grid)
+        sut.maxGuesses = 20
+
+        let result = sut.solve()
+
+        XCTAssertEqual(result, .solved)
+        XCTAssertEqual(sut.state, .solved)
+        XCTAssertEqual(sut.internalState.guessesTaken, 19)
+        assertGridEquals(sut.grid, [
+            [0, s, l, b, s, s, s, b, s, s, s, s, s, s, s, s, s, l, 2, l],
+            [b, l, b, l, s, s, s, 0, s, l, b, s, l, 2, l, s, s, s, b, b],
+            [s, s, l, 3, l, s, s, s, s, b, l, b, s, b, s, s, l, b, l, s],
+            [0, s, s, s, s, l, s, s, s, s, b, l, s, b, b, b, s, b, b, s],
+            [s, 1, 1, l, b, 2, l, s, s, 1, l, b, b, l, 1, s, 0, 0, 0, s],
+            [s, l, s, b, s, s, s, s, l, s, s, b, s, s, s, l, s, s, s, s],
+            [l, s, s, b, s, s, s, l, s, 1, b, s, l, b, l, s, b, s, l, s],
+            [b, s, s, l, 1, s, s, s, s, l, s, s, 1, s, b, s, l, s, 1, s],
+            [b, s, l, s, 1, l, s, 1, s, 2, l, b, 1, l, s, b, s, s, s, l],
+            [b, 1, 1, b, s, s, s, l, s, b, 1, s, b, s, s, l, b, b, s, 2],
+            [s, l, s, s, s, s, s, b, b, s, s, l, s, s, 0, b, 1, b, s, l],
+            [s, s, s, l, s, s, s, s, s, b, 0, 1, s, s, b, s, l, b, s, b],
+            [l, b, s, s, b, b, s, s, s, s, s, s, l, 2, l, s, s, s, s, s],
+            [b, s, s, 0, 0, s, s, s, 0, s, s, l, s, s, s, b, 0, b, s, 0],
+            [s, s, l, 1, s, l, b, s, s, s, 0, s, s, s, s, s, s, l, s, s],
+            [l, s, s, b, s, s, s, s, s, l, s, s, 1, l, b, 0, s, s, l, 1],
+            [b, s, s, s, s, s, s, l, s, 1, s, s, s, s, s, s, l, s, s, s],
+            [0, s, 0, s, 0, s, s, 2, l, b, s, s, 0, s, s, s, s, s, b, l],
+            [s, l, s, s, b, s, l, s, b, s, l, s, s, b, l, s, b, b, b, 1],
+            [s, s, s, l, 1, b, s, l, 2, l, s, 0, s, l, 3, l, b, b, b, b],
         ])
     }
 

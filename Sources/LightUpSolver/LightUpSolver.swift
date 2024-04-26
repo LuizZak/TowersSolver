@@ -110,7 +110,7 @@ public class LightUpSolver: GameSolverType {
 
         var guesses = generateGuesses()
 
-        while !guesses.isEmpty && internalState.guessesTaken <= maxGuesses {
+        while !guesses.isEmpty && internalState.guessesTaken < maxGuesses {
             defer { internalState.guessesTaken += 1 }
 
             let guess = guesses.removeFirst()
