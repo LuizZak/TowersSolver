@@ -22,7 +22,7 @@ class PatternSolverTests: XCTestCase {
 
         printGrid(sut.grid)
     }
-    
+
     func testSolve_10x10() throws {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/pattern.html#10x10:5/5/4/4.5/3.3.1/1.3/2.2/6/2.1.1/2/5.4/5.4/5.1/4.1.1/2.2/6/3/3/1/2.1
@@ -87,7 +87,7 @@ class PatternSolverTests: XCTestCase {
 
         printGrid(sut.grid)
     }
-    
+
     func testSolve_15x20() throws {
         // Game available at:
         // https://www.chiark.greenend.org.uk/~sgtatham/puzzles/js/pattern.html#15x20:3.1/3.1.2/1.4.3/1.4.4/1.3.4.4/1.4.3.4/2.4.4.3/3.5.2.3/3.8.6/11.1.1/11.3/11.1/2.1.1/3.2.3/1.1.3/2.9.2/2.6.1/2.5.2/3/1.1.4/3.6/10/7/7/5.2/2.8/3.1.2/6.2/5/5/4/3.1/7.1/8.1/11
@@ -95,7 +95,7 @@ class PatternSolverTests: XCTestCase {
         let gen = try PatternGridGenerator(gameId: """
             15x20:3.1/3.1.2/1.4.3/1.4.4/1.3.4.4/1.4.3.4/2.4.4.3/3.5.2.3/3.8.6/11.1.1/11.3/11.1/2.1.1/3.2.3/1.1.3/2.9.2/2.6.1/2.5.2/3/1.1.4/3.6/10/7/7/5.2/2.8/3.1.2/6.2/5/5/4/3.1/7.1/8.1/11
             """)
-        
+
         let sut = PatternSolver(grid: gen.grid)
 
         XCTAssertEqual(sut.solve(), .solved)
@@ -142,7 +142,7 @@ class PatternSolverTests: XCTestCase {
             1.2.1.6.6/1.1.1.2.1.1.3.6/3.6.2.6/5.3.4/3.3.4.3.3/3.4.7.3/1.1.12.3/\
             17/1.6.7/1.2.6.5/4.8.6/3.2.1.1.1/4/5/2.1.7/2.2.7.2
             """)
-        
+
         let sut = PatternSolver(grid: gen.grid)
 
         XCTAssertEqual(sut.solve(), .solved)
@@ -201,11 +201,11 @@ class PatternSolverTests: XCTestCase {
             3.1.1.1.1.4.6.1.1/3.1.1.9.6/5.11.5/5.7.3.5/6.3.1.3.4.1/1.5.1.8/\
             1.1.4.1.1.1/2.1.1.8.2
             """)
-        
+
         let sut = PatternSolver(grid: gen.grid)
 
         XCTAssertEqual(sut.solve(), .solved)
-        
+
         assertStatesMatch(sut.grid, [
             //
             0b00000_00000_00001_11110_00110_00111_00111,
@@ -275,7 +275,7 @@ class PatternSolverTests: XCTestCase {
             1.1.4.1.1.17.1/1.1.7.2.10.1/15.1.5/6.7.4.1/2.8.1.3.2.1.3.1/1.3.7.2.4.2/\
             14.5.1.7/15.4.4.7
             """)
-        
+
         let sut = PatternSolver(grid: gen.grid)
 
         XCTAssertEqual(sut.solve(), .solved)
@@ -333,11 +333,11 @@ class PatternSolverTests: XCTestCase {
 
         printGrid(sut.grid)
     }
-    
+
     func test_45x75LightBulb() throws {
-        // This pattern was aquired from a Nanogram website, contributed by a
+        // This pattern was acquired from a Nanogram website, contributed by a
         // community member, but I've since lost the original source link. Any
-        // hints as to the original author for proper credit are apreciated.
+        // hints as to the original author for proper credit are appreciated.
         let gen = try PatternGridGenerator(gameId: """
             45x75:27/4.4.10.4/15.3.1.3/13.4.2.3.3/5.5.3.3.5.3/9.1.4.7.3/8.2.2.8.2/\
             7.1.2.1.10.3/1.4.3.1.10.3/5.3.1.4.7.5/4.4.2.8.5.4/3.3.3.7.8.9.1/\
@@ -369,12 +369,12 @@ class PatternSolverTests: XCTestCase {
             1.1.5.4.1.1/7.2.5.2/1.10.1.1/1.1.2/5.7/1.5.2/1.7.3/4.4.1/2.8.1/\
             1.7.2/4.4.2/3.5.3/1.7.3/5.3.1/2.1.3.1/2.5.3/5.5/3.3.2/2.1.1/6
             """)
-        
+
         let sut = PatternSolver(grid: gen.grid)
-        
+
         XCTAssertEqual(sut.solve(), .solved)
         XCTAssertTrue(sut.state != .invalid && sut.state != .unsolvable)
-        
+
         printGrid(sut.grid)
     }
 }

@@ -121,7 +121,7 @@ struct TowerVisibilityNode {
         }
     }
 
-    /// Gets the depth of this node's tree. Always > 1.
+    /// Gets the depth of this node's tree. Always > 0.
     func depth() -> Int {
         var depth = 0
         for child in children {

@@ -35,7 +35,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
 
     /// Indexes using 0-based storage index. 0 index into `self._storage`, while
     /// indices 1 or greater index into `_remaining` array with a -1 offset
-    /// 
+    ///
     /// Indices past `self.storageLength` result in a return value of `0`.
     @usableFromInline
     subscript(safeStorageIndex storageIndex: Int) -> Storage {
@@ -155,7 +155,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                     // transformed into a whole Storage value.
                     if remainder > 0 {
                         var last: Storage = 0b0
-                        
+
                         for index in 0..<remainder {
                             let bytes = ptr[buffer.count - remainder + index]
 
@@ -178,7 +178,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
 
             if Storage.bitWidth < T.bitWidth {
                 ensureBitCount(bitmask.bitWidth)
-                
+
                 let bitsPerStorage = T.bitWidth / Storage.bitWidth
 
                 var storageIndex = 0
@@ -424,7 +424,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
     @inlinable
     public mutating func setBitOff(_ index: Int) {
         ensureBitCount(index + 1)
-        
+
         let modBit = index % Storage.bitWidth
         let mask: Storage = 0b1 << modBit
         let storageIndex = storageIndex(for: index)
@@ -452,7 +452,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         withMutableStorageRange(start: offset, count: count) { (bits, offset, count) in
             var mask: Storage = ~0 >> (Storage.bitWidth - count)
             mask = mask << Storage(offset)
-            
+
             if state {
                 bits |= mask
             } else {
@@ -613,7 +613,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
         var startIndex: Int {
             0
         }
-        
+
         @inlinable
         var endIndex: Int {
             switch self {
@@ -677,11 +677,11 @@ public struct Bitmask<Storage: FixedWidthInteger> {
             switch self {
             case .single:
                 return self
-                
+
             case .multiple(let packed):
                 if let lastNonZero = packed.storage.lastIndex(where: { $0 != 0 }) {
                     let newStorage = Array(packed.storage[...lastNonZero])
-                    
+
                     return .multiple(.init(storage: newStorage))
                 } else {
                     return .single(0b0)
@@ -712,13 +712,13 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 self = .init(values: Array(self.dropFirst(-count)))
             }
         }
-        
+
         @inlinable
         func withStorage(_ closure: (Storage) throws -> Void) rethrows {
             switch self {
             case .single(let value):
                 try closure(value)
-            
+
             case .multiple(let packed):
                 for entry in packed.storage {
                     try closure(entry)
@@ -740,13 +740,13 @@ public struct Bitmask<Storage: FixedWidthInteger> {
 
                     bufferCount = count
                 }
-                
+
                 self = .multiple(
                     .init(
                         storage: newStorage
                     )
                 )
-            
+
             case .multiple(var packed):
                 let extraStorage = count - packed.storage.count
 
@@ -765,7 +765,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                     let buffer = UnsafeBufferPointer(start: ptr, count: 1)
                     return try body(buffer)
                 }
-            
+
             case .multiple(let packed):
                 return try packed.storage.withContiguousStorageIfAvailable { _storagePtr in
                     try body(_storagePtr)
@@ -778,7 +778,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
             switch (lhs, rhs) {
             case (.single(let lValue), .single(let rValue)):
                 return .single(op(lValue, rValue))
-            
+
             case (.single(let lValue), .multiple(let rPacked)):
                 var storage = [Storage](repeating: 0b0, count: rPacked.storage.count)
                 storage[0] = op(lValue, rPacked.lead)
@@ -788,7 +788,7 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 }
 
                 return .multiple(.init(storage: storage))
-            
+
             case (.multiple(let lPacked), .single(let rValue)):
                 var storage = [Storage](repeating: 0b0, count: lPacked.storage.count)
                 storage[0] = op(lPacked.lead, rValue)
@@ -798,21 +798,21 @@ public struct Bitmask<Storage: FixedWidthInteger> {
                 }
 
                 return .multiple(.init(storage: storage))
-            
+
             case (.multiple(let lPacked), .multiple(let rPacked)):
                 let lStorage = lPacked.storage
                 let rStorage = rPacked.storage
 
                 let minCount = Swift.min(lStorage.count, rStorage.count)
                 let totalCount = Swift.max(lStorage.count, rStorage.count)
-                
+
                 var storage = [Storage](repeating: 0b0, count: totalCount)
-                
+
                 // Fill the common storage amount
                 for index in 0..<minCount {
                     storage[index] = op(lStorage[index], rStorage[index])
                 }
-                
+
                 // Apply operator to remaining elements past minimum common storage
                 if lStorage.count > rStorage.count {
                     for index in minCount..<totalCount {
@@ -903,7 +903,7 @@ extension Bitmask: Decodable where Storage: Decodable {
                 .init(codingPath: [], debugDescription: "Expected proper collection of \(Storage.self) values")
             )
         }
-        
+
         self.init()
 
         self.ensureBitCount(count * Storage.bitWidth)
@@ -1009,7 +1009,7 @@ public extension Bitmask {
         _ value: Self,
         op: (Storage) -> Storage
     ) -> Self {
-        
+
         Self(_storage: _Storage._unaryOp(value: value._storage, op: op))
     }
 }

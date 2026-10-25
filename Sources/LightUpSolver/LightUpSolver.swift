@@ -151,7 +151,7 @@ public class LightUpSolver: GameSolverType {
             case .wall(0):
                 // 0 hint: orthogonal tiles cannot be lights
                 result.append(.markAsMarker(grid.tilesOrthogonallyAdjacentTo(coords)))
-            
+
             case .wall(1):
                 let lightCount = grid.lightsSurrounding(coords)?.count ?? 0
                 if lightCount == 1 {
@@ -178,7 +178,7 @@ public class LightUpSolver: GameSolverType {
                     // combinations is the 1-hint wall itself
                     result.append(.markAsMarker(grid.viewForTile(diagonal)))
                 }
-            
+
             case .wall(2):
                 let orthogonal = grid.tilesOrthogonallyAdjacentTo(coords)
 
@@ -229,17 +229,17 @@ public class LightUpSolver: GameSolverType {
 
     /// Apply markers to neighbors of marker tiles to prevent a light placement
     /// from ruling out ways to light the marker itself.
-    /// 
+    ///
     /// Considering the following example:
     /// ```
     /// | x |   |
     /// |   |   |
     /// ```
-    /// 
+    ///
     /// Placement of a light on the bottom-right tile would prevent the marker
     /// tile from being lit by either of its adjacent tiles, so it must not be
     /// a light:
-    /// 
+    ///
     /// ```
     /// | x |   |
     /// |   | x |
@@ -342,7 +342,7 @@ public class LightUpSolver: GameSolverType {
     }
 
     /// Generates an array of all potential guess move from the current grid state.
-    /// 
+    ///
     /// Returns an empty array if no move can be made from the current grid state.
     private func generateGuesses() -> [Guess] {
         var guesses: [Guess] = []
@@ -356,12 +356,12 @@ public class LightUpSolver: GameSolverType {
                 guard let available = grid.availableSpacesSurrounding(coord) else {
                     continue
                 }
-                
+
                 // Guesses for hinted tiles take priority over empty space guesses
                 for coord in available.coordinates {
                     guesses.insert(.markAsLight(coord), at: 0)
                 }
-            
+
             case .space(.empty):
                 guesses.append(
                     .markAsLight(coord)
@@ -420,8 +420,8 @@ public class LightUpSolver: GameSolverType {
         case markAsMarker(Coordinates)
 
         /// Returns a logical inversion of this guess.
-        /// For `Guess.markAsMarker(coords)`, returns `.Guess(coords)`,
-        /// and for `Guess.markAsLight(coords)`, returns `.Guess(coords)`.
+        /// For `Guess.markAsMarker(coords)`, returns `Guess.markAsLight(coords)`,
+        /// and for `Guess.markAsLight(coords)`, returns `Guess.markAsMarker(coords)`.
         var inverted: Self? {
             switch self {
             case .markAsMarker(let coords):
@@ -453,7 +453,7 @@ extension LightUpGrid {
 
         let adjacent1 = makeCoordinates(column: diagonal1.column, row: diagonal2.row)
         let adjacent2 = makeCoordinates(column: diagonal2.column, row: diagonal1.row)
-        
+
         return adjacent1 == ignore ? adjacent2 : adjacent1
     }
 }
